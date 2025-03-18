@@ -9,18 +9,22 @@ export default async function ChatPage({
     chat: string;
   }>;
   searchParams: Promise<{
-    new?: string;
+    respond?: string;
   }>;
 }) {
   const { chat: chatId } = await params;
-  const { new: newChat } = await searchParams;
+  const { respond: shouldRespond } = await searchParams;
 
   const initialChatState = await getChat(chatId);
-  const isNew = newChat !== undefined;
+  const isNew = shouldRespond !== undefined;
 
   return (
     <>
-      <ChatUI initialMessages={initialChatState} isNew={isNew} />
+      <ChatUI
+        initialMessages={initialChatState}
+        respond={isNew}
+        chatId={chatId}
+      />
     </>
   );
 }

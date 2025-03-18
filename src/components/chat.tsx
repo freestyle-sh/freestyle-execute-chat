@@ -10,15 +10,51 @@ import {
 import { Button } from "@/components/ui/button";
 import { CommandIcon, CornerDownLeftIcon, Square } from "lucide-react";
 import { ChatRequestOptions } from "ai";
-import { ChangeEvent } from "react";
+import { ChangeEvent, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import type { Message } from "@/db/schema";
+import { insertMessage } from "@/lib/actions/insert-message";
+import { useTransitionRouter } from "next-view-transitions";
 
-export function ChatUI(props: { initialMessages: Message[]; isNew: boolean }) {
-  const { messages, input, handleInputChange, handleSubmit, status } = useChat({
-    initialMessages: props.initialMessages,
-    onFinish: (message) => {},
-  });
+export function ChatUI(props: {
+  chatId: string;
+  initialMessages: Message[];
+  respond: boolean;
+}) {
+  const router = useTransitionRouter();
+  const { messages, input, handleInputChange, handleSubmit, status, reload } =
+    useChat({
+      initialMessages: props.initialMessages,
+      fetch: async (req, init) => {
+        return fetch(req, {
+          ...init,
+          headers: {
+            ...init?.headers,
+            "chat-id": props.chatId,
+          },
+        });
+      },
+      onFinish: async (message) => {
+        console.log("onFinish", message);
+
+        await insertMessage(props.chatId, message);
+      },
+    });
+
+  useEffect(() => {
+    async function r() {
+      if (props.respond && messages[messages.length - 1]?.role === "user") {
+        // remove the ?respond query param
+        router.replace(`/chat/${props.chatId}`, {
+          scroll: false,
+        });
+
+        await reload();
+      }
+    }
+    r();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex flex-col h-full justify-between max-w-3xl mx-auto p-6 w-full">
@@ -37,6 +73,7 @@ export function ChatUI(props: { initialMessages: Message[]; isNew: boolean }) {
           input={input}
           handleValueChange={handleInputChange}
           isLoading={status === "streaming"}
+
           // onChange={handleInputChange}
         />
       </div>
