@@ -17,6 +17,7 @@ import { insertMessage } from "@/lib/actions/insert-message";
 // import { useTransitionRouter } from "next-view-transitions";
 import ChatMessage from "./message";
 import { useRouter } from "next/navigation";
+import { ChatContainer } from "./ui/chat-container";
 
 export function ChatUI(props: {
   chatId: string;
@@ -61,31 +62,36 @@ export function ChatUI(props: {
   }, []);
 
   return (
-    <div className="flex flex-col h-full justify-between max-w-3xl mx-auto p-4 sm:p-6 w-full">
-      <div className="flex flex-col gap-4 overflow-y-auto pb-2 scrollbar-thin scrollbar-thumb-secondary scrollbar-track-transparent">
-        {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-32 text-muted-foreground animate-fade-in">
-            <div className="p-4 rounded-lg text-center">
-              <p className="italic mb-2">No messages yet</p>
-              <p className="text-sm">Start the conversation below!</p>
+    <div className="flex flex-col h-full relative flex-1">
+      <div className="flex-1 overflow-hidden">
+        <ChatContainer className="h-full">
+          <div className="flex flex-col h-full justify-between max-w-3xl mx-auto p-4 sm:p-6 w-full">
+            <div className="flex flex-col gap-4 pb-2 scrollbar-thin scrollbar-thumb-secondary scrollbar-track-transparent">
+              {messages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-32 text-muted-foreground animate-fade-in">
+                  <div className="p-4 rounded-lg text-center">
+                    <p className="italic mb-2">No messages yet</p>
+                    <p className="text-sm">Start the conversation below!</p>
+                  </div>
+                </div>
+              ) : (
+                messages.map((message) => (
+                  <ChatMessage key={message.id} message={message} />
+                ))
+              )}
             </div>
           </div>
-        ) : (
-          messages.map((message) => (
-            <ChatMessage key={message.id} message={message} />
-          ))
-        )}
+        </ChatContainer>
       </div>
-
-      <div className="mt-auto pt-4">
-        <PromptInputBasic
-          handleSubmit={handleSubmit}
-          input={input}
-          handleValueChange={handleInputChange}
-          isLoading={status === "streaming" || status === "submitted"}
-
-          // onChange={handleInputChange}
-        />
+      <div className="mt-auto pt-4 sticky bottom-0 w-full pb-4 flex justify-center">
+        <div className="w-full max-w-3xl mx-auto">
+          <PromptInputBasic
+            handleSubmit={handleSubmit}
+            input={input}
+            handleValueChange={handleInputChange}
+            isLoading={status === "streaming" || status === "submitted"}
+          />
+        </div>
       </div>
     </div>
   );
@@ -96,12 +102,12 @@ export function PromptInputBasic(props: {
     event?: {
       preventDefault?: () => void;
     },
-    chatRequestOptions?: ChatRequestOptions,
+    chatRequestOptions?: ChatRequestOptions
   ) => void;
   input: string;
   isLoading: boolean;
   handleValueChange: (
-    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
+    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>
   ) => void;
 }) {
   // const handleValueChange = (value: string) => {
@@ -135,7 +141,7 @@ export function PromptInputBasic(props: {
             className={cn(
               props.isLoading ? "w-8" : "w-14",
               "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out hover:bg-primary/90",
-              props.input.trim().length > 0 ? "animate-pulse-subtle" : "",
+              props.input.trim().length > 0 ? "animate-pulse-subtle" : ""
             )}
             onClick={props.handleSubmit}
           >
