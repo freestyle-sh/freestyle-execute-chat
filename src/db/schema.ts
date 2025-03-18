@@ -1,4 +1,5 @@
 import type { InferSelectModel } from "drizzle-orm";
+import type { Message as SdkMessage } from "ai";
 import {
   boolean,
   json,
@@ -33,7 +34,7 @@ export const messagesTable = pgTable("Messages", {
   createdAt: timestamp("created_at").notNull(),
 });
 
-export type Message = InferSelectModel<typeof messagesTable>;
+export type Message = InferSelectModel<typeof messagesTable> & SdkMessage;
 
 export const moduleConfig = pgTable("ModuleConfig", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),

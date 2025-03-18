@@ -9,9 +9,10 @@ import {
 } from "@/components/ui/prompt-input";
 import { Button } from "@/components/ui/button";
 import { CommandIcon, CornerDownLeftIcon, Square } from "lucide-react";
-import { ChatRequestOptions, Message } from "ai";
+import { ChatRequestOptions } from "ai";
 import { ChangeEvent } from "react";
 import { cn } from "@/lib/utils";
+import type { Message } from "@/db/schema";
 
 export function ChatUI(props: { initialMessages: Message[]; isNew: boolean }) {
   const { messages, input, handleInputChange, handleSubmit, status } = useChat({
