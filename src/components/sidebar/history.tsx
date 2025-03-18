@@ -15,7 +15,7 @@ export function SidebarHistory() {
 
   return (
     <SidebarSection label="History" className="flex flex-col">
-      <div className="max-h-[calc(5*32px)] flex flex-col gap-0.5 overflow-y-auto pr-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-sidebar-border hover:scrollbar-thumb-sidebar-accent">
+      <div className="max-h-[calc(5*32px)] flex flex-col gap-0.5 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-sidebar-border hover:scrollbar-thumb-sidebar-accent">
         {isLoading
           ? Array.from({ length: 5 }).map((_, index) => (
               <SidebarMenuItem key={`sidebar-history-${index.toString()}`}>

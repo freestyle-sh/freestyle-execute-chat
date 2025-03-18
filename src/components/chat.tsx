@@ -47,6 +47,7 @@ export function ChatUI(props: {
       },
     });
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: it's ok
   useEffect(() => {
     if (hasRunRef.current) return; // already ran
     hasRunRef.current = true;
