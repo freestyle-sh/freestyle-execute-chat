@@ -31,7 +31,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider>
+        <ThemeProvider attribute={"class"}>
           <SidebarProvider>
             <ChatSidebar />
             <main className="flex-1 overflow-auto">{children}</main>
