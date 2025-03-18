@@ -5,5 +5,6 @@ import { wrapLanguageModel } from "ai";
 
 export const claudeSonnetModel = wrapLanguageModel({
   model: anthropic("claude-3-sonnet-20240229"),
+  // model: anthropic("claude-3-5-haiku-20241022	")
   middleware: [],
 });

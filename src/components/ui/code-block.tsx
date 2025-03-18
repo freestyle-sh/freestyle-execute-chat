@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils"
 import React, { useEffect, useState } from "react"
 import { codeToHtml } from "shiki"
+import { useTheme } from "next-themes"
 
 export type CodeBlockProps = {
   children?: React.ReactNode
@@ -34,11 +35,21 @@ export type CodeBlockCodeProps = {
 function CodeBlockCode({
   code,
   language = "tsx",
-  theme = "github-light",
+  theme: propTheme,
   className,
   ...props
 }: CodeBlockCodeProps) {
   const [highlightedHtml, setHighlightedHtml] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
+  const { resolvedTheme } = useTheme()
+  
+  // Handle mounting for SSR
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+  
+  // Use system theme or provided theme prop
+  const theme = propTheme || (mounted && resolvedTheme === 'dark' ? 'github-dark' : 'github-light')
 
   useEffect(() => {
     async function highlight() {
