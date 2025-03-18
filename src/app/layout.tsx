@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import { ViewTransitions } from "next-view-transitions";
 
 import { SidebarProvider } from "@/components/sidebar/provider";
 import { ChatSidebar } from "@/components/sidebar/sidebar";
@@ -27,17 +28,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <ThemeProvider attribute={"class"}>
-          <SidebarProvider>
-            <ChatSidebar />
-            <main className="flex-1 overflow-auto">{children}</main>
-          </SidebarProvider>
-        </ThemeProvider>
-      </body>
-    </html>
+    <ViewTransitions>
+      <html lang="en" suppressHydrationWarning>
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        >
+          <ThemeProvider attribute={"class"}>
+            <SidebarProvider>
+              <ChatSidebar />
+              <main className="flex-1 overflow-auto">{children}</main>
+            </SidebarProvider>
+          </ThemeProvider>
+        </body>
+      </html>
+    </ViewTransitions>
   );
 }

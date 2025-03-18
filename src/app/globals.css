@@ -121,3 +121,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+.promptbox {
+  view-transition-name: demo-title;
+}

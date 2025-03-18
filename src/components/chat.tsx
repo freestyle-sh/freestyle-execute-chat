@@ -69,7 +69,7 @@ export function PromptInputBasic(props: {
       }
       // isLoading={isLoading}
       onSubmit={props.handleSubmit}
-      className="w-full max-w-(--breakpoint-md)"
+      className="promptbox w-full max-w-(--breakpoint-md)"
     >
       <PromptInputTextarea placeholder="Ask me anything..." />
       <PromptInputActions className="justify-end pt-2">

@@ -1,17 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { SendIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
+
 import { PromptInputBasic } from "@/components/chat";
-import { ChatRequestOptions } from "ai";
+import { useTransitionRouter } from "next-view-transitions";
 
 export default function Home() {
   const [prompt, setPrompt] = useState("");
-  const router = useRouter();
+  const router = useTransitionRouter();
 
   const handleSubmit = () => {
     // e.preventDefault ?? e.preventDefault();
