@@ -1,6 +1,7 @@
 "use client";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { withStorageDOMEvents } from "./sync";
 
 interface SidebarState {
   isOpen: boolean;
@@ -20,3 +21,5 @@ export const useSidebarStore = create<SidebarState>()(
     },
   ),
 );
+
+withStorageDOMEvents(useSidebarStore);
