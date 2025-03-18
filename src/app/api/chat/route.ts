@@ -1,3 +1,5 @@
+import { db } from "@/db";
+import { messagesTable } from "@/db/schema";
 import { claudeSonnetModel } from "@/lib/model";
 import { CoreMessage, streamText } from "ai";
 
@@ -5,8 +7,6 @@ export async function POST(request: Request) {
   const json: {
     messages: CoreMessage[];
   } = await request.json();
-
-  console.log("SKIBIDOX", json);
 
   return streamText({
     model: claudeSonnetModel,

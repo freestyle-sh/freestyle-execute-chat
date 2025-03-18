@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 export function ChatUI(props: { initialMessages: Message[]; isNew: boolean }) {
   const { messages, input, handleInputChange, handleSubmit, status } = useChat({
     initialMessages: props.initialMessages,
+    onFinish: (message) => {},
   });
 
   return (
@@ -47,12 +48,12 @@ export function PromptInputBasic(props: {
     event?: {
       preventDefault?: () => void;
     },
-    chatRequestOptions?: ChatRequestOptions,
+    chatRequestOptions?: ChatRequestOptions
   ) => void;
   input: string;
   isLoading: boolean;
   handleValueChange: (
-    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
+    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>
   ) => void;
 }) {
   // const handleValueChange = (value: string) => {
@@ -85,7 +86,7 @@ export function PromptInputBasic(props: {
             size="default"
             className={cn(
               props.isLoading ? "w-8" : "w-14",
-              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out",
+              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out"
             )}
             onClick={props.handleSubmit}
           >

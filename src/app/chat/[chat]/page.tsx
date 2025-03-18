@@ -14,7 +14,7 @@ export default async function ChatPage({
 }) {
   const { chat: chatId } = await params;
   const initialChatState = await getChat(chatId);
-  const isNew = searchParams.new !== undefined;
+  const isNew = (await searchParams).new !== undefined;
 
   return (
     <>
