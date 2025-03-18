@@ -25,6 +25,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { deleteChat } from "@/lib/actions/delete-chat";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function SidebarHistoryItem({
   id,
@@ -37,6 +38,7 @@ export function SidebarHistoryItem({
 }) {
   const sidebar = useSidebar();
   const pathname = usePathname();
+  const queryClient = useQueryClient();
   const [hovered, setHovered] = useState(false);
 
   const href = `/chat/${id}`;
@@ -97,11 +99,16 @@ export function SidebarHistoryItem({
             <DropdownMenuItem
               variant="destructive"
               onClick={() => {
-                toast.promise(deleteChat(id), {
-                  loading: "Deleting...",
-                  success: "Deleted chat",
-                  error: "Error deleting chat",
-                });
+                toast.promise(
+                  deleteChat(id).then(() =>
+                    queryClient.invalidateQueries({ queryKey: ["chats:list"] }),
+                  ),
+                  {
+                    loading: "Deleting...",
+                    success: "Deleted chat",
+                    error: "Error deleting chat",
+                  },
+                );
               }}
             >
               <TrashIcon className="mr-2 h-4 w-4" />

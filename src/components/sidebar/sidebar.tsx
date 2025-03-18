@@ -12,15 +12,15 @@ import { SidebarHeader } from "./header";
 import { SidebarToggleButton } from "./toggle-button";
 import Logo from "../logo";
 import { SidebarHistory } from "./history";
-// import { SidebarSection } from "./section";
 import { SidebarCreateChat } from "./create-chat-button";
+import ClientOnly from "../client-only";
 
 export function ChatSidebar() {
   return (
-    <Sidebar collapsible="icon" className="transition-all duration-300 ease-in-out">
+    <Sidebar collapsible="icon" className="transition-all duration-300">
       <SidebarHeader className="border-b border-sidebar-border pb-2">
         <Link href={"/"}>
-          <Logo className="stroke-primary transition-transform hover:scale-105" />
+          <Logo className="stroke-primary" />
         </Link>
       </SidebarHeader>
       <SidebarContent className="gap-2 mt-2">

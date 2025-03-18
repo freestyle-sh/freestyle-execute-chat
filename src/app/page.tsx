@@ -5,15 +5,20 @@ import { useState } from "react";
 import { PromptInputBasic } from "@/components/chat";
 import { useTransitionRouter } from "next-view-transitions";
 import { createChat } from "@/lib/actions/create-chat";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function Home() {
   const [prompt, setPrompt] = useState("");
+  const queryClient = useQueryClient();
   const router = useTransitionRouter();
   const isLoading = false;
 
   const handleSubmit = async () => {
     if (prompt.trim()) {
-      const id = await createChat(prompt.trim());
+      const id = await createChat(prompt.trim()).then(() =>
+        queryClient.invalidateQueries({ queryKey: ["chats:list"] }),
+      );
+
       router.push(`/chat/${id}?respond`);
     }
   };

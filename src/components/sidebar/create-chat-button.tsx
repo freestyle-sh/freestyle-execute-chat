@@ -9,8 +9,10 @@ import {
 } from "@/components/ui/sidebar";
 import { createChat } from "@/lib/actions/create-chat";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function SidebarCreateChat() {
+  const queryClient = useQueryClient();
   const router = useRouter();
 
   return (
@@ -22,7 +24,10 @@ export function SidebarCreateChat() {
               tooltip={"Create new chat"}
               className="flex gap-2 cursor-pointer transition-all duration-200"
               onClick={() =>
-                createChat().then((id) => router.push(`/chat/${id}`))
+                createChat().then((id) => {
+                  queryClient.invalidateQueries({ queryKey: ["chats:list"] });
+                  router.push(`/chat/${id}`);
+                })
               }
             >
               <PlusIcon />
