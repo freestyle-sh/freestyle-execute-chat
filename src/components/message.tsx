@@ -1,5 +1,6 @@
 "use client";
 
+import { CodeExecution } from "./tools/code-execution";
 // import type { Components } from "react-markdown";
 import { Message, MessageContent, MessageAvatar } from "./ui/message";
 import type { UIMessage } from "ai";
@@ -25,14 +26,10 @@ export function UserMessage({ message }: { message: UIMessage }) {
     <>
       {message.parts.map((part, index) => (
         <Message key={index} className="justify-end animate-slide-in-right">
-          {part.type === "text" ? (
+          {part.type === "text" && (
             <MessageContent className="bg-primary/10 rounded-2xl rounded-br-none shadow-sm border border-primary/10 transition-all duration-200">
-              part.text
+              {part.text}
             </MessageContent>
-          ) : (
-            <pre className="p-2 bg-muted rounded overflow-auto whitespace-pre">
-              <code>{JSON.stringify(part, null, 2)}</code>
-            </pre>
           )}
         </Message>
       ))}
@@ -41,27 +38,6 @@ export function UserMessage({ message }: { message: UIMessage }) {
 }
 
 export function AIMessage({ message }: { message: UIMessage }) {
-  if (!message.parts || message.parts.length === 0) {
-    return (
-      <Message className="justify-start animate-slide-up">
-        <MessageAvatar
-          src="/avatars/ai.png"
-          alt="AI"
-          fallback="AI"
-          className="mt-1"
-        />
-        <MessageContent
-          markdown
-          className={
-            "bg-transparent p-0 transition-all duration-200 dark:prose-invert"
-          }
-        >
-          {message.content}
-        </MessageContent>
-      </Message>
-    );
-  }
-
   return (
     <>
       {message.parts.map((part, index) => (
@@ -75,20 +51,22 @@ export function AIMessage({ message }: { message: UIMessage }) {
             />
           )}
           {index !== 0 && <div className="w-8" />} {/* Spacing for alignment */}
-          <MessageContent
-            markdown={part.type === "text"}
-            className={
-              "bg-transparent p-0 transition-all duration-200 dark:prose-invert"
-            }
-          >
-            {part.type === "text" ? (
-              part.text
-            ) : (
-              <pre className="p-2 bg-muted rounded overflow-auto whitespace-pre">
-                <code>{JSON.stringify(part, null, 2)}</code>
-              </pre>
-            )}
-          </MessageContent>
+          {part.type == "text" && (
+            <MessageContent
+              key={index}
+              markdown
+              className="bg-transparent p-0 transition-all duration-200 dark:prose-invert"
+            >
+              {part.text}
+            </MessageContent>
+          )}
+          {part.type == "tool-invocation" && (
+            <>
+              {part.toolInvocation.toolName == "codeExecutor" && (
+                <CodeExecution execution={part.toolInvocation} />
+              )}
+            </>
+          )}
         </Message>
       ))}
     </>
