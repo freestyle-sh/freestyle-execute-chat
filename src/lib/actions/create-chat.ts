@@ -20,6 +20,7 @@ export async function createChat(firstMessage: string) {
     .values({
       createdAt: new Date(),
       id: crypto.randomUUID(),
+      name: "Chat with Me",
       userId: STACKAUTHID,
     })
     .returning();
