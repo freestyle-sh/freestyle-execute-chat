@@ -1,9 +1,8 @@
 "use server";
 
-const STACKAUTHID = "57278389-2e23-4c18-86f8-aaa0667417c4";
-
 import { db } from "@/db";
 import { chatsTable, messagesTable, usersTable } from "@/db/schema";
+import { STACKAUTHID } from "./tempuserid";
 
 export async function createChat(firstMessage: string) {
   "use server";

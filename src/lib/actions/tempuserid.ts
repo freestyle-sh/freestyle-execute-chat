@@ -1,0 +1,1 @@
+export const STACKAUTHID = "57278389-2e23-4c18-86f8-aaa0667417c4";
