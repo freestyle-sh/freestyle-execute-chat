@@ -62,7 +62,7 @@ export function SidebarHistoryItem({
 
       <div
         className={cn(
-          "absolute right-2 top-1/2 -translate-y-1/2 opacity-0 transition-opacity",
+          "absolute right-2 top-1/2 -translate-y-1/2 opacity-0 transition-opacity z-10",
           hovered ? "opacity-100" : "opacity-0",
           sidebar.open ? "" : "hidden",
         )}
