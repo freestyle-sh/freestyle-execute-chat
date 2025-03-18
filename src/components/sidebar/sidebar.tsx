@@ -3,7 +3,6 @@
 import { SettingsIcon, MessageSquareIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Image from "next/image";
 
 import {
   Sidebar,
@@ -15,6 +14,7 @@ import { SidebarSection } from "./section";
 import { SidebarMenuItem } from "./menu-item";
 import { SidebarHeader } from "./header";
 import { SidebarToggleButton } from "./toggle-button";
+import Logo from "../logo";
 
 export function ChatSidebar() {
   const pathname = usePathname();
@@ -23,13 +23,7 @@ export function ChatSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <Link href={"/"}>
-          <Image
-            src="/logo.svg"
-            alt="Logo"
-            width={24}
-            height={24}
-            className="text-black dark:text-white"
-          />
+          <Logo className="stroke-primary" />
         </Link>
       </SidebarHeader>
       <SidebarContent>

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import type { ReactNode } from "react";
 import {
   SidebarHeader as BaseSidebarHeader,
