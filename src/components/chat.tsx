@@ -13,6 +13,7 @@ import { ChatRequestOptions } from "ai";
 import { ChangeEvent } from "react";
 import { cn } from "@/lib/utils";
 import type { Message } from "@/db/schema";
+import ChatMessage from "./message";
 
 export function ChatUI(props: { initialMessages: Message[]; isNew: boolean }) {
   const { messages, input, handleInputChange, handleSubmit, status } = useChat({
@@ -24,10 +25,7 @@ export function ChatUI(props: { initialMessages: Message[]; isNew: boolean }) {
     <div className="flex flex-col h-full justify-between max-w-3xl mx-auto p-6 w-full">
       <div className="flex flex-col gap-4 overflow-y-auto">
         {messages.map((message) => (
-          <div key={message.id} className="p-3 rounded-lg">
-            {message.role === "user" ? "User: " : "AI: "}
-            {message.content}
-          </div>
+          <ChatMessage key={message.id} message={message} />
         ))}
       </div>
 
@@ -49,12 +47,12 @@ export function PromptInputBasic(props: {
     event?: {
       preventDefault?: () => void;
     },
-    chatRequestOptions?: ChatRequestOptions
+    chatRequestOptions?: ChatRequestOptions,
   ) => void;
   input: string;
   isLoading: boolean;
   handleValueChange: (
-    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>
+    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
   ) => void;
 }) {
   // const handleValueChange = (value: string) => {
@@ -87,7 +85,7 @@ export function PromptInputBasic(props: {
             size="default"
             className={cn(
               props.isLoading ? "w-8" : "w-14",
-              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out"
+              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out",
             )}
             onClick={props.handleSubmit}
           >
