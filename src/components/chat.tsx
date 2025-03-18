@@ -100,12 +100,12 @@ export function PromptInputBasic(props: {
     event?: {
       preventDefault?: () => void;
     },
-    chatRequestOptions?: ChatRequestOptions
+    chatRequestOptions?: ChatRequestOptions,
   ) => void;
   input: string;
   isLoading: boolean;
   handleValueChange: (
-    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>
+    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
   ) => void;
 }) {
   // const handleValueChange = (value: string) => {
@@ -122,7 +122,7 @@ export function PromptInputBasic(props: {
       }
       onSubmit={props.handleSubmit}
       isLoading={props.isLoading}
-      className="promptbox w-full max-w-(--breakpoint-md) transition-all duration-200 focus-within:shadow-md backdrop-blur-sm bg-background/90"
+      className="promptbox mx-4 max-w-(--breakpoint-md) transition-all duration-200 focus-within:shadow-md backdrop-blur-sm bg-background/90"
     >
       <PromptInputTextarea
         className="rounded-2xl bg-card/50 backdrop-blur-sm"
@@ -139,7 +139,7 @@ export function PromptInputBasic(props: {
             className={cn(
               props.isLoading ? "w-8" : "w-14",
               "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out hover:bg-primary/90",
-              props.input.trim().length > 0 ? "animate-pulse-subtle" : ""
+              props.input.trim().length > 0 ? "animate-pulse-subtle" : "",
             )}
             onClick={props.handleSubmit}
           >
