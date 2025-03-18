@@ -24,6 +24,7 @@ export async function insertMessage(chatId: string, message: Message) {
       createdAt: new Date(),
       role: message.role,
       content: message.content,
+      parts: message.parts,
       chatId: chatId,
     })
     .returning();

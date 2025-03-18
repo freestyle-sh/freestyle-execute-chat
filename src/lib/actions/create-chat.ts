@@ -3,6 +3,7 @@
 import { db } from "@/db";
 import { chatsTable, messagesTable, usersTable } from "@/db/schema";
 import { STACKAUTHID } from "./tempuserid";
+import type { TextUIPart } from "@ai-sdk/ui-utils";
 
 export async function createChat(firstMessage?: string) {
   "use server";
@@ -30,6 +31,12 @@ export async function createChat(firstMessage?: string) {
       id: crypto.randomUUID(),
       createdAt: new Date(),
       role: "user",
+      parts: [
+        {
+          type: "text",
+          text: firstMessage,
+        } as TextUIPart,
+      ],
       content: firstMessage,
       chatId: newChat[0].id,
     });

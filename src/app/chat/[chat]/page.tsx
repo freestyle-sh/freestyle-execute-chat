@@ -18,6 +18,8 @@ export default async function ChatPage({
   const initialChatState = await getChat(chatId);
   const isNew = shouldRespond !== undefined;
 
+  console.log("isNew", initialChatState);
+
   return (
     <ChatUI
       initialMessages={initialChatState}

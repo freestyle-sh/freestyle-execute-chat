@@ -1,11 +1,12 @@
 import { db } from "@/db";
 import { messagesTable } from "@/db/schema";
 import { claudeSonnetModel } from "@/lib/model";
-import { CoreMessage, streamText } from "ai";
+import { Message, streamText } from "ai";
 import { executeTool } from "freestyle-sandboxes/ai";
+
 export async function POST(request: Request) {
   const json: {
-    messages: CoreMessage[];
+    messages: Message[];
   } = await request.json();
 
   const chatId = request.headers.get("chat-id");
@@ -21,6 +22,7 @@ export async function POST(request: Request) {
       ...lastMessage,
       id: crypto.randomUUID(),
       createdAt: new Date(),
+      parts: lastMessage.parts,
       content: lastMessage.content.toString(),
       role: lastMessage.role,
       chatId,

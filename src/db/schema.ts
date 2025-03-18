@@ -34,6 +34,7 @@ export const messagesTable = pgTable("Messages", {
     onDelete: "cascade",
   }),
   content: text("content").notNull(),
+  parts: json("parts").notNull(),
   role: varchar("role", { length: 16 }).notNull(),
   createdAt: timestamp("created_at").notNull(),
 });

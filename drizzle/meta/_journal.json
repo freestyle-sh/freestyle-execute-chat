@@ -15,6 +15,27 @@
       "when": 1742279102741,
       "tag": "0001_youthful_talos",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1742323819205,
+      "tag": "0002_dear_dagger",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1742324282913,
+      "tag": "0003_complex_justin_hammer",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1742324654911,
+      "tag": "0004_far_aqueduct",
+      "breakpoints": true
     }
   ]
 }
