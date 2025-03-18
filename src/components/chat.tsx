@@ -8,25 +8,12 @@ import {
   PromptInputTextarea,
 } from "@/components/ui/prompt-input";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowUp,
-  CommandIcon,
-  CornerDownLeft,
-  CornerDownLeftIcon,
-  Loader,
-  Loader2,
-  MonitorStopIcon,
-  Square,
-  StopCircleIcon,
-} from "lucide-react";
-import { useEffect, useState } from "react";
-import { ChatRequestOptions } from "ai";
+import { CommandIcon, CornerDownLeftIcon, Square } from "lucide-react";
+import { ChatRequestOptions, Message } from "ai";
 import { ChangeEvent } from "react";
 import { cn } from "@/lib/utils";
 
-export function ChatUI(props: {
-  initialMessages: { id: string; role: string; content: string }[];
-}) {
+export function ChatUI(props: { initialMessages: Message[]; isNew: boolean }) {
   const { messages, input, handleInputChange, handleSubmit, status } = useChat({
     initialMessages: props.initialMessages,
   });

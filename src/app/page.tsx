@@ -14,7 +14,7 @@ export default function Home() {
   const handleSubmit = async () => {
     if (prompt.trim()) {
       const id = await createChat(prompt.trim());
-      router.push(`/chat/${id}`);
+      router.push(`/chat/${id}?respond`);
     }
   };
 
