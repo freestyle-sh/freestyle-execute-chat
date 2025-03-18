@@ -6,21 +6,25 @@ export function ChatUI() {
   const { messages, input, handleInputChange, handleSubmit } = useChat({});
 
   return (
-    <>
-      {messages.map((message) => (
-        <div key={message.id}>
-          {message.role === "user" ? "User: " : "AI: "}
-          {message.content}
-        </div>
-      ))}
+    <div className="flex flex-col h-full justify-between max-w-3xl mx-auto p-6 w-full">
+      <div className="flex flex-col gap-4 overflow-y-auto">
+        {messages.map((message) => (
+          <div key={message.id} className="p-3 rounded-lg">
+            {message.role === "user" ? "User: " : "AI: "}
+            {message.content}
+          </div>
+        ))}
+      </div>
 
-      <PromptInputBasic
-        handleSubmit={handleSubmit}
-        input={input}
-        handleValueChange={handleInputChange}
-        // onChange={handleInputChange}
-      />
-    </>
+      <div className="mt-auto pt-4">
+        <PromptInputBasic
+          handleSubmit={handleSubmit}
+          input={input}
+          handleValueChange={handleInputChange}
+          // onChange={handleInputChange}
+        />
+      </div>
+    </div>
   );
 }
 

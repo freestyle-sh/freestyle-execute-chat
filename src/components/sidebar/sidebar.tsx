@@ -1,12 +1,9 @@
 "use client";
 
-import {
-  SettingsIcon,
-  MessageSquareIcon,
-  MessageCircleIcon,
-} from "lucide-react";
+import { SettingsIcon, MessageSquareIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 import {
   Sidebar,
@@ -28,7 +25,13 @@ export function ChatSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader isOpen={sidebar.isOpen}>
         <Link href={"/"}>
-          <MessageCircleIcon size={24} />
+          <Image
+            src="/logo.svg"
+            alt="Logo"
+            width={24}
+            height={24}
+            className="text-white"
+          />
         </Link>
       </SidebarHeader>
       <SidebarContent>
