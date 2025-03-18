@@ -10,19 +10,23 @@ import {
 import { Button } from "@/components/ui/button";
 import { CommandIcon, CornerDownLeftIcon, Square } from "lucide-react";
 import { ChatRequestOptions } from "ai";
-import { ChangeEvent, useEffect } from "react";
+import { ChangeEvent, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import type { Message } from "@/db/schema";
 import { insertMessage } from "@/lib/actions/insert-message";
-import { useTransitionRouter } from "next-view-transitions";
+// import { useTransitionRouter } from "next-view-transitions";
 import ChatMessage from "./message";
+import { useRouter } from "next/navigation";
 
 export function ChatUI(props: {
   chatId: string;
   initialMessages: Message[];
   respond: boolean;
 }) {
-  const router = useTransitionRouter();
+  "use client";
+  const router = useRouter();
+  const hasRunRef = useRef(false);
+
   const { messages, input, handleInputChange, handleSubmit, status, reload } =
     useChat({
       initialMessages: props.initialMessages,
@@ -43,13 +47,12 @@ export function ChatUI(props: {
     });
 
   useEffect(() => {
+    if (hasRunRef.current) return; // already ran
+    hasRunRef.current = true;
     async function r() {
       if (props.respond && messages[messages.length - 1]?.role === "user") {
         // remove the ?respond query param
-        router.replace(`/chat/${props.chatId}`, {
-          scroll: false,
-        });
-
+        router.push(`/chat/${props.chatId}`, {});
         await reload();
       }
     }
