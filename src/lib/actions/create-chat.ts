@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { chatsTable, messagesTable, usersTable } from "@/db/schema";
 import { STACKAUTHID } from "./tempuserid";
 
-export async function createChat(firstMessage: string) {
+export async function createChat(firstMessage?: string) {
   "use server";
 
   await db
@@ -25,13 +25,15 @@ export async function createChat(firstMessage: string) {
     })
     .returning();
 
-  await db.insert(messagesTable).values({
-    id: crypto.randomUUID(),
-    createdAt: new Date(),
-    role: "user",
-    content: firstMessage,
-    chatId: newChat[0].id,
-  });
+  if (firstMessage) {
+    await db.insert(messagesTable).values({
+      id: crypto.randomUUID(),
+      createdAt: new Date(),
+      role: "user",
+      content: firstMessage,
+      chatId: newChat[0].id,
+    });
+  }
 
   return newChat[0].id;
 }

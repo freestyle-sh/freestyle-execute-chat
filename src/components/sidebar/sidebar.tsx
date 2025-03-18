@@ -15,6 +15,9 @@ import { SidebarToggleButton } from "./toggle-button";
 import Logo from "../logo";
 import { SidebarHistory } from "./history";
 import { SidebarSection } from "./section";
+import { createChat } from "@/lib/actions/create-chat";
+import { redirect } from "next/navigation";
+import { SidebarCreateChat } from "./create-chat-button";
 
 export function ChatSidebar() {
   return (
@@ -25,13 +28,7 @@ export function ChatSidebar() {
         </Link>
       </SidebarHeader>
       <SidebarContent className="gap-0">
-        <SidebarGroup className="z-10">
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuLinkItem href="/new" icon={PlusIcon} label="New Chat" />
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <SidebarCreateChat />
         <SidebarHistory />
       </SidebarContent>
       <SidebarFooter>

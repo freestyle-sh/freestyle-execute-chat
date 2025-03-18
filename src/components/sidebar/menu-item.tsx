@@ -13,31 +13,6 @@ interface SidebarMenuItemProps {
   className?: string;
 }
 
-export async function SidebarMenuButtonItem({
-  icon: Icon,
-  onClick,
-  label,
-  isActive = false,
-  tooltip,
-  className,
-}: SidebarMenuItemProps & {
-  onClick?: () => void;
-}) {
-  return (
-    <BaseSidebarMenuItem className={className}>
-      <SidebarMenuButton
-        onClick={onClick}
-        tooltip={tooltip || label}
-        isActive={isActive}
-        className="flex gap-2"
-      >
-        <Icon />
-        <span>{label}</span>
-      </SidebarMenuButton>
-    </BaseSidebarMenuItem>
-  );
-}
-
 export async function SidebarMenuLinkItem({
   href,
   icon: Icon,
