@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import type { Message } from "@/db/schema";
 import { insertMessage } from "@/lib/actions/insert-message";
 import { useTransitionRouter } from "next-view-transitions";
+import ChatMessage from "./message";
 
 export function ChatUI(props: {
   chatId: string;
