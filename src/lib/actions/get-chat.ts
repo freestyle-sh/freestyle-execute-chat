@@ -1,7 +1,6 @@
 "use server";
 import { db } from "@/db";
-import { messagesTable } from "@/db/schema";
-import { Message } from "ai";
+import { messagesTable, type Message } from "@/db/schema";
 import { asc, eq } from "drizzle-orm";
 
 export async function getChat(id: string): Promise<Message[]> {
