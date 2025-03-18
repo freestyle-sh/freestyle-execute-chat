@@ -32,7 +32,7 @@ export function AIMessage({ message }: { message: UIMessage }) {
       <MessageContent
         markdown
         className={
-          "bg-transparent p-0 transition-all duration-200 hover:shadow-md dark:prose-invert"
+          "bg-transparent p-0 transition-all duration-200 dark:prose-invert"
         }
       >
         {message.content}

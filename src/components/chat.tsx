@@ -82,7 +82,7 @@ export function ChatUI(props: {
           handleSubmit={handleSubmit}
           input={input}
           handleValueChange={handleInputChange}
-          isLoading={status === "streaming"}
+          isLoading={status === "streaming" || status === "submitted"}
 
           // onChange={handleInputChange}
         />
