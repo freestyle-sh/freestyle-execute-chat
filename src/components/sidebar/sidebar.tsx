@@ -14,19 +14,17 @@ import {
   SidebarFooter,
   SidebarMenu,
 } from "@/components/ui/sidebar";
-import { useSidebarStore } from "@/lib/stores/sidebar";
 import { SidebarSection } from "./section";
 import { SidebarMenuItem } from "./menu-item";
 import { SidebarHeader } from "./header";
 import { SidebarToggleButton } from "./toggle-button";
 
 export function ChatSidebar() {
-  const sidebar = useSidebarStore();
   const pathname = usePathname();
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader isOpen={sidebar.isOpen}>
+      <SidebarHeader>
         <Link href={"/"}>
           <MessageCircleIcon size={24} />
         </Link>
@@ -60,3 +58,4 @@ export function ChatSidebar() {
     </Sidebar>
   );
 }
+
