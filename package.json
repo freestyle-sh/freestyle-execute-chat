@@ -25,6 +25,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.40.1",
+    "freestyle-sandboxes": "^0.0.31",
     "lucide-react": "^0.482.0",
     "marked": "^15.0.7",
     "next": "15.2.3",

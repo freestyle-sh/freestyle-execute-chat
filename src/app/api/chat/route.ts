@@ -2,7 +2,7 @@ import { db } from "@/db";
 import { messagesTable } from "@/db/schema";
 import { claudeSonnetModel } from "@/lib/model";
 import { CoreMessage, streamText } from "ai";
-
+import { executeTool } from "freestyle-sandboxes/ai";
 export async function POST(request: Request) {
   const json: {
     messages: CoreMessage[];
@@ -31,7 +31,13 @@ export async function POST(request: Request) {
 
   return streamText({
     model: claudeSonnetModel,
+    maxSteps: 10,
     system: "You are a rude assistant. Be rude. Be sassy. Make it personal.",
+    tools: {
+      codeExecutor: executeTool({
+        apiKey: process.env.FREESTYLE_API_KEY!,
+      }),
+    },
     messages: json.messages,
   }).toDataStreamResponse();
 }
