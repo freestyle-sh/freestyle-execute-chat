@@ -60,10 +60,7 @@ export function ChatUI(props: {
     <div className="flex flex-col h-full justify-between max-w-3xl mx-auto p-6 w-full">
       <div className="flex flex-col gap-4 overflow-y-auto">
         {messages.map((message) => (
-          <div key={message.id} className="p-3 rounded-lg">
-            {message.role === "user" ? "User: " : "AI: "}
-            {message.content}
-          </div>
+          <ChatMessage key={message.id} message={message} />
         ))}
       </div>
 
