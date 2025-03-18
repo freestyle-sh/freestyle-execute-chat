@@ -23,10 +23,9 @@ export function SidebarSection({
     <SidebarGroup className={className}>
       <SidebarGroupLabel>{label}</SidebarGroupLabel>
       <SidebarGroupContent>
-        <SidebarMenu>
-          {children}
-        </SidebarMenu>
+        <SidebarMenu>{children}</SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
   );
 }
+

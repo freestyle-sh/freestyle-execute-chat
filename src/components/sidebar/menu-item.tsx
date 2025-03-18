@@ -1,5 +1,4 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   SidebarMenuItem as BaseSidebarMenuItem,
@@ -7,7 +6,6 @@ import {
 } from "@/components/ui/sidebar";
 
 interface SidebarMenuItemProps {
-  href: string;
   icon: LucideIcon;
   label: string;
   isActive?: boolean;
@@ -15,23 +13,49 @@ interface SidebarMenuItemProps {
   className?: string;
 }
 
-export async function SidebarMenuItem({
+export async function SidebarMenuButtonItem({
+  icon: Icon,
+  onClick,
+  label,
+  isActive = false,
+  tooltip,
+  className,
+}: SidebarMenuItemProps & {
+  onClick?: () => void;
+}) {
+  return (
+    <BaseSidebarMenuItem className={className}>
+      <SidebarMenuButton
+        onClick={onClick}
+        tooltip={tooltip || label}
+        isActive={isActive}
+        className="flex gap-2"
+      >
+        <Icon />
+        <span>{label}</span>
+      </SidebarMenuButton>
+    </BaseSidebarMenuItem>
+  );
+}
+
+export async function SidebarMenuLinkItem({
   href,
   icon: Icon,
   label,
   isActive = false,
   tooltip,
   className,
-}: SidebarMenuItemProps) {
+}: SidebarMenuItemProps & {
+  href: string;
+}) {
   return (
     <BaseSidebarMenuItem className={className}>
       <SidebarMenuButton tooltip={tooltip || label} isActive={isActive} asChild>
-        <Link href={href}>
-          <Icon className="mr-2" />
+        <Link href={href} className="flex gap-2">
+          <Icon />
           <span>{label}</span>
         </Link>
       </SidebarMenuButton>
     </BaseSidebarMenuItem>
   );
 }
-
