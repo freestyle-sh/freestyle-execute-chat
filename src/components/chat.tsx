@@ -45,11 +45,11 @@ export function PromptInputBasic(props: {
     event?: {
       preventDefault?: () => void;
     },
-    chatRequestOptions?: ChatRequestOptions
+    chatRequestOptions?: ChatRequestOptions,
   ) => void;
   input: string;
   handleValueChange: (
-    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>
+    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
   ) => void;
 }) {
   // const [input, setInput] = useState("");
@@ -71,7 +71,10 @@ export function PromptInputBasic(props: {
       onSubmit={props.handleSubmit}
       className="promptbox w-full max-w-(--breakpoint-md)"
     >
-      <PromptInputTextarea placeholder="Ask me anything..." />
+      <PromptInputTextarea
+        className="rounded-2xl"
+        placeholder="Ask me anything..."
+      />
       <PromptInputActions className="justify-end pt-2">
         <PromptInputAction
           tooltip="Send message"
