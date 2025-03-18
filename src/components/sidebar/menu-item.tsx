@@ -1,8 +1,6 @@
-"use client";
-
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { LucideIcon } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import {
   SidebarMenuItem as BaseSidebarMenuItem,
   SidebarMenuButton,
@@ -17,7 +15,7 @@ interface SidebarMenuItemProps {
   className?: string;
 }
 
-export function SidebarMenuItem({
+export async function SidebarMenuItem({
   href,
   icon: Icon,
   label,
@@ -27,11 +25,7 @@ export function SidebarMenuItem({
 }: SidebarMenuItemProps) {
   return (
     <BaseSidebarMenuItem className={className}>
-      <SidebarMenuButton
-        tooltip={tooltip || label}
-        isActive={isActive}
-        asChild
-      >
+      <SidebarMenuButton tooltip={tooltip || label} isActive={isActive} asChild>
         <Link href={href}>
           <Icon className="mr-2" />
           <span>{label}</span>
@@ -40,3 +34,4 @@ export function SidebarMenuItem({
     </BaseSidebarMenuItem>
   );
 }
+
