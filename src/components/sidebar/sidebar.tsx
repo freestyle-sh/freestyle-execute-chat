@@ -28,7 +28,7 @@ export function ChatSidebar() {
             alt="Logo"
             width={24}
             height={24}
-            className="text-white"
+            className="text-black dark:text-white"
           />
         </Link>
       </SidebarHeader>

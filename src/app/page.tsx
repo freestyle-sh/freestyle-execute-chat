@@ -6,13 +6,15 @@ import { SendIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { PromptInputBasic } from "@/components/chat";
+import { ChatRequestOptions } from "ai";
 
 export default function Home() {
   const [prompt, setPrompt] = useState("");
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
+    // e.preventDefault ?? e.preventDefault();
     if (prompt.trim()) {
       // In a real app, you'd create a new chat and redirect to it
       router.push(`/chat/new?prompt=${encodeURIComponent(prompt)}`);
@@ -26,8 +28,14 @@ export default function Home() {
         <p className="text-muted-foreground mb-8 text-center max-w-md">
           Start a new conversation with Freestyle code execution.
         </p>
-        
-        <Card className="w-full mb-4 p-4 shadow-sm border-[0.5px]">
+
+        <PromptInputBasic
+          handleSubmit={handleSubmit}
+          input={prompt}
+          handleValueChange={(e) => setPrompt(e.target.value)}
+          // onChange={handleInputChange}
+        />
+        {/* <Card className="w-full mb-4 p-4 shadow-sm border-[0.5px]">
           <form onSubmit={handleSubmit} className="space-y-3">
             <Textarea
               placeholder="Ask me anything..."
@@ -36,8 +44,8 @@ export default function Home() {
               onChange={(e) => setPrompt(e.target.value)}
             />
             <div className="flex justify-end">
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 size="default"
                 className="cursor-pointer"
                 disabled={!prompt.trim()}
@@ -47,8 +55,8 @@ export default function Home() {
               </Button>
             </div>
           </form>
-        </Card>
-        
+        </Card> */}
+
         <div className="text-muted-foreground text-sm mt-4">
           Or continue with a recent chat from the sidebar.
         </div>
