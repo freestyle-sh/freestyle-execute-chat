@@ -62,28 +62,26 @@ export function ChatUI(props: {
   }, []);
 
   return (
-    <div className="flex flex-col h-full relative flex-1">
-      <div className="flex-1 overflow-hidden">
-        <ChatContainer className="h-full">
-          <div className="flex flex-col h-full justify-between max-w-3xl mx-auto p-4 sm:p-6 w-full">
-            <div className="flex flex-col gap-4 pb-2 scrollbar-thin scrollbar-thumb-secondary scrollbar-track-transparent">
-              {messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-32 text-muted-foreground animate-fade-in">
-                  <div className="p-4 rounded-lg text-center">
-                    <p className="italic mb-2">No messages yet</p>
-                    <p className="text-sm">Start the conversation below!</p>
-                  </div>
+    <div className="flex flex-col h-full overflow-hidden">
+      <ChatContainer className="flex-1 overflow-auto">
+        <div className="flex flex-col max-w-3xl mx-auto p-4 sm:p-6 w-full">
+          <div className="flex flex-col gap-4 pb-2 scrollbar-thin scrollbar-thumb-secondary scrollbar-track-transparent">
+            {messages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-32 text-muted-foreground animate-fade-in">
+                <div className="p-4 rounded-lg text-center">
+                  <p className="italic mb-2">No messages yet</p>
+                  <p className="text-sm">Start the conversation below!</p>
                 </div>
-              ) : (
-                messages.map((message) => (
-                  <ChatMessage key={message.id} message={message} />
-                ))
-              )}
-            </div>
+              </div>
+            ) : (
+              messages.map((message) => (
+                <ChatMessage key={message.id} message={message} />
+              ))
+            )}
           </div>
-        </ChatContainer>
-      </div>
-      <div className="mt-auto pt-4 sticky bottom-0 w-full pb-4 flex justify-center">
+        </div>
+      </ChatContainer>
+      <div className="w-full py-4 bg-background flex-shrink-0">
         <div className="w-full max-w-3xl mx-auto">
           <PromptInputBasic
             handleSubmit={handleSubmit}
