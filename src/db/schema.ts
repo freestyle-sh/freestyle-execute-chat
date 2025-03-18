@@ -9,16 +9,16 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
-export const user = pgTable("User", {
+export const usersTable = pgTable("User", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   stackId: varchar("stack_id", { length: 64 }).notNull(),
 });
 
-export type User = InferSelectModel<typeof user>;
+export type User = InferSelectModel<typeof usersTable>;
 
 export const chatsTable = pgTable("Chats", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").references(() => user.id),
+  userId: uuid("user_id").references(() => usersTable.id),
 
   createdAt: timestamp("created_at").notNull(),
 });
@@ -28,9 +28,8 @@ export type Chat = InferSelectModel<typeof chatsTable>;
 export const messagesTable = pgTable("Messages", {
   id: uuid("id").primaryKey().defaultRandom(),
   chatId: uuid("chat_id").references(() => chatsTable.id),
-
   content: text("content").notNull(),
-
+  role: varchar("role", { length: 16 }).notNull(),
   createdAt: timestamp("created_at").notNull(),
 });
 
@@ -39,7 +38,7 @@ export type Message = InferSelectModel<typeof messagesTable>;
 export const moduleConfig = pgTable("ModuleConfig", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   moduleId: varchar("moduleId", { length: 64 }).notNull(),
-  userId: uuid("userId").references(() => user.id),
+  userId: uuid("userId").references(() => usersTable.id),
   enabled: boolean("enabled").default(false).notNull(),
   envVars: json("envVars").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

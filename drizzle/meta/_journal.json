@@ -8,6 +8,13 @@
       "when": 1742268213779,
       "tag": "0000_good_thor_girl",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1742279102741,
+      "tag": "0001_youthful_talos",
+      "breakpoints": true
     }
   ]
 }

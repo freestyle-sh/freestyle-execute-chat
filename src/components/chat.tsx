@@ -24,10 +24,12 @@ import { ChatRequestOptions } from "ai";
 import { ChangeEvent } from "react";
 import { cn } from "@/lib/utils";
 
-export function ChatUI() {
-  const { messages, input, handleInputChange, handleSubmit, status } = useChat(
-    {},
-  );
+export function ChatUI(props: {
+  initialMessages: { id: string; role: string; content: string }[];
+}) {
+  const { messages, input, handleInputChange, handleSubmit, status } = useChat({
+    initialMessages: props.initialMessages,
+  });
 
   return (
     <div className="flex flex-col h-full justify-between max-w-3xl mx-auto p-6 w-full">
@@ -58,12 +60,12 @@ export function PromptInputBasic(props: {
     event?: {
       preventDefault?: () => void;
     },
-    chatRequestOptions?: ChatRequestOptions,
+    chatRequestOptions?: ChatRequestOptions
   ) => void;
   input: string;
   isLoading: boolean;
   handleValueChange: (
-    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
+    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>
   ) => void;
 }) {
   // const handleValueChange = (value: string) => {
@@ -78,6 +80,7 @@ export function PromptInputBasic(props: {
           target: { value },
         } as ChangeEvent<HTMLTextAreaElement>)
       }
+      onSubmit={props.handleSubmit}
       isLoading={props.isLoading}
       className="promptbox w-full max-w-(--breakpoint-md)"
     >
@@ -95,7 +98,7 @@ export function PromptInputBasic(props: {
             size="default"
             className={cn(
               props.isLoading ? "w-8" : "w-14",
-              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out",
+              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out"
             )}
             onClick={props.handleSubmit}
           >
