@@ -5,14 +5,15 @@ export default async function ChatPage({
   params,
   searchParams,
 }: {
-  params: {
+  params: Promise<{
     chat: string;
-  };
+  }>;
   searchParams: {
     new?: string;
   };
 }) {
-  const initialChatState = await getChat(params.chat);
+  const { chat: chatId } = await params;
+  const initialChatState = await getChat(chatId);
   const isNew = searchParams.new !== undefined;
 
   return (
