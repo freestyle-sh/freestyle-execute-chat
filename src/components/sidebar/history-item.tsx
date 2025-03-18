@@ -47,7 +47,7 @@ export function SidebarHistoryItem({
     <BaseSidebarMenuItem
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={cn("group relative", className)}
+      className={cn("relative", className)}
     >
       <SidebarMenuButton
         tooltip={title}
