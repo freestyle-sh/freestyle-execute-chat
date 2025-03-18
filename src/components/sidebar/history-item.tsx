@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { deleteChat } from "@/lib/actions/delete-chat";
+import { toast } from "sonner";
 
 export function SidebarHistoryItem({
   id,
@@ -85,7 +87,16 @@ export function SidebarHistoryItem({
               <span>Rename</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive">
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => {
+                toast.promise(deleteChat(id), {
+                  loading: "Deleting...",
+                  success: "Deleted chat",
+                  error: "Error deleting chat",
+                });
+              }}
+            >
               <TrashIcon className="mr-2 h-4 w-4" />
               <span>Delete</span>
             </DropdownMenuItem>

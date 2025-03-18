@@ -19,7 +19,9 @@ export type User = InferSelectModel<typeof usersTable>;
 
 export const chatsTable = pgTable("Chats", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").references(() => usersTable.id),
+  userId: uuid("user_id").references(() => usersTable.id, {
+    onDelete: "cascade",
+  }),
   name: varchar("name", { length: 256 }),
   createdAt: timestamp("created_at").notNull(),
 });
@@ -28,7 +30,9 @@ export type Chat = InferSelectModel<typeof chatsTable>;
 
 export const messagesTable = pgTable("Messages", {
   id: uuid("id").primaryKey().defaultRandom(),
-  chatId: uuid("chat_id").references(() => chatsTable.id),
+  chatId: uuid("chat_id").references(() => chatsTable.id, {
+    onDelete: "cascade",
+  }),
   content: text("content").notNull(),
   role: varchar("role", { length: 16 }).notNull(),
   createdAt: timestamp("created_at").notNull(),

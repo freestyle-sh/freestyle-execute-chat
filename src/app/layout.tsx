@@ -6,6 +6,8 @@ import { ViewTransitions } from "next-view-transitions";
 import { SidebarProvider } from "@/components/sidebar/provider";
 import { ChatSidebar } from "@/components/sidebar/sidebar";
 import "./globals.css";
+// import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,6 +37,7 @@ export default function RootLayout({
         >
           <ThemeProvider attribute={"class"}>
             <SidebarProvider>
+              <Toaster richColors />
               <ChatSidebar />
               <main className="flex-1 overflow-auto">{children}</main>
             </SidebarProvider>
