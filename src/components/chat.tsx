@@ -82,7 +82,7 @@ export function ChatUI(props: {
           </div>
         </div>
       </ChatContainer>
-      <div className="w-full overflow-x-scroll">
+      <div className="w-full">
         <PromptInputBasic
           handleSubmit={handleSubmit}
           input={input}
@@ -121,7 +121,7 @@ export function PromptInputBasic(props: {
       }
       onSubmit={props.handleSubmit}
       isLoading={props.isLoading}
-      className="promptbox w-full transition-all duration-200 focus-within:shadow-md backdrop-blur-sm bg-background/90"
+      className="max-w-3xl mx-auto promptbox w-full transition-all duration-200 focus-within:shadow-md backdrop-blur-sm bg-background/90"
     >
       <PromptInputTextarea
         className="rounded-2xl bg-card/50 backdrop-blur-sm"
