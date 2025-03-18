@@ -37,7 +37,7 @@ export default function RootLayout({
         >
           <ThemeProvider attribute={"class"}>
             <SidebarProvider>
-              <Toaster richColors />
+              <Toaster richColors position="top-right" />
               <ChatSidebar />
               <main className="flex-1 overflow-auto">{children}</main>
             </SidebarProvider>

@@ -19,7 +19,7 @@ export function SidebarHeader({ children, className }: SidebarHeaderProps) {
     <BaseSidebarHeader className={className}>
       <div
         className={cn(
-          "flex items-center ml-1 py-0.5",
+          "flex items-center ml-1 py-1",
           open ? "justify-between" : "justify-start",
         )}
       >
@@ -28,4 +28,3 @@ export function SidebarHeader({ children, className }: SidebarHeaderProps) {
     </BaseSidebarHeader>
   );
 }
-

@@ -61,11 +61,20 @@ export function ChatUI(props: {
   }, []);
 
   return (
-    <div className="flex flex-col h-full justify-between max-w-3xl mx-auto p-6 w-full">
-      <div className="flex flex-col gap-4 overflow-y-auto">
-        {messages.map((message) => (
-          <ChatMessage key={message.id} message={message} />
-        ))}
+    <div className="flex flex-col h-full justify-between max-w-3xl mx-auto p-4 sm:p-6 w-full">
+      <div className="flex flex-col gap-4 overflow-y-auto pb-2 scrollbar-thin scrollbar-thumb-secondary scrollbar-track-transparent">
+        {messages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-32 text-muted-foreground animate-fade-in">
+            <div className="p-4 rounded-lg text-center">
+              <p className="italic mb-2">No messages yet</p>
+              <p className="text-sm">Start the conversation below!</p>
+            </div>
+          </div>
+        ) : (
+          messages.map((message) => (
+            <ChatMessage key={message.id} message={message} />
+          ))
+        )}
       </div>
 
       <div className="mt-auto pt-4">
@@ -87,12 +96,12 @@ export function PromptInputBasic(props: {
     event?: {
       preventDefault?: () => void;
     },
-    chatRequestOptions?: ChatRequestOptions
+    chatRequestOptions?: ChatRequestOptions,
   ) => void;
   input: string;
   isLoading: boolean;
   handleValueChange: (
-    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>
+    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
   ) => void;
 }) {
   // const handleValueChange = (value: string) => {
@@ -109,10 +118,10 @@ export function PromptInputBasic(props: {
       }
       onSubmit={props.handleSubmit}
       isLoading={props.isLoading}
-      className="promptbox w-full max-w-(--breakpoint-md)"
+      className="promptbox w-full max-w-(--breakpoint-md) transition-all duration-200 focus-within:shadow-md backdrop-blur-sm bg-background/90"
     >
       <PromptInputTextarea
-        className="rounded-2xl"
+        className="rounded-2xl bg-card/50 backdrop-blur-sm"
         placeholder="Ask me anything..."
       />
       <PromptInputActions className="justify-end pt-2">
@@ -125,14 +134,15 @@ export function PromptInputBasic(props: {
             size="default"
             className={cn(
               props.isLoading ? "w-8" : "w-14",
-              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out"
+              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out hover:bg-primary/90",
+              props.input.trim().length > 0 ? "animate-pulse-subtle" : "",
             )}
             onClick={props.handleSubmit}
           >
             {props.isLoading ? (
               <Square className="fill-secondary" />
             ) : (
-              <span className="flex flex-row gap-0.5 items-center">
+              <span className="flex flex-row gap-0.5 items-center transition-all">
                 <CommandIcon className="size-4" />
                 <CornerDownLeftIcon className="size-4" />
               </span>

@@ -1,29 +1,39 @@
 "use client";
 
-import type { Components } from "react-markdown";
+// import type { Components } from "react-markdown";
 import { Message, MessageContent, MessageAvatar } from "./ui/message";
 import type { UIMessage } from "ai";
-import { cn } from "@/lib/utils";
-
+// Markdown components for future use if needed
+/*
 const markdownComponents: Partial<Components> = {
   h1: ({ children }) => <h1 className="text-2xl font-bold mb-2">{children}</h1>,
 };
+*/
 
 export function UserMessage({ message }: { message: UIMessage }) {
   return (
-    <Message className="justify-end">
-      <MessageContent>{message.content}</MessageContent>
+    <Message className="justify-end animate-slide-in-right">
+      <MessageContent className="bg-primary/10 rounded-2xl rounded-br-none shadow-sm border border-primary/10 transition-all duration-200">
+        {message.content}
+      </MessageContent>
     </Message>
   );
 }
 
 export function AIMessage({ message }: { message: UIMessage }) {
   return (
-    <Message className="justify-start">
-      <MessageAvatar src="/avatars/ai.png" alt="AI" fallback="AI" />
+    <Message className="justify-start animate-slide-up">
+      <MessageAvatar
+        src="/avatars/ai.png"
+        alt="AI"
+        fallback="AI"
+        className="mt-1"
+      />
       <MessageContent
         markdown
-        className={"bg-transparent p-0 dark:prose-invert"}
+        className={
+          "bg-transparent p-0 transition-all duration-200 hover:shadow-md dark:prose-invert"
+        }
       >
         {message.content}
       </MessageContent>

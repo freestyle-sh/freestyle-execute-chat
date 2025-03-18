@@ -47,16 +47,23 @@ export function SidebarHistoryItem({
       onMouseLeave={() => setHovered(false)}
       className={cn("group relative", className)}
     >
-      <SidebarMenuButton tooltip={title} isActive={pathname === href} asChild>
+      <SidebarMenuButton
+        tooltip={title}
+        isActive={pathname === href}
+        asChild
+        className="transition-all duration-150"
+      >
         <Link
           className="flex flex-row justify-between items-center"
           href={href}
         >
           <span className="flex items-center gap-2">
             {sidebar.open ? (
-              <span>{title}</span>
+              <span className={cn(pathname === href ? "font-medium" : "")}>
+                {title}
+              </span>
             ) : (
-              <MessageSquareIcon className="h-4 w-4" />
+              <MessageSquareIcon className={cn("h-4 w-4")} />
             )}
           </span>
         </Link>

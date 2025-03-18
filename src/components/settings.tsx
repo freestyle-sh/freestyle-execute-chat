@@ -16,8 +16,11 @@ export function SettingsSection({
   ...props
 }: SettingsSectionProps) {
   return (
-    <div className={cn("border rounded-lg p-4", className)} {...props}>
-      <h2 className="text-xl font-medium mb-2">{title}</h2>
+    <div
+      className={cn("rounded-xl p-6 transition-all duration-200", className)}
+      {...props}
+    >
+      <h2 className="text-xl font-medium mb-2 text-primary">{title}</h2>
       {description && (
         <p className="text-sm text-muted-foreground mb-4">{description}</p>
       )}
@@ -40,7 +43,10 @@ export function SettingsItem({
 }: SettingsItemProps) {
   return (
     <div
-      className={cn("flex justify-between items-center", className)}
+      className={cn(
+        "flex justify-between items-center p-4 bg-background/50 rounded-lg border border-border/30 transition-all duration-200",
+        className,
+      )}
       {...props}
     >
       <div>
@@ -49,8 +55,7 @@ export function SettingsItem({
           <p className="text-sm text-muted-foreground">{description}</p>
         )}
       </div>
-      <div>{children}</div>
+      <div className="transition-all hover:brightness-110">{children}</div>
     </div>
   );
 }
-

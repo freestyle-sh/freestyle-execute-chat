@@ -20,13 +20,13 @@ export function SidebarCreateChat() {
           <BaseSidebarMenuItem>
             <SidebarMenuButton
               tooltip={"Create new chat"}
-              className="flex gap-2 cursor-pointer"
+              className="flex gap-2 cursor-pointer transition-all duration-200"
               onClick={() =>
                 createChat().then((id) => router.push(`/chat/${id}`))
               }
             >
               <PlusIcon />
-              <span>{"Create chat"}</span>
+              <span className="font-medium">{"Create chat"}</span>
             </SidebarMenuButton>
           </BaseSidebarMenuItem>
         </SidebarMenu>

@@ -1,12 +1,10 @@
-import { PlusIcon, SettingsIcon } from "lucide-react";
+import { SettingsIcon } from "lucide-react";
 import Link from "next/link";
 
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
   SidebarMenu,
 } from "@/components/ui/sidebar";
 import { SidebarMenuLinkItem } from "./menu-item";
@@ -14,24 +12,22 @@ import { SidebarHeader } from "./header";
 import { SidebarToggleButton } from "./toggle-button";
 import Logo from "../logo";
 import { SidebarHistory } from "./history";
-import { SidebarSection } from "./section";
-import { createChat } from "@/lib/actions/create-chat";
-import { redirect } from "next/navigation";
+// import { SidebarSection } from "./section";
 import { SidebarCreateChat } from "./create-chat-button";
 
 export function ChatSidebar() {
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader>
+    <Sidebar collapsible="icon" className="transition-all duration-300 ease-in-out">
+      <SidebarHeader className="border-b border-sidebar-border pb-2">
         <Link href={"/"}>
-          <Logo className="stroke-primary" />
+          <Logo className="stroke-primary transition-transform hover:scale-105" />
         </Link>
       </SidebarHeader>
-      <SidebarContent className="gap-0">
+      <SidebarContent className="gap-2 mt-2">
         <SidebarCreateChat />
         <SidebarHistory />
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="border-t border-sidebar-border pt-2">
         <SidebarMenu>
           <SidebarMenuLinkItem
             href="/settings"

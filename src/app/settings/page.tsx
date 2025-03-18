@@ -5,9 +5,9 @@ import { SettingsSection, SettingsItem } from "@/components/settings";
 
 export default function SettingsPage() {
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Settings</h1>
-      <div className="space-y-4 max-w-2xl">
+    <div className="p-6 animate-fade-in">
+      <h1 className="text-2xl font-bold mb-6 gradient-text">Settings</h1>
+      <div className="space-y-6 max-w-2xl animate-slide-up">
         <SettingsSection title="Appearance">
           <SettingsItem
             title="Theme"
