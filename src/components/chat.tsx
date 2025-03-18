@@ -122,7 +122,7 @@ export function PromptInputBasic(props: {
       }
       onSubmit={props.handleSubmit}
       isLoading={props.isLoading}
-      className="promptbox mx-4 max-w-(--breakpoint-md) transition-all duration-200 focus-within:shadow-md backdrop-blur-sm bg-background/90"
+      className="promptbox mx-4 w-full max-w-(--breakpoint-md) transition-all duration-200 focus-within:shadow-md backdrop-blur-sm bg-background/90"
     >
       <PromptInputTextarea
         className="rounded-2xl bg-card/50 backdrop-blur-sm"
