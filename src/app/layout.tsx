@@ -37,7 +37,7 @@ export default function RootLayout({
           <Providers>
             <Toaster richColors position="top-right" />
             <ChatSidebar />
-            <main className="flex-1 overflow-auto">{children}</main>
+            <main className="w-screen">{children}</main>
           </Providers>
         </body>
       </html>

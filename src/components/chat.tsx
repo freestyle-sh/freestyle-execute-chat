@@ -62,9 +62,9 @@ export function ChatUI(props: {
   }, []);
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      <ChatContainer className="flex-1 overflow-auto">
-        <div className="flex flex-col max-w-3xl mx-auto p-4 sm:p-6 w-full">
+    <div className="flex flex-col h-full p-4">
+      <ChatContainer className="grow overflow-y-auto">
+        <div className="flex flex-col max-w-3xl mx-auto  w-full">
           <div className="flex flex-col gap-4 pb-2 scrollbar-thin scrollbar-thumb-secondary scrollbar-track-transparent">
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-32 text-muted-foreground animate-fade-in">
@@ -81,15 +81,13 @@ export function ChatUI(props: {
           </div>
         </div>
       </ChatContainer>
-      <div className="w-full py-4 bg-background flex-shrink-0">
-        <div className="w-full max-w-3xl mx-auto">
-          <PromptInputBasic
-            handleSubmit={handleSubmit}
-            input={input}
-            handleValueChange={handleInputChange}
-            isLoading={status === "streaming" || status === "submitted"}
-          />
-        </div>
+      <div className="w-full overflow-x-scroll">
+        <PromptInputBasic
+          handleSubmit={handleSubmit}
+          input={input}
+          handleValueChange={handleInputChange}
+          isLoading={status === "streaming" || status === "submitted"}
+        />
       </div>
     </div>
   );
@@ -122,7 +120,7 @@ export function PromptInputBasic(props: {
       }
       onSubmit={props.handleSubmit}
       isLoading={props.isLoading}
-      className="promptbox mx-4 w-full max-w-(--breakpoint-md) transition-all duration-200 focus-within:shadow-md backdrop-blur-sm bg-background/90"
+      className="promptbox w-full transition-all duration-200 focus-within:shadow-md backdrop-blur-sm bg-background/90"
     >
       <PromptInputTextarea
         className="rounded-2xl bg-card/50 backdrop-blur-sm"

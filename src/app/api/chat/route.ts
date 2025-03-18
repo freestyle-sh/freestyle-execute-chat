@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { messagesTable } from "@/db/schema";
 import { claudeSonnetModel } from "@/lib/model";
-import { Message, streamText } from "ai";
+import { type Message, streamText } from "ai";
 import { executeTool } from "freestyle-sandboxes/ai";
 
 export async function POST(request: Request) {
