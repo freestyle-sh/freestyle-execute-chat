@@ -23,7 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { deleteChat } from "@/lib/actions/delete-chat";
 import { renameChat } from "@/lib/actions/rename-chat";
@@ -47,7 +47,10 @@ export function SidebarHistoryItem({
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState(title);
 
-  const href = `/chat/${id}`;
+  const [href, isActive] = useMemo(() => {
+    const href = `/chat/${id}`;
+    return [href, pathname === href];
+  }, [id, pathname]);
 
   const handleRename = async () => {
     if (newName.trim() === "") {
@@ -78,11 +81,19 @@ export function SidebarHistoryItem({
       <BaseSidebarMenuItem
         className={cn("group/menu-item relative", className)}
       >
-        <div className="flex gap-1 items-center justify-between w-full h-8 px-1 rounded-md !bg-sidebar-accent/20">
+        <div
+          className={cn(
+            "flex gap-1 items-center justify-between w-full h-8 px-1 rounded-md",
+            // "!bg-sidebar-accent",
+          )}
+        >
           <Input
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
-            className="h-7 text-sm bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 px-1"
+            className={cn(
+              "h-7 text-sm !bg-sidebar-accent border-none focus-visible:ring-0 focus-visible:ring-offset-0 px-1",
+              isActive ? "font-medium" : "",
+            )}
             placeholder="Enter chat name"
             autoFocus
             onKeyDown={(e) => {
@@ -97,14 +108,20 @@ export function SidebarHistoryItem({
             <button
               type="button"
               onClick={handleRename}
-              className="flex cursor-pointer items-center justify-center h-6 w-6 rounded-sm hover:bg-sidebar-accent text-muted-foreground"
+              className={cn(
+                "flex cursor-pointer items-center justify-center h-6 w-6 rounded-sm text-muted-foreground",
+                "hover:bg-sidebar-accent",
+              )}
             >
               <CheckIcon className="h-3.5 w-3.5" />
             </button>
             <button
               type="button"
               onClick={cancelRename}
-              className="flex cursor-pointer items-center justify-center h-6 w-6 rounded-sm hover:bg-sidebar-accent text-muted-foreground"
+              className={cn(
+                "flex cursor-pointer items-center justify-center h-6 w-6 rounded-sm !text-muted-foreground",
+                "hover:bg-sidebar-accent",
+              )}
             >
               <XIcon className="h-3.5 w-3.5" />
             </button>
@@ -122,7 +139,7 @@ export function SidebarHistoryItem({
     >
       <SidebarMenuButton
         tooltip={title}
-        isActive={pathname === href}
+        isActive={isActive}
         asChild
         className="transition-all duration-150"
       >
@@ -132,9 +149,7 @@ export function SidebarHistoryItem({
         >
           <span className="flex items-center gap-2">
             {sidebar.open ? (
-              <span className={cn(pathname === href ? "font-medium" : "")}>
-                {title}
-              </span>
+              <span className={cn(isActive ? "font-medium" : "")}>{title}</span>
             ) : (
               <MessageSquareIcon className={cn("h-4 w-4")} />
             )}
