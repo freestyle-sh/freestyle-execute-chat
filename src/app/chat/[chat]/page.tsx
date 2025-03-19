@@ -19,10 +19,12 @@ export default async function ChatPage({
   const isNew = shouldRespond !== undefined;
 
   return (
-    <ChatUI
-      initialMessages={initialChatState}
-      respond={isNew}
-      chatId={chatId}
-    />
+    <div className="px-2 sm:px-4">
+      <ChatUI
+        initialMessages={initialChatState}
+        respond={isNew}
+        chatId={chatId}
+      />
+    </div>
   );
 }
