@@ -96,6 +96,7 @@ export function SidebarHistoryItem({
             )}
             placeholder="Enter chat name"
             autoFocus
+            onBlur={cancelRename}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 handleRename();
