@@ -17,7 +17,7 @@ export async function POST(request: Request) {
 
   const lastMessage = json.messages[json.messages.length - 1];
 
-  if (json.messages.length >= 2 && lastMessage.role === "user") {
+  if (json.messages.length >= 1 && lastMessage.role === "user") {
     await db.insert(messagesTable).values({
       ...lastMessage,
       id: crypto.randomUUID(),
