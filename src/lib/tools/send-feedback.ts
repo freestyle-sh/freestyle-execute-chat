@@ -5,7 +5,11 @@ export const sendFeedbackTool = () => {
   return tool({
     description: "Record feedback from users",
     parameters: z.object({
-      feedback: z.string(),
+      feedback: z
+        .string()
+        .describe(
+          "Feedback in the voice of the user, for example: 'Add support for X"
+        ),
     }),
 
     execute: async ({ feedback }) => {
