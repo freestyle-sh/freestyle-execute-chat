@@ -9,6 +9,7 @@ import ClientOnly from "../client-only";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronDownIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "motion/react";
 
 export function SidebarHistory() {
   const { data: chats = [], isLoading } = useQuery({
@@ -41,21 +42,37 @@ export function SidebarHistory() {
         onScroll={checkScrollability}
         className="max-h-[calc(5*32px)] flex flex-col gap-0.5 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-sidebar-border hover:scrollbar-thumb-sidebar-accent"
       >
-        {isLoading
-          ? Array.from({ length: 5 }).map((_, index) => (
-              <SidebarMenuItem key={`sidebar-history-${index.toString()}`}>
-                <ClientOnly>
-                  <SidebarMenuSkeleton />
-                </ClientOnly>
-              </SidebarMenuItem>
-            ))
-          : chats.map((chat) => (
-              <SidebarHistoryItem
+        {isLoading ? (
+          Array.from({ length: 5 }).map((_, index) => (
+            <SidebarMenuItem key={`sidebar-history-${index.toString()}`}>
+              <ClientOnly>
+                <SidebarMenuSkeleton />
+              </ClientOnly>
+            </SidebarMenuItem>
+          ))
+        ) : (
+          <AnimatePresence initial={false}>
+            {chats.map((chat) => (
+              <motion.div
                 key={chat.id}
-                id={chat.id}
-                title={chat.name ?? chat.id}
-              />
+                layout
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 300, 
+                  damping: 30 
+                }}
+              >
+                <SidebarHistoryItem
+                  id={chat.id}
+                  title={chat.name ?? chat.id}
+                />
+              </motion.div>
             ))}
+          </AnimatePresence>
+        )}
       </div>
       {/* Scroll indicator */}
       <div className="absolute bottom-0 inset-x-0 flex justify-center pointer-events-none">
