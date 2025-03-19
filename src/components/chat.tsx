@@ -8,9 +8,9 @@ import {
   PromptInputTextarea,
 } from "@/components/ui/prompt-input";
 import { Button } from "@/components/ui/button";
-import { CommandIcon, CornerDownLeftIcon, Square } from "lucide-react";
+import { CommandIcon, CornerDownLeftIcon, MenuIcon, Square } from "lucide-react";
 import type { ChatRequestOptions } from "ai";
-import { type ChangeEvent, useEffect, useRef } from "react";
+import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { Message } from "@/db/schema";
 import { insertMessage } from "@/lib/actions/insert-message";
@@ -20,6 +20,21 @@ import { useRouter } from "next/navigation";
 import { ChatContainer } from "./ui/chat-container";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { chatExists } from "@/lib/actions/check-chat";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useSidebarStore } from "@/lib/stores/sidebar";
+
+function MobileHeader({ title, className }: { title: string; className?: string }) {
+  const { toggle } = useSidebarStore();
+  
+  return (
+    <div className={cn("h-14 w-full border-b flex items-center justify-between px-4", className)}>
+      <h1 className="font-medium text-lg truncate">{title}</h1>
+      <Button variant="ghost" size="icon" onClick={toggle} aria-label="Toggle Sidebar">
+        <MenuIcon className="h-5 w-5" />
+      </Button>
+    </div>
+  );
+}
 
 export function ChatUI(props: {
   chatId: string;
@@ -29,6 +44,9 @@ export function ChatUI(props: {
   const router = useRouter();
   const queryClient = useQueryClient();
   const hasRunRef = useRef(false);
+  const isMobile = useIsMobile();
+  const { isOpen } = useSidebarStore();
+  const [chatTitle, setChatTitle] = useState<string>("New Chat");
 
   const { data: exists = true } = useQuery({
     queryKey: ["chats", props.chatId],
@@ -40,6 +58,18 @@ export function ChatUI(props: {
       router.replace("/");
     }
   }, [exists, router]);
+
+  // Get chat title from the first user message, if available
+  useEffect(() => {
+    if (props.initialMessages.length > 0) {
+      const firstUserMessage = props.initialMessages.find(msg => msg.role === 'user');
+      if (firstUserMessage?.content) {
+        // Create a title from the first ~25 chars of the first message
+        const title = firstUserMessage.content.substring(0, 25);
+        setChatTitle(title + (title.length >= 25 ? '...' : ''));
+      }
+    }
+  }, [props.initialMessages]);
 
   const { messages, input, handleInputChange, handleSubmit, status, reload } =
     useChat({
@@ -80,45 +110,51 @@ export function ChatUI(props: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Show header in mobile view when sidebar is closed
+  const showMobileHeader = isMobile && !isOpen;
+
   return (
     <div className="flex flex-col h-svh">
-      <ChatContainer
-        autoScroll
-        className={cn(
-          "w-full flex-1 max-w-3xl mx-auto flex flex-col gap-4 pb-2 scrollbar-thin scrollbar-thumb-secondary scrollbar-track-transparent",
-          "overflow-scroll py-4"
-        )}
-      >
-        {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-32 text-muted-foreground animate-fade-in">
-            <div className="p-4 rounded-lg text-center">
-              <p className="italic mb-2">No messages yet</p>
-              <p className="text-sm">Start the conversation below!</p>
+      {showMobileHeader && <MobileHeader title={chatTitle} />}
+      <div className="flex-1 flex flex-col px-4">
+        <ChatContainer
+          autoScroll
+          className={cn(
+            "w-full flex-1 max-w-3xl mx-auto flex flex-col gap-4 pb-2 scrollbar-thin scrollbar-thumb-secondary scrollbar-track-transparent",
+            "overflow-scroll py-4"
+          )}
+        >
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-32 text-muted-foreground animate-fade-in">
+              <div className="p-4 rounded-lg text-center">
+                <p className="italic mb-2">No messages yet</p>
+                <p className="text-sm">Start the conversation below!</p>
+              </div>
             </div>
-          </div>
-        ) : (
-          messages.map((message) => (
-            <ChatMessage key={message.id} message={message} />
-          ))
-        )}
-      </ChatContainer>
-      <div className="w-full pb-4">
-        <PromptInputBasic
-          handleSubmit={(
-            event?: {
-              preventDefault?: () => void;
-            },
-            chatRequestOptions?: ChatRequestOptions
-          ) => {
-            handleSubmit(event, chatRequestOptions);
+          ) : (
+            messages.map((message) => (
+              <ChatMessage key={message.id} message={message} />
+            ))
+          )}
+        </ChatContainer>
+        <div className="w-full pb-4">
+          <PromptInputBasic
+            handleSubmit={(
+              event?: {
+                preventDefault?: () => void;
+              },
+              chatRequestOptions?: ChatRequestOptions
+            ) => {
+              handleSubmit(event, chatRequestOptions);
 
-            // Invalidate the chat list when user submits a message
-            queryClient.invalidateQueries({ queryKey: ["chats"] });
-          }}
-          input={input}
-          handleValueChange={handleInputChange}
-          isLoading={status === "streaming" || status === "submitted"}
-        />
+              // Invalidate the chat list when user submits a message
+              queryClient.invalidateQueries({ queryKey: ["chats"] });
+            }}
+            input={input}
+            handleValueChange={handleInputChange}
+            isLoading={status === "streaming" || status === "submitted"}
+          />
+        </div>
       </div>
     </div>
   );
