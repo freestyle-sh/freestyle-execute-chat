@@ -65,49 +65,7 @@ export function ChatUI(props: {
   respond: boolean;
 }) {
   // Define module status: enabled, disabled, or unconfigured with branding
-  const modules = {
-    enabled: [
-      {
-        name: "Postgres",
-        logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Postgresql_elephant.svg/1200px-Postgresql_elephant.svg.png",
-        color: "#336791",
-      },
-      {
-        name: "Supabase",
-        logo: "https://seeklogo.com/images/S/supabase-logo-DCC676FFE2-seeklogo.com.png",
-        color: "#3ECF8E",
-      },
-      {
-        name: "Python",
-        logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/1869px-Python-logo-notext.svg.png",
-        color: "#3776AB",
-      },
-    ],
-    disabled: [
-      {
-        name: "PostHog",
-        logo: "https://avatars.githubusercontent.com/u/53387?v=4",
-        color: "#F54E00",
-      },
-    ],
-    unconfigured: [
-      {
-        name: "Vercel",
-        logo: "https://assets.vercel.com/image/upload/front/favicon/vercel/180x180.png",
-        color: "#000000",
-      },
-      {
-        name: "MongoDB",
-        logo: "https://www.mongodb.com/assets/images/global/leaf.png",
-        color: "#00ED64",
-      },
-      {
-        name: "Firebase",
-        logo: "https://www.gstatic.com/devrel-devsite/prod/v45f61267e22826169cf5d5f452882f7812c8cfb5f8b103a48c0d88727908b295/firebase/images/touchicon-180.png",
-        color: "#FFCA28",
-      },
-    ],
-  };
+
   const router = useRouter();
   const queryClient = useQueryClient();
   const hasRunRef = useRef(false);
