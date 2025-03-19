@@ -33,6 +33,7 @@
         "react-markdown": "^10.1.0",
         "remark-gfm": "^4.0.1",
         "shiki": "^3.2.1",
+        "simple-icons": "^14.11.0",
         "sonner": "^2.0.1",
         "swr": "^2.3.3",
         "tailwind-merge": "^3.0.2",
@@ -1835,6 +1836,8 @@
     "sift": ["sift@17.1.3", "", {}, "sha512-Rtlj66/b0ICeFzYTuNvX/EF1igRbbnGSvEyT79McoZa/DeGhMyC5pWKOEsZKnpkqtSeovd5FL/bjHWC3CIIvCQ=="],
 
     "signal-exit": ["signal-exit@4.1.0", "", {}, "sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw=="],
+
+    "simple-icons": ["simple-icons@14.11.0", "", {}, "sha512-wZmG7JXVhFrobLIUum20blb9mvW3TfUcSLP9bOQ42Ul37GYc/59armh2wKySHzhN1/NaTan5VUQmr/9wYseRXA=="],
 
     "simple-swizzle": ["simple-swizzle@0.2.2", "", { "dependencies": { "is-arrayish": "^0.3.1" } }, "sha512-JA//kQgZtbuY83m+xT+tXJkmJncGMTFT+C+g2h2R9uxkYIrE2yy9sgmcLhCnw57/WSD+Eh3J97FPEDFnbXnDUg=="],
 

@@ -2,6 +2,7 @@ import type { InferSelectModel } from "drizzle-orm";
 import type { Message as SdkMessage } from "ai";
 import {
   boolean,
+  integer,
   json,
   pgTable,
   text,
@@ -70,6 +71,33 @@ export const userFormResponse = pgTable("UserFormResponse", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
+
+export const freestyleModulesTable = pgTable("FreestyleModules", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  name: varchar("name", { length: 256 }).notNull(),
+  example: text("example").notNull(),
+  svg: text("svg").notNull(),
+  color: varchar("color", { length: 16 }).notNull(),
+  createdAt: timestamp("created_at").notNull(),
+  priority: integer("priority").notNull().default(0),
+  setupInstructions: text("setup_instructions"),
+  documentation: text("documentation"),
+});
+
+export const freestyleModulesEnvironmentVariableRequirementsTable = pgTable(
+  "FreestyleModulesEnvironmentVariableRequirements",
+  {
+    id: uuid("id").primaryKey().notNull().defaultRandom(),
+    moduleId: uuid("moduleId").references(() => freestyleModulesTable.id, {
+      onDelete: "cascade",
+    }),
+    name: varchar("name", { length: 256 }).notNull(),
+    description: text("description"),
+    example: text("example"),
+    required: boolean("required").default(true).notNull(),
+    public: boolean("public").default(false).notNull(),
+  }
+);
 
 export type UserFormResponse = Omit<
   InferSelectModel<typeof userFormResponse>,
