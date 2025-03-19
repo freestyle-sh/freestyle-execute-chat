@@ -8,4 +8,6 @@ export async function POST() {
 
   await initResend();
   await initPostgres();
+
+  return new Response("Initialized", { status: 200 });
 }
