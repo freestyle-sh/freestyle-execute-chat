@@ -74,12 +74,13 @@ Only send emails from email addresses under the RESEND_DOMAIN.
     })
     .returning();
 
-  db.insert(freestyleModulesEnvironmentVariableRequirementsTable).values([
+  await db.insert(freestyleModulesEnvironmentVariableRequirementsTable).values([
     {
       moduleId: resendMod[0].id,
       name: "RESEND_DOMAIN",
       description: "Your domain in Resend",
       example: "example.com",
+      public: true,
     },
     {
       moduleId: resendMod[0].id,
