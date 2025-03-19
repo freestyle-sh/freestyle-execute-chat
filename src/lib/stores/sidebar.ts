@@ -11,6 +11,7 @@ interface SidebarState {
   openMobile: boolean;
   setOpenMobile: (open: boolean) => void;
   toggleMobile: () => void;
+  closeMobileOnNavigation: () => void;
 }
 
 // Create the base store with persistence for desktop sidebar only
@@ -23,6 +24,9 @@ export const useSidebarStore = create<SidebarState>()(
       openMobile: false,
       setOpenMobile: (openMobile: boolean) => set({ openMobile }),
       toggleMobile: () => set((state) => ({ openMobile: !state.openMobile })),
+      closeMobileOnNavigation: () => {
+        set({ openMobile: false });
+      },
     }),
     {
       name: "sidebar-storage",

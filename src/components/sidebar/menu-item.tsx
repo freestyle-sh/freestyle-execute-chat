@@ -4,6 +4,7 @@ import {
   SidebarMenuItem as BaseSidebarMenuItem,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
+import { useSidebarStore } from "@/lib/stores/sidebar";
 
 interface SidebarMenuItemProps {
   icon: LucideIcon;
@@ -25,10 +26,15 @@ export function SidebarMenuLinkItem({
   target?: string;
   href: string;
 }) {
+  const { closeMobileOnNavigation } = useSidebarStore();
   return (
     <BaseSidebarMenuItem className={className}>
       <SidebarMenuButton tooltip={tooltip || label} isActive={isActive} asChild>
-        <Link href={href} target={target} className="flex gap-2">
+        <Link 
+          href={href} 
+          target={target} 
+          className="flex gap-2"
+          onClick={() => closeMobileOnNavigation()}>
           <Icon />
           <span>{label}</span>
         </Link>

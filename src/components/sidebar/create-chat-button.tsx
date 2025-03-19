@@ -10,10 +10,12 @@ import {
 import { createChat } from "@/lib/actions/create-chat";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSidebarStore } from "@/lib/stores/sidebar";
 
 export function SidebarCreateChat() {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const { closeMobileOnNavigation } = useSidebarStore();
 
   return (
     <SidebarGroup className="z-10">
@@ -23,12 +25,13 @@ export function SidebarCreateChat() {
             <SidebarMenuButton
               tooltip={"Create new chat"}
               className="flex gap-2 cursor-pointer transition-all duration-200"
-              onClick={() =>
+              onClick={() => {
+                closeMobileOnNavigation();
                 createChat().then((id) => {
                   queryClient.invalidateQueries({ queryKey: ["chats"] });
                   router.push(`/chat/${id}`);
-                })
-              }
+                });
+              }}
             >
               <PlusIcon />
               <span className="font-medium">{"Create chat"}</span>

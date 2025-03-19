@@ -30,6 +30,7 @@ import { renameChat } from "@/lib/actions/rename-chat";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
+import { useSidebarStore } from "@/lib/stores/sidebar";
 
 export function SidebarHistoryItem({
   id,
@@ -43,6 +44,7 @@ export function SidebarHistoryItem({
   const sidebar = useSidebar();
   const pathname = usePathname();
   const queryClient = useQueryClient();
+  const { closeMobileOnNavigation } = useSidebarStore();
   const [hovered, setHovered] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState(title);
@@ -146,6 +148,7 @@ export function SidebarHistoryItem({
         <Link
           className="flex flex-row justify-between items-center"
           href={href}
+          onClick={() => closeMobileOnNavigation()}
         >
           <span className="flex items-center gap-2">
             {sidebar.open ? (
