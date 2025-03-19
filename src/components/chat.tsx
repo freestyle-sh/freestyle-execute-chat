@@ -43,7 +43,7 @@ function MobileHeader({
     <div
       className={cn(
         "h-14 w-full border-b flex items-center justify-between px-4",
-        className
+        className,
       )}
     >
       <h1 className="font-medium text-lg truncate">{title}</h1>
@@ -130,7 +130,7 @@ export function ChatUI(props: {
   useEffect(() => {
     if (props.initialMessages.length > 0) {
       const firstUserMessage = props.initialMessages.find(
-        (msg) => msg.role === "user"
+        (msg) => msg.role === "user",
       );
       if (firstUserMessage?.content) {
         // Create a title from the first ~25 chars of the first message
@@ -188,7 +188,7 @@ export function ChatUI(props: {
         autoScroll
         className={cn(
           "w-full flex-1 max-w-3xl mx-auto flex flex-col gap-4 pb-2 scrollbar-thin scrollbar-thumb-secondary scrollbar-track-transparent",
-          "overflow-scroll py-4"
+          "overflow-scroll py-4",
         )}
       >
         {messages.length === 0 ? (
@@ -210,7 +210,7 @@ export function ChatUI(props: {
             event?: {
               preventDefault?: () => void;
             },
-            chatRequestOptions?: ChatRequestOptions
+            chatRequestOptions?: ChatRequestOptions,
           ) => {
             handleSubmit(event, chatRequestOptions);
 
@@ -231,12 +231,12 @@ export function PromptInputBasic(props: {
     event?: {
       preventDefault?: () => void;
     },
-    chatRequestOptions?: ChatRequestOptions
+    chatRequestOptions?: ChatRequestOptions,
   ) => void;
   input: string;
   isLoading: boolean;
   handleValueChange: (
-    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>
+    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
   ) => void;
 }) {
   // State to track if module tray is open
@@ -257,7 +257,7 @@ export function PromptInputBasic(props: {
       }
       onSubmit={props.handleSubmit}
       isLoading={props.isLoading}
-      className=" w-full max-w-3xl mx-auto promptbox w-full transition-all duration-200 focus-within:shadow-md backdrop-blur-sm bg-background/90"
+      className="max-w-3xl mx-auto promptbox w-full transition-all duration-200 focus-within:shadow-none backdrop-blur-sm bg-background/90"
     >
       <div className="flex flex-col justify-between mb-2">
         <div className="flex justify-between">
@@ -266,7 +266,7 @@ export function PromptInputBasic(props: {
               <div
                 key={`enabled-${index.toString()}`}
                 className={cn(
-                  "inline-flex items-center px-3 py-1.5 rounded-2xl border border-border/30 shadow-sm cursor-pointer hover:shadow-md transition-all text-xs active:scale-95"
+                  "inline-flex items-center px-3 py-1.5 rounded-2xl border border-border/30 cursor-pointer transition-all text-xs active:scale-95",
                 )}
                 style={{
                   borderColor: `#${module.color}`,
@@ -294,11 +294,12 @@ export function PromptInputBasic(props: {
                 onClick={() => {
                   setIsModuleTrayOpen(!isModuleTrayOpen);
                 }}
-                className={`inline-flex items-center gap-0.5 px-3 py-1.5 cursor-pointer text-xs ${
+                className={cn(
+                  "inline-flex items-center gap-0.5 px-3 py-1.5 cursor-pointer text-xs hover:text-foreground rounded-2xl border border-border/20 hover:bg-muted/10",
                   isModuleTrayOpen
-                    ? "text-foreground bg-muted/10 shadow-sm"
-                    : "text-muted-foreground"
-                } hover:text-foreground rounded-2xl border border-border/20 hover:bg-muted/10 hover:shadow-sm`}
+                    ? "text-foreground bg-muted/10"
+                    : "text-muted-foreground",
+                )}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
                 transition={{ duration: 0.2 }}
@@ -362,7 +363,7 @@ export function PromptInputBasic(props: {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 0.6 }}
                     transition={{ duration: 0.2, delay: 0.1 + index * 0.02 }}
-                    className="bg-sidebar inline-flex items-center px-3 py-1.5 rounded-2xl border border-border/20 shadow-sm cursor-pointer hover:shadow-md transition-all text-xs active:scale-95"
+                    className="bg-sidebar inline-flex items-center px-3 py-1.5 rounded-2xl border border-border/20 cursor-pointer transition-all text-xs active:scale-95"
                   >
                     <div
                       // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
@@ -396,7 +397,7 @@ export function PromptInputBasic(props: {
             size="default"
             className={cn(
               props.isLoading ? "w-8" : "w-14",
-              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out hover:bg-primary/90"
+              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out hover:bg-primary/90",
             )}
             onClick={props.handleSubmit}
           >
