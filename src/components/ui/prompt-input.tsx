@@ -1,5 +1,7 @@
 "use client";
 
+import "ios-vibrator-pro-max";
+
 import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
@@ -96,16 +98,29 @@ function PromptInput({
 
 export type PromptInputTextareaProps = {
   disableAutosize?: boolean;
+  autoFocus?: boolean;
 } & React.ComponentProps<typeof Textarea>;
 
 function PromptInputTextarea({
   className,
   onKeyDown,
   disableAutosize = false,
+  autoFocus = false,
   ...props
 }: PromptInputTextareaProps) {
   const { value, setValue, maxHeight, onSubmit, disabled } = usePromptInput();
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Handle initial auto focus if enabled
+  useEffect(() => {
+    if (autoFocus && textareaRef.current) {
+      // Small delay to ensure the component is fully rendered
+      setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 100);
+    }
+  }, [autoFocus]);
 
   useEffect(() => {
     if (disableAutosize) return;

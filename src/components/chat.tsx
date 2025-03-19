@@ -387,6 +387,7 @@ export function PromptInputBasic(props: {
       <PromptInputTextarea
         className="rounded-2xl bg-card/50 backdrop-blur-sm"
         placeholder="Ask me to do something..."
+        autoFocus
       />
       <PromptInputActions className="justify-end pt-2">
         <PromptInputAction
