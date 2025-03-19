@@ -207,4 +207,13 @@
     background-color: color-mix(in srgb, var(--module-dark) 20%, transparent);
     border-color: var(--module-dark);
   }
+  
+  .module-text {
+    color: var(--module-light);
+    font-weight: 500;
+  }
+  
+  .dark .module-text {
+    color: var(--module-dark);
+  }
 }
