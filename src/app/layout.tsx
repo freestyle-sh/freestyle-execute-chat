@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { ThemeProvider } from "next-themes";
 import { ViewTransitions } from "next-view-transitions";
 
 import { ChatSidebar } from "@/components/sidebar/sidebar";
 import "./globals.css";
-import { Toaster } from "@/components/ui/sonner";
 import Providers from "./providers";
 
 const geistSans = Geist({
@@ -35,7 +33,6 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           <Providers>
-            <Toaster richColors position="top-right" />
             <ChatSidebar />
             <main className="w-screen">{children}</main>
           </Providers>
