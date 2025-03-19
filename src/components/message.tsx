@@ -25,7 +25,10 @@ export function UserMessage({ message }: { message: UIMessage }) {
   return (
     <>
       {message.parts.map((part, index) => (
-        <Message key={index} className="justify-end animate-slide-in-right">
+        <Message
+          key={`msg-${message.id}-part-${index.toString()}`}
+          className="justify-end animate-slide-in-right"
+        >
           {part.type === "text" && (
             <MessageContent className="bg-primary/10 rounded-2xl rounded-br-none shadow-sm border border-primary/10 transition-all duration-200">
               {part.text}
@@ -41,7 +44,10 @@ export function AIMessage({ message }: { message: UIMessage }) {
   return (
     <>
       {message.parts.map((part, index) => (
-        <Message key={index} className="justify-start animate-slide-up">
+        <Message
+          key={`msg-${message.id}-part-${index.toString()}`}
+          className="justify-start animate-slide-up max-w-[85%]"
+        >
           {index === 0 && (
             <MessageAvatar
               src="/avatars/ai.png"
@@ -51,22 +57,19 @@ export function AIMessage({ message }: { message: UIMessage }) {
             />
           )}
           {index !== 0 && <div className="w-8" />} {/* Spacing for alignment */}
-          {part.type == "text" && (
+          {part.type === "text" && (
             <MessageContent
-              key={index}
+              key={`msg-${message.id}-content-${index.toString()}`}
               markdown
               className="bg-transparent p-0 transition-all duration-200 dark:prose-invert"
             >
               {part.text}
             </MessageContent>
           )}
-          {part.type == "tool-invocation" && (
-            <>
-              {part.toolInvocation.toolName == "codeExecutor" && (
-                <CodeExecution execution={part.toolInvocation} />
-              )}
-            </>
-          )}
+          {part.type === "tool-invocation" &&
+            part.toolInvocation.toolName === "codeExecutor" && (
+              <CodeExecution execution={part.toolInvocation} />
+            )}
         </Message>
       ))}
     </>

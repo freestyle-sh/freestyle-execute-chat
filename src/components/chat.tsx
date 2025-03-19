@@ -9,8 +9,8 @@ import {
 } from "@/components/ui/prompt-input";
 import { Button } from "@/components/ui/button";
 import { CommandIcon, CornerDownLeftIcon, Square } from "lucide-react";
-import { ChatRequestOptions } from "ai";
-import { ChangeEvent, useEffect, useRef } from "react";
+import type { ChatRequestOptions } from "ai";
+import { type ChangeEvent, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import type { Message } from "@/db/schema";
 import { insertMessage } from "@/lib/actions/insert-message";
@@ -63,26 +63,28 @@ export function ChatUI(props: {
   }, []);
 
   return (
-    <div className="flex flex-col h-full p-4">
-      <ChatContainer className="grow overflow-y-auto">
-        <div className="flex flex-col max-w-3xl mx-auto  w-full">
-          <div className="flex flex-col gap-4 pb-2 scrollbar-thin scrollbar-thumb-secondary scrollbar-track-transparent">
-            {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-32 text-muted-foreground animate-fade-in">
-                <div className="p-4 rounded-lg text-center">
-                  <p className="italic mb-2">No messages yet</p>
-                  <p className="text-sm">Start the conversation below!</p>
-                </div>
-              </div>
-            ) : (
-              messages.map((message) => (
-                <ChatMessage key={message.id} message={message} />
-              ))
-            )}
+    <div className="flex flex-col h-svh">
+      <ChatContainer
+        autoScroll
+        className={cn(
+          "flex-1 max-w-3xl mx-auto flex flex-col gap-4 pb-2 scrollbar-thin scrollbar-thumb-secondary scrollbar-track-transparent",
+          "overflow-scroll py-4",
+        )}
+      >
+        {messages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-32 text-muted-foreground animate-fade-in">
+            <div className="p-4 rounded-lg text-center">
+              <p className="italic mb-2">No messages yet</p>
+              <p className="text-sm">Start the conversation below!</p>
+            </div>
           </div>
-        </div>
+        ) : (
+          messages.map((message) => (
+            <ChatMessage key={message.id} message={message} />
+          ))
+        )}
       </ChatContainer>
-      <div className="w-full">
+      <div className="w-full pb-4">
         <PromptInputBasic
           handleSubmit={handleSubmit}
           input={input}
