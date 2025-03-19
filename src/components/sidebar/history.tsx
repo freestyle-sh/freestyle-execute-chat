@@ -59,7 +59,12 @@ export function SidebarHistory() {
       </div>
       {/* Scroll indicator */}
       <div className="absolute bottom-0 inset-x-0 flex justify-center pointer-events-none">
-        <div className="bg-gradient-to-t from-sidebar h-8 w-full absolute bottom-0 opacity-70" />
+        <div
+          className={cn(
+            "h-8 w-full absolute bottom-0 opacity-70 transition-all",
+            hasMoreBelow ? "bg-gradient-to-t from-sidebar" : "",
+          )}
+        />
         <div className="h-8 flex items-center justify-center text-muted-foreground z-10">
           <ChevronDownIcon
             className={cn(
