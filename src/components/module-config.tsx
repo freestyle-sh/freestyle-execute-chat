@@ -226,7 +226,7 @@ export function ModuleConfigDrawer({
           {isConfigured ? "Configured" : "Configure"}
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="px-6 pb-8">
+      <DrawerContent className="px-6">
         <DrawerHeader className="pb-6 pt-4">
           <DrawerTitle className="flex items-center justify-center gap-3 text-lg">
             <ModuleIcon
@@ -240,7 +240,8 @@ export function ModuleConfigDrawer({
           <DrawerDescription className="text-center mt-2 text-sm">
             Configure the environment variables required for {module.name}.
           </DrawerDescription>
-
+        </DrawerHeader>
+        <div className="overflow-auto">
           {module.setupInstructions && (
             <div className="mt-4 p-5 bg-muted/40 rounded-lg border border-border/30 mx-auto max-w-2xl">
               <div className="font-medium text-sm mb-3 text-center uppercase tracking-wide text-muted-foreground">
@@ -251,67 +252,67 @@ export function ModuleConfigDrawer({
               </Markdown>
             </div>
           )}
-        </DrawerHeader>
 
-        {isLoading ? (
-          <div className="py-8 flex flex-col items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4" />
-            <p className="text-sm text-muted-foreground">
-              Loading configuration...
-            </p>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 py-6">
-            {module.environmentVariableRequirements.map((envVar) => (
-              <SettingsItem
-                key={envVar.id}
-                title={envVar.name}
-                description={envVar.description}
-                className={cn(
-                  "p-5",
-                  envVar.required ? "border-amber-500/30" : "",
-                )}
-              >
-                <div className="w-full max-w-sm">
-                  <Input
-                    {...register(envVar.id)}
-                    type={envVar.public ? "text" : "password"}
-                    placeholder={envVar.example}
-                    className={errors[envVar.id] ? "border-destructive" : ""}
-                  />
-                  {errors[envVar.id] && (
-                    <p className="text-xs text-destructive mt-1">
-                      {errors[envVar.id]?.message}
-                    </p>
+          {isLoading ? (
+            <div className="py-8 flex flex-col items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4" />
+              <p className="text-sm text-muted-foreground">
+                Loading configuration...
+              </p>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 py-6">
+              {module.environmentVariableRequirements.map((envVar) => (
+                <SettingsItem
+                  key={envVar.id}
+                  title={envVar.name}
+                  description={envVar.description}
+                  className={cn(
+                    "p-5",
+                    envVar.required ? "border-amber-500/30" : "",
                   )}
-                </div>
-              </SettingsItem>
-            ))}
+                >
+                  <div className="w-full max-w-sm">
+                    <Input
+                      {...register(envVar.id)}
+                      type={envVar.public ? "text" : "password"}
+                      placeholder={envVar.example}
+                      className={errors[envVar.id] ? "border-destructive" : ""}
+                    />
+                    {errors[envVar.id] && (
+                      <p className="text-xs text-destructive mt-1">
+                        {errors[envVar.id]?.message}
+                      </p>
+                    )}
+                  </div>
+                </SettingsItem>
+              ))}
 
-            <DrawerFooter className="mt-10">
-              <div className="flex w-full sm:justify-center gap-6">
-                <DrawerClose asChild>
+              <DrawerFooter>
+                <div className="flex w-full sm:justify-center gap-6">
+                  <DrawerClose asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="lg"
+                      className="w-full sm:w-auto"
+                    >
+                      Cancel
+                    </Button>
+                  </DrawerClose>
                   <Button
-                    type="button"
-                    variant="outline"
+                    type="submit"
+                    disabled={isSubmitting}
                     size="lg"
                     className="w-full sm:w-auto"
                   >
-                    Cancel
+                    {isSubmitting ? "Saving..." : "Save Configuration"}
                   </Button>
-                </DrawerClose>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  size="lg"
-                  className="w-full sm:w-auto"
-                >
-                  {isSubmitting ? "Saving..." : "Save Configuration"}
-                </Button>
-              </div>
-            </DrawerFooter>
-          </form>
-        )}
+                </div>
+              </DrawerFooter>
+            </form>
+          )}
+        </div>
       </DrawerContent>
     </Drawer>
   );
