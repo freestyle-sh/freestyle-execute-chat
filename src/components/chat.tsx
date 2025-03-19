@@ -204,7 +204,7 @@ export function ChatUI(props: {
           ))
         )}
       </ChatContainer>
-      <div className="w-full pb-4 px-4">
+      <div className="w-full pb-4">
         <PromptInputBasic
           handleSubmit={(
             event?: {
