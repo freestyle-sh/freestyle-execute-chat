@@ -18,17 +18,28 @@ import { insertMessage } from "@/lib/actions/insert-message";
 import ChatMessage from "./message";
 import { useRouter } from "next/navigation";
 import { ChatContainer } from "./ui/chat-container";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { chatExists } from "@/lib/actions/check-chat";
 
 export function ChatUI(props: {
   chatId: string;
   initialMessages: Message[];
   respond: boolean;
 }) {
-  "use client";
   const router = useRouter();
   const queryClient = useQueryClient();
   const hasRunRef = useRef(false);
+
+  const { data: exists = true } = useQuery({
+    queryKey: ["chats", props.chatId],
+    queryFn: () => chatExists(props.chatId),
+  });
+
+  useEffect(() => {
+    if (!exists) {
+      router.replace("/");
+    }
+  }, [exists, router]);
 
   const { messages, input, handleInputChange, handleSubmit, status, reload } =
     useChat({
@@ -48,7 +59,7 @@ export function ChatUI(props: {
         await insertMessage(props.chatId, message);
 
         // Invalidate chats list to update sidebar history order
-        queryClient.invalidateQueries({ queryKey: ["chats:list"] });
+        queryClient.invalidateQueries({ queryKey: ["chats"] });
       },
     });
 
@@ -100,7 +111,7 @@ export function ChatUI(props: {
             handleSubmit(event, chatRequestOptions);
 
             // Invalidate the chat list when user submits a message
-            queryClient.invalidateQueries({ queryKey: ["chats:list"] });
+            queryClient.invalidateQueries({ queryKey: ["chats"] });
           }}
           input={input}
           handleValueChange={handleInputChange}

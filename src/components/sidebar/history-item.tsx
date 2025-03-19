@@ -59,7 +59,7 @@ export function SidebarHistoryItem({
 
     toast.promise(
       renameChat(id, newName).then(() =>
-        queryClient.invalidateQueries({ queryKey: ["chats:list"] }),
+        queryClient.invalidateQueries({ queryKey: ["chats"] }),
       ),
       {
         loading: "Renaming...",
@@ -188,7 +188,7 @@ export function SidebarHistoryItem({
               onClick={() => {
                 toast.promise(
                   deleteChat(id).then(() =>
-                    queryClient.invalidateQueries({ queryKey: ["chats:list"] }),
+                    queryClient.invalidateQueries({ queryKey: ["chats"] }),
                   ),
                   {
                     loading: "Deleting...",

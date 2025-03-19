@@ -14,7 +14,7 @@ import { motion, AnimatePresence } from "motion/react";
 export function SidebarHistory() {
   const { data: chats = [], isLoading } = useQuery({
     queryFn: () => listChats(),
-    queryKey: ["chats:list"],
+    queryKey: ["chats"],
   });
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [hasMoreBelow, setHasMoreBelow] = useState(false);
@@ -59,16 +59,13 @@ export function SidebarHistory() {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ 
-                  type: "spring", 
-                  stiffness: 300, 
-                  damping: 30 
+                transition={{
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 30,
                 }}
               >
-                <SidebarHistoryItem
-                  id={chat.id}
-                  title={chat.name ?? chat.id}
-                />
+                <SidebarHistoryItem id={chat.id} title={chat.name ?? chat.id} />
               </motion.div>
             ))}
           </AnimatePresence>

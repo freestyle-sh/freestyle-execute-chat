@@ -17,7 +17,7 @@ export default function Home() {
     if (prompt.trim()) {
       const id = await createChat(prompt.trim());
 
-      queryClient.invalidateQueries({ queryKey: ["chats:list"] });
+      queryClient.invalidateQueries({ queryKey: ["chats"] });
 
       router.push(`/chat/${id}?respond`);
     }

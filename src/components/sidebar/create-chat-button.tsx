@@ -25,7 +25,7 @@ export function SidebarCreateChat() {
               className="flex gap-2 cursor-pointer transition-all duration-200"
               onClick={() =>
                 createChat().then((id) => {
-                  queryClient.invalidateQueries({ queryKey: ["chats:list"] });
+                  queryClient.invalidateQueries({ queryKey: ["chats"] });
                   router.push(`/chat/${id}`);
                 })
               }
