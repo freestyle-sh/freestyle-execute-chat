@@ -2,9 +2,11 @@ import type { InferSelectModel } from "drizzle-orm";
 import type { Message as SdkMessage } from "ai";
 import {
   boolean,
+  index,
   integer,
   json,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uuid,
@@ -19,7 +21,7 @@ export const usersTable = pgTable("User", {
 export type User = InferSelectModel<typeof usersTable>;
 
 export const chatsTable = pgTable("Chats", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
   userId: uuid("user_id").references(() => usersTable.id, {
     onDelete: "cascade",
   }),
@@ -29,20 +31,27 @@ export const chatsTable = pgTable("Chats", {
 
 export type Chat = InferSelectModel<typeof chatsTable>;
 
-export const messagesTable = pgTable("Messages", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  chatId: uuid("chat_id").references(() => chatsTable.id, {
-    onDelete: "cascade",
-  }),
-  content: text("content").notNull(),
-  parts: json("parts").notNull(),
-  role: varchar("role", { length: 16 }).notNull(),
-  createdAt: timestamp("created_at").notNull(),
-});
+export const messagesTable = pgTable(
+  "Messages",
+  {
+    id: uuid("id").primaryKey().notNull().defaultRandom(),
+    chatId: uuid("chat_id").references(() => chatsTable.id, {
+      onDelete: "cascade",
+    }),
+    content: text("content").notNull(),
+    parts: json("parts").notNull(),
+    role: varchar("role", { length: 16 }).notNull(),
+    createdAt: timestamp("created_at").notNull(),
+  },
+  (table) => [
+    // speed up lookups by chatId
+    index().on(table.chatId),
+  ],
+);
 
 export type Message = InferSelectModel<typeof messagesTable> & SdkMessage;
 
-export const userFormResponse = pgTable("UserFormResponse", {
+export const userFormResponsesTable = pgTable("UserFormResponse", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   chatId: uuid("chatId")
     .references(() => chatsTable.id)
@@ -54,6 +63,13 @@ export const userFormResponse = pgTable("UserFormResponse", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
+
+export type UserFormResponse = Omit<
+  InferSelectModel<typeof userFormResponsesTable>,
+  "formData"
+> & {
+  formData: Record<string, unknown> | null;
+};
 
 export const freestyleModulesTable = pgTable("FreestyleModules", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
@@ -80,12 +96,29 @@ export const freestyleModulesEnvironmentVariableRequirementsTable = pgTable(
     example: text("example"),
     required: boolean("required").default(true).notNull(),
     public: boolean("public").default(false).notNull(),
-  }
+  },
+  (table) => [
+    // speed up lookups by moduleId
+    index().on(table.moduleId),
+  ],
 );
 
-export type UserFormResponse = Omit<
-  InferSelectModel<typeof userFormResponse>,
-  "formData"
-> & {
-  formData: Record<string, unknown> | null;
-};
+export const freestyleModulesConfigurationsTable = pgTable(
+  "FreestyleModulesConfigurations",
+  {
+    userId: uuid("userId").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }),
+    environmentVariableId: uuid("environmentVariableId").references(
+      () => freestyleModulesEnvironmentVariableRequirementsTable.id,
+      {
+        onDelete: "cascade",
+      },
+    ),
+    value: text("value").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.environmentVariableId] }),
+    index().on(table.userId),
+  ],
+);
