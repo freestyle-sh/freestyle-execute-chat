@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { messagesTable } from "@/db/schema";
 import { maybeUpdateChatTitle } from "@/lib/actions/create-chat";
+import { listModules } from "@/lib/actions/list-modules";
 import { claudeSonnetModel } from "@/lib/model";
 import { systemPrompt } from "@/lib/system-prompt";
 import { sendFeedbackTool } from "@/lib/tools/send-feedback";
@@ -13,8 +14,39 @@ export async function POST(request: Request) {
   } = await request.json();
 
   const chatId = request.headers.get("chat-id");
+  if (!chatId) {
+    throw new Error("chat-id header is required");
+  }
+
   const allowFirstMessage =
     request.headers.get("allow-first-message") === "true";
+
+  const modules = await listModules(chatId);
+
+  const nodeModules = Object.fromEntries(
+    modules
+      .filter((module) => module.isEnabled)
+      .map((module) => module.nodeModules as Record<string, string>)
+      .flatMap(Object.entries)
+  );
+
+  const envVars = Object.fromEntries(
+    modules
+      .filter((module) => module.isConfigured)
+      .map((module) => {
+        return module.configurations;
+      })
+      .map((configurations) => {
+        // get name and value
+        return configurations.map((configuration) => {
+          return [configuration.name, configuration.value];
+        });
+      })
+      .flat()
+  );
+
+  console.log("NODE MODULES", nodeModules);
+  console.log("ENV VARS", envVars);
 
   if (!chatId) {
     throw new Error("chat-id header is required");
@@ -50,6 +82,8 @@ export async function POST(request: Request) {
     tools: {
       codeExecutor: executeTool({
         apiKey: process.env.FREESTYLE_API_KEY!,
+        nodeModules,
+        envVars,
       }),
       sendFeedback: sendFeedbackTool(),
     },

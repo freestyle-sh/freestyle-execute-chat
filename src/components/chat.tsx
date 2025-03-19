@@ -82,7 +82,7 @@ export function ChatUI(props: {
   useEffect(() => {
     if (props.initialMessages.length > 0) {
       const firstUserMessage = props.initialMessages.find(
-        (msg) => msg.role === "user",
+        (msg) => msg.role === "user"
       );
       if (firstUserMessage?.content) {
         // Create a title from the first ~25 chars of the first message
@@ -138,7 +138,7 @@ export function ChatUI(props: {
         autoScroll
         className={cn(
           "w-full flex-1 max-w-3xl mx-auto flex flex-col gap-4 pb-2 scrollbar-thin scrollbar-thumb-secondary scrollbar-track-transparent",
-          "overflow-scroll py-4",
+          "overflow-scroll py-4"
         )}
       >
         {messages.length === 0 ? (
@@ -160,7 +160,7 @@ export function ChatUI(props: {
             event?: {
               preventDefault?: () => void;
             },
-            chatRequestOptions?: ChatRequestOptions,
+            chatRequestOptions?: ChatRequestOptions
           ) => {
             handleSubmit(event, chatRequestOptions);
 
@@ -182,12 +182,12 @@ export function PromptInputBasic(props: {
     event?: {
       preventDefault?: () => void;
     },
-    chatRequestOptions?: ChatRequestOptions,
+    chatRequestOptions?: ChatRequestOptions
   ) => void;
   input: string;
   isLoading: boolean;
   handleValueChange: (
-    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
+    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>
   ) => void;
   chatId?: string; // Make chatId optional for homepage usage
 }) {
@@ -256,7 +256,7 @@ export function PromptInputBasic(props: {
             }
             return module;
           });
-        },
+        }
       );
 
       return { previousModules };
@@ -266,7 +266,7 @@ export function PromptInputBasic(props: {
       if (context?.previousModules) {
         queryClient.setQueryData(
           ["modules", props.chatId],
-          context.previousModules,
+          context.previousModules
         );
       }
     },
@@ -316,7 +316,7 @@ export function PromptInputBasic(props: {
                         "inline-flex items-center px-3 py-1.5 rounded-2xl border cursor-pointer transition-all text-xs active:scale-95",
                         module.isEnabled === false
                           ? "opacity-50 bg-muted/30"
-                          : "module-bg",
+                          : "module-bg"
                       )}
                       style={
                         {
@@ -337,7 +337,7 @@ export function PromptInputBasic(props: {
                           "w-4 h-4 mr-1.5 object-contain",
                           module.isEnabled === false
                             ? "opacity-50"
-                            : "module-fill",
+                            : "module-fill"
                         )}
                         style={
                           {
@@ -365,7 +365,7 @@ export function PromptInputBasic(props: {
                           "inline-flex items-center px-3 py-1.5 rounded-2xl border cursor-pointer transition-all text-xs active:scale-95",
                           isEnabled === false || isEnabled === undefined
                             ? "opacity-50 bg-muted/30"
-                            : "module-bg",
+                            : "module-bg"
                         )}
                         style={
                           {
@@ -384,7 +384,7 @@ export function PromptInputBasic(props: {
                             "w-4 h-4 mr-1.5 object-contain",
                             isEnabled === false || isEnabled === undefined
                               ? "opacity-50"
-                              : "module-fill",
+                              : "module-fill"
                           )}
                           style={
                             {
@@ -409,7 +409,7 @@ export function PromptInputBasic(props: {
                   "inline-flex items-center gap-0.5 px-3 py-1.5 cursor-pointer text-xs hover:text-foreground rounded-2xl border border-border/20 hover:bg-muted/10",
                   isModuleTrayOpen
                     ? "text-foreground bg-muted/10"
-                    : "text-muted-foreground",
+                    : "text-muted-foreground"
                 )}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
@@ -517,7 +517,7 @@ export function PromptInputBasic(props: {
             size="default"
             className={cn(
               props.isLoading ? "w-8" : "w-14",
-              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out hover:bg-primary/90",
+              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out hover:bg-primary/90"
             )}
             onClick={props.handleSubmit}
           >
