@@ -1,18 +1,23 @@
 "use server";
 
 import { db } from "@/db";
-import { chatsTable, messagesTable, usersTable, chatModulesEnabledTable } from "@/db/schema";
+import {
+  chatsTable,
+  messagesTable,
+  usersTable,
+  chatModulesEnabledTable,
+} from "@/db/schema";
 import { STACKAUTHID } from "./tempuserid";
 import type { TextUIPart } from "@ai-sdk/ui-utils";
-import { smallModel } from "@/lib/model";
-import { generateText, type Message } from "ai";
+import { claudeSonnetModel } from "@/lib/model";
+import { generateText } from "ai";
 import { renameChat } from "./rename-chat";
-import { asc, desc, eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 
 export async function generateChatTitle(message: string, chatId: string) {
   try {
     const response = await generateText({
-      model: smallModel,
+      model: claudeSonnetModel,
       messages: [
         {
           role: "user",
@@ -62,7 +67,10 @@ export async function maybeUpdateChatTitle(chatId: string): Promise<boolean> {
 
 import type { ModuleState } from "@/lib/stores/modules";
 
-export async function createChat(firstMessage?: string, selectedModules?: Record<string, ModuleState>) {
+export async function createChat(
+  firstMessage?: string,
+  selectedModules?: Record<string, ModuleState>
+) {
   "use server";
 
   await db
@@ -112,14 +120,20 @@ export async function createChat(firstMessage?: string, selectedModules?: Record
       const moduleEntries = Object.entries(selectedModules);
       for (const [moduleId, { enabled }] of moduleEntries) {
         if (moduleId) {
-          await db.insert(chatModulesEnabledTable).values({
-            chatId,
-            moduleId,
-            enabled,
-          }).onConflictDoUpdate({
-            target: [chatModulesEnabledTable.chatId, chatModulesEnabledTable.moduleId],
-            set: { enabled }
-          });
+          await db
+            .insert(chatModulesEnabledTable)
+            .values({
+              chatId,
+              moduleId,
+              enabled,
+            })
+            .onConflictDoUpdate({
+              target: [
+                chatModulesEnabledTable.chatId,
+                chatModulesEnabledTable.moduleId,
+              ],
+              set: { enabled },
+            });
         }
       }
     } catch (error) {

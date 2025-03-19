@@ -16,6 +16,7 @@ export default async function initResend() {
       nodeModules: {
         resend: "4.1.2",
       },
+
       setupInstructions: `
 1. **Sign up for Resend**:
    [Create a free Resend account](https://resend.com/signup)
