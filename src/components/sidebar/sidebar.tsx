@@ -45,6 +45,7 @@ export function ChatSidebar() {
           <SidebarMenuLinkItem
             href="https://github.com/freestyle-sh/freestyle-execute-chat"
             label="Github"
+            target="_blank"
             icon={GithubIcon}
           />
           <SidebarMenuLinkItem

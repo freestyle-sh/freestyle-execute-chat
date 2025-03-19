@@ -20,13 +20,15 @@ export function SidebarMenuLinkItem({
   isActive = false,
   tooltip,
   className,
+  target,
 }: SidebarMenuItemProps & {
+  target?: string;
   href: string;
 }) {
   return (
     <BaseSidebarMenuItem className={className}>
       <SidebarMenuButton tooltip={tooltip || label} isActive={isActive} asChild>
-        <Link href={href} className="flex gap-2">
+        <Link href={href} target={target} className="flex gap-2">
           <Icon />
           <span>{label}</span>
         </Link>
