@@ -17,7 +17,7 @@ export function UserMessage({ message }: { message: UIMessage }) {
   if (!message.parts || message.parts.length === 0) {
     return (
       <Message className="justify-end animate-slide-in-right">
-        <MessageContent className="bg-primary/10 rounded-2xl rounded-br-none shadow-sm border border-primary/10 transition-all duration-200">
+        <MessageContent className="bg-primary/10 rounded-2xl rounded-br-none border border-primary/10 transition-all duration-200">
           {message.content}
         </MessageContent>
       </Message>
@@ -32,7 +32,7 @@ export function UserMessage({ message }: { message: UIMessage }) {
           className="justify-end animate-slide-in-right"
         >
           {part.type === "text" && (
-            <MessageContent className="bg-primary/10 rounded-2xl rounded-br-none shadow-sm border border-primary/10 transition-all duration-200">
+            <MessageContent className="bg-primary/10 rounded-2xl rounded-br-none border border-primary/10 transition-all duration-200">
               {part.text}
             </MessageContent>
           )}
