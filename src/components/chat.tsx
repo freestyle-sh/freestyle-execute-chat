@@ -18,6 +18,7 @@ import { insertMessage } from "@/lib/actions/insert-message";
 import ChatMessage from "./message";
 import { useRouter } from "next/navigation";
 import { ChatContainer } from "./ui/chat-container";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function ChatUI(props: {
   chatId: string;
@@ -26,6 +27,7 @@ export function ChatUI(props: {
 }) {
   "use client";
   const router = useRouter();
+  const queryClient = useQueryClient();
   const hasRunRef = useRef(false);
 
   const { messages, input, handleInputChange, handleSubmit, status, reload } =
@@ -44,6 +46,9 @@ export function ChatUI(props: {
         console.log("onFinish", message);
 
         await insertMessage(props.chatId, message);
+
+        // Invalidate chats list to update sidebar history order
+        queryClient.invalidateQueries({ queryKey: ["chats:list"] });
       },
     });
 
@@ -86,7 +91,17 @@ export function ChatUI(props: {
       </ChatContainer>
       <div className="w-full pb-4">
         <PromptInputBasic
-          handleSubmit={handleSubmit}
+          handleSubmit={(
+            event?: {
+              preventDefault?: () => void;
+            },
+            chatRequestOptions?: ChatRequestOptions,
+          ) => {
+            handleSubmit(event, chatRequestOptions);
+
+            // Invalidate the chat list when user submits a message
+            queryClient.invalidateQueries({ queryKey: ["chats:list"] });
+          }}
           input={input}
           handleValueChange={handleInputChange}
           isLoading={status === "streaming" || status === "submitted"}
