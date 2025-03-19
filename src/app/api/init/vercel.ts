@@ -12,7 +12,7 @@ export default async function initVercel() {
       name: "vercel",
       svg: siVercel.svg,
       lightModeColor: siVercel.hex,
-      darkModeColor: "000000",
+      darkModeColor: "ffffff",
       documentation: vercelDocs,
       nodeModules: {
         "@vercel/sdk": "1.5.0",

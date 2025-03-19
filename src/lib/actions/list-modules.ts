@@ -13,4 +13,3 @@ export async function listModules(): Promise<FreestyleModule[]> {
 
   return modules;
 }
-
