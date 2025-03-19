@@ -146,8 +146,7 @@ export function PromptInputBasic(props: {
       />
       <PromptInputActions className="justify-end pt-2">
         <PromptInputAction
-          tooltip="Send message"
-          // tooltip={isLoading ? "Stop generation" : "Send message"}
+          tooltip={props.isLoading ? "Stop generation" : "Send message"}
         >
           <Button
             variant="default"
