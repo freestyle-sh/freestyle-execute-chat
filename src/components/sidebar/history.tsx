@@ -40,7 +40,7 @@ export function SidebarHistory() {
       <div
         ref={scrollContainerRef}
         onScroll={checkScrollability}
-        className="max-h-[calc(5*32px)] flex flex-col gap-0.5 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-sidebar-border hover:scrollbar-thumb-sidebar-accent"
+        className="max-h-[calc(16*32px)] flex flex-col gap-0.5 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-sidebar-border hover:scrollbar-thumb-sidebar-accent"
       >
         {isLoading ? (
           Array.from({ length: 5 }).map((_, index) => (
