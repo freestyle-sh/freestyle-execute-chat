@@ -3,6 +3,7 @@ import { messagesTable } from "@/db/schema";
 import { maybeUpdateChatTitle } from "@/lib/actions/create-chat";
 import { claudeSonnetModel } from "@/lib/model";
 import { systemPrompt } from "@/lib/system-prompt";
+import { sendFeedbackTool } from "@/lib/tools/send-feedback";
 import { type Message, streamText } from "ai";
 import { executeTool } from "freestyle-sandboxes/ai";
 
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
   }
 
   maybeUpdateChatTitle(chatId).catch((error) =>
-    console.error("Failed to update chat title:", error),
+    console.error("Failed to update chat title:", error)
   );
 
   console.log("JSON", json, "CHAT ID", chatId);
@@ -45,6 +46,7 @@ export async function POST(request: Request) {
       codeExecutor: executeTool({
         apiKey: process.env.FREESTYLE_API_KEY!,
       }),
+      sendFeedback: sendFeedbackTool(),
     },
     messages: json.messages,
   }).toDataStreamResponse();

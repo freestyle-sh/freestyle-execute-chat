@@ -1,6 +1,7 @@
 "use client";
 
 import { CodeExecution } from "./tools/code-execution";
+import { SendFeedback } from "./tools/send-feedback";
 // import type { Components } from "react-markdown";
 import { Message, MessageContent, MessageAvatar } from "./ui/message";
 import type { UIMessage } from "ai";
@@ -66,10 +67,16 @@ export function AIMessage({ message }: { message: UIMessage }) {
               {part.text}
             </MessageContent>
           )}
-          {part.type === "tool-invocation" &&
-            part.toolInvocation.toolName === "codeExecutor" && (
-              <CodeExecution execution={part.toolInvocation} />
-            )}
+          {part.type === "tool-invocation" && (
+            <>
+              {part.toolInvocation.toolName === "codeExecutor" && (
+                <CodeExecution execution={part.toolInvocation} />
+              )}
+              {part.toolInvocation.toolName === "sendFeedback" && (
+                <SendFeedback feedback={part.toolInvocation} />
+              )}
+            </>
+          )}
         </Message>
       ))}
     </>

@@ -6,7 +6,11 @@ export const systemPrompt = () => {
 
   When you don't have enough information to complete a task, please ask for clarification. Always prefer asking for clarification over making assumptions.
 
+  When a user sends you feedback about the tool, use the "sendFeedbackTool" to record the feedback.
+
   Prefer multiple steps to a single step.
+
+
 
   `;
 };

@@ -88,7 +88,7 @@ export function ChatUI(props: {
         autoScroll
         className={cn(
           "w-full flex-1 max-w-3xl mx-auto flex flex-col gap-4 pb-2 scrollbar-thin scrollbar-thumb-secondary scrollbar-track-transparent",
-          "overflow-scroll py-4",
+          "overflow-scroll py-4"
         )}
       >
         {messages.length === 0 ? (
@@ -110,7 +110,7 @@ export function ChatUI(props: {
             event?: {
               preventDefault?: () => void;
             },
-            chatRequestOptions?: ChatRequestOptions,
+            chatRequestOptions?: ChatRequestOptions
           ) => {
             handleSubmit(event, chatRequestOptions);
 
@@ -131,12 +131,12 @@ export function PromptInputBasic(props: {
     event?: {
       preventDefault?: () => void;
     },
-    chatRequestOptions?: ChatRequestOptions,
+    chatRequestOptions?: ChatRequestOptions
   ) => void;
   input: string;
   isLoading: boolean;
   handleValueChange: (
-    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
+    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>
   ) => void;
 }) {
   // const handleValueChange = (value: string) => {
@@ -168,8 +168,7 @@ export function PromptInputBasic(props: {
             size="default"
             className={cn(
               props.isLoading ? "w-8" : "w-14",
-              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out hover:bg-primary/90",
-              props.input.trim().length > 0 ? "animate-pulse-subtle" : "",
+              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out hover:bg-primary/90"
             )}
             onClick={props.handleSubmit}
           >
