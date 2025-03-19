@@ -65,7 +65,10 @@ export function SidebarHistory() {
                   damping: 30,
                 }}
               >
-                <SidebarHistoryItem id={chat.id} title={chat.name ?? chat.id} />
+                <SidebarHistoryItem
+                  id={chat.id}
+                  title={chat.name ?? "Untitled"}
+                />
               </motion.div>
             ))}
           </AnimatePresence>

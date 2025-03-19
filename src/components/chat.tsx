@@ -20,6 +20,10 @@ import { useRouter } from "next/navigation";
 import { ChatContainer } from "./ui/chat-container";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { chatExists } from "@/lib/actions/check-chat";
+import {
+  generateChatTitle,
+  maybeUpdateChatTitle,
+} from "@/lib/actions/create-chat";
 
 export function ChatUI(props: {
   chatId: string;

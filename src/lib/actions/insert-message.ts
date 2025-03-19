@@ -1,9 +1,9 @@
 "use server";
 import { db } from "@/db";
 import { chatsTable, messagesTable } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq, count } from "drizzle-orm";
 import { STACKAUTHID } from "./tempuserid";
-import { Message } from "ai";
+import type { Message } from "ai";
 
 export async function insertMessage(chatId: string, message: Message) {
   "use server";
@@ -17,7 +17,7 @@ export async function insertMessage(chatId: string, message: Message) {
     throw new Error("Chat does not belong to user");
   }
 
-  return await db
+  const result = await db
     .insert(messagesTable)
     .values({
       id: crypto.randomUUID(),
@@ -28,8 +28,6 @@ export async function insertMessage(chatId: string, message: Message) {
       chatId: chatId,
     })
     .returning();
+
+  return result;
 }
-
-// db.insert(messagesTable).values(
-
-// );
