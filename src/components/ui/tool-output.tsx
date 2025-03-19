@@ -282,7 +282,7 @@ export const ToolOutput = ({
                   variant="outline"
                   size="sm"
                   onClick={() => setShowLogs(!showLogs)}
-                  className="ml-2 h-6 px-2 text-xs font-medium ring-offset-background transition-all hover:bg-muted hover:text-muted-foreground active:scale-95 cursor-pointer"
+                  className="ml-2 h-6 px-2 text-xs font-medium ring-offset-background transition-all hover:bg-muted active:scale-95 cursor-pointer"
                 >
                   {showLogs ? (
                     <ChevronUp className="mr-1 h-3 w-3" />
