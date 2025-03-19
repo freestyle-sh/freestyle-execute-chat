@@ -15,6 +15,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { ToolOutputBadge } from "@/components/ui/tool-output";
 
 type PromptInputContextType = {
   isLoading: boolean;
@@ -79,13 +80,15 @@ function PromptInput({
           onSubmit,
         }}
       >
-        <div
-          className={cn(
-            "border-input bg-background rounded-3xl border p-2 focus-within:shadow-md transition-all duration-200 focus-within:border-primary/30",
-            className,
-          )}
-        >
-          {children}
+        <div className="flex flex-col">
+          <div
+            className={cn(
+              "border-input bg-background rounded-3xl border focus-within:shadow-lg transition-all duration-200 focus-within:border-primary/30",
+              className,
+            )}
+          >
+            <div className="p-2">{children}</div>
+          </div>
         </div>
       </PromptInputContext.Provider>
     </TooltipProvider>
