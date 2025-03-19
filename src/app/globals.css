@@ -187,3 +187,24 @@
 .animate-pulse-subtle {
   animation: pulse 2s infinite;
 }
+
+/* Dynamic module colors */
+@layer utilities {
+  .module-fill {
+    fill: var(--module-light);
+  }
+  
+  .dark .module-fill {
+    fill: var(--module-dark);
+  }
+  
+  .module-bg {
+    background-color: color-mix(in srgb, var(--module-light) 20%, transparent);
+    border-color: var(--module-light);
+  }
+  
+  .dark .module-bg {
+    background-color: color-mix(in srgb, var(--module-dark) 20%, transparent);
+    border-color: var(--module-dark);
+  }
+}

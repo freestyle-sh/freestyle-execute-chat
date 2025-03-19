@@ -10,7 +10,8 @@ export default async function initSupabase() {
     .values({
       name: "supabase",
       svg: siSupabase.svg,
-      color: siSupabase.hex,
+      lightModeColor: siSupabase.hex,
+      darkModeColor: siSupabase.hex,
       nodeModules: {
         "@supabase/supabase-js": "2.49.1",
       },

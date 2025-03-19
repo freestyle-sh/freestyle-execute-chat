@@ -11,7 +11,8 @@ export default async function initResend() {
     .values({
       name: "resend",
       svg: siResend.svg,
-      color: siResend.hex,
+      lightModeColor: siResend.hex,
+      darkModeColor: "000000",
       nodeModules: {
         resend: "4.1.2",
       },

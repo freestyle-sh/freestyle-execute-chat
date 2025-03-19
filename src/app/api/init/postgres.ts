@@ -10,7 +10,8 @@ export default async function initPostgres() {
     .values({
       name: "postgres",
       svg: siPostgresql.svg,
-      color: siPostgresql.hex,
+      lightModeColor: siPostgresql.hex,
+      darkModeColor: siPostgresql.hex,
       nodeModules: {
         pg: "8.14.0",
       },

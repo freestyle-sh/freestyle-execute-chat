@@ -71,6 +71,13 @@
       "when": 1742362957581,
       "tag": "0009_black_menace",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1742372875398,
+      "tag": "0010_cuddly_mister_sinister",
+      "breakpoints": true
     }
   ]
 }
