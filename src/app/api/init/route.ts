@@ -7,6 +7,7 @@ import initVercel from "./vercel";
 import initStripe from "./stripe";
 import initSlack from "./slack";
 import initGithub from "./github";
+import initExa from "./exa";
 
 export async function POST() {
   await db.delete(freestyleModulesTable);
@@ -18,6 +19,7 @@ export async function POST() {
   await initStripe();
   await initSlack();
   await initGithub();
+  await initExa();
 
   return new Response("Initialized", { status: 200 });
 }
