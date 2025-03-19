@@ -54,6 +54,7 @@ export function ChatUI(props: {
           headers: {
             ...init?.headers,
             "chat-id": props.chatId,
+            "allow-first-message": "true",
           },
         });
       },

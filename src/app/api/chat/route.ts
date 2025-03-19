@@ -13,6 +13,7 @@ export async function POST(request: Request) {
   } = await request.json();
 
   const chatId = request.headers.get("chat-id");
+  const allowFirstMessage = request.headers.get("allow-first-message");
 
   if (!chatId) {
     throw new Error("chat-id header is required");
@@ -20,7 +21,10 @@ export async function POST(request: Request) {
 
   const lastMessage = json.messages[json.messages.length - 1];
 
-  if (json.messages.length >= 1 && lastMessage.role === "user") {
+  if (
+    (json.messages.length >= 1 || allowFirstMessage) &&
+    lastMessage.role === "user"
+  ) {
     await db.insert(messagesTable).values({
       ...lastMessage,
       id: crypto.randomUUID(),
