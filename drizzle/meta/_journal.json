@@ -57,6 +57,13 @@
       "when": 1742360185044,
       "tag": "0007_keen_magdalene",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1742361139757,
+      "tag": "0008_glossy_celestials",
+      "breakpoints": true
     }
   ]
 }
