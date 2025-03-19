@@ -137,8 +137,8 @@ export function ChatUI(props: {
       <ChatContainer
         autoScroll
         className={cn(
-          "w-full flex-1 max-w-3xl mx-auto flex flex-col gap-4 pb-2 scrollbar-thin scrollbar-thumb-secondary scrollbar-track-transparent",
-          "overflow-scroll py-4"
+          "w-full flex-1 max-w-3xl mx-auto flex flex-col gap-4 pb-2",
+          "overflow-scroll py-4 scrollbar-none"
         )}
       >
         {messages.length === 0 ? (
