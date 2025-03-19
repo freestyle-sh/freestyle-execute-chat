@@ -72,7 +72,7 @@ export function ChatUI(props: {
       <ChatContainer
         autoScroll
         className={cn(
-          "flex-1 max-w-3xl mx-auto flex flex-col gap-4 pb-2 scrollbar-thin scrollbar-thumb-secondary scrollbar-track-transparent",
+          "w-full flex-1 max-w-3xl mx-auto flex flex-col gap-4 pb-2 scrollbar-thin scrollbar-thumb-secondary scrollbar-track-transparent",
           "overflow-scroll py-4",
         )}
       >
