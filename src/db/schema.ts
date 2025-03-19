@@ -84,6 +84,8 @@ export const freestyleModulesTable = pgTable("FreestyleModules", {
   documentation: text("documentation"),
 });
 
+export type FreestyleModule = InferSelectModel<typeof freestyleModulesTable>;
+
 export const freestyleModulesEnvironmentVariableRequirementsTable = pgTable(
   "FreestyleModulesEnvironmentVariableRequirements",
   {
