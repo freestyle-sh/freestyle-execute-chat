@@ -3,8 +3,13 @@
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SettingsSection, SettingsItem } from "@/components/settings";
 import { ModulesSettings } from "@/components/modules-settings";
+import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 
 export default function SettingsPage() {
+  const searchParams = useSearchParams();
+  const moduleToOpen = searchParams.get("module");
+
   return (
     <div className="p-6 animate-fade-in">
       <h1 className="text-2xl font-bold mb-6 gradient-text">Settings</h1>
@@ -18,7 +23,7 @@ export default function SettingsPage() {
           </SettingsItem>
         </SettingsSection>
 
-        <ModulesSettings />
+        <ModulesSettings moduleToOpen={moduleToOpen} />
 
         <SettingsSection
           title="Account"

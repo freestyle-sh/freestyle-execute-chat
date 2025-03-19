@@ -194,6 +194,7 @@ export function PromptInputBasic(props: {
   // State to track if module tray is open
   const [isModuleTrayOpen, setIsModuleTrayOpen] = useState(false);
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   // Use in-memory module store when no chatId is provided (homepage)
   const { selectedModules, toggleModule } = useModulesStore();
@@ -477,7 +478,10 @@ export function PromptInputBasic(props: {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 0.6 }}
                       transition={{ duration: 0.2, delay: 0.1 + index * 0.02 }}
-                      className="bg-sidebar inline-flex items-center px-3 py-1.5 rounded-2xl border border-border/20 cursor-not-allowed transition-all text-xs"
+                      className="bg-sidebar inline-flex items-center px-3 py-1.5 rounded-2xl border border-border/20 cursor-pointer hover:bg-muted/20 transition-all text-xs"
+                      onClick={() => {
+                        router.push(`/settings?module=${module.id}`);
+                      }}
                     >
                       <div
                         // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>

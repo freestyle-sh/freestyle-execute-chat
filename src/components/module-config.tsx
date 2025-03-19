@@ -64,13 +64,15 @@ interface ModuleConfigDrawerProps {
     moduleId: string,
     configs: Record<string, string>,
   ) => Promise<void>;
+  defaultOpen?: boolean;
 }
 
 export function ModuleConfigDrawer({
   module,
   onConfigSave,
+  defaultOpen = false,
 }: ModuleConfigDrawerProps) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Create a schema based on module env var requirements
