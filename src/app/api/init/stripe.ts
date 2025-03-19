@@ -13,9 +13,9 @@ export default async function initStripe() {
       lightModeColor: siStripe.hex,
       darkModeColor: siStripe.hex,
       nodeModules: {
-        stripe: "8.214.0",
+        stripe: "17.7.0",
       },
-      example: `Interact with your Stripe project`,
+      example: `Interact with your Stripe account`,
     })
     .returning();
 
