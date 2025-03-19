@@ -17,7 +17,7 @@ export function SettingsSection({
 }: SettingsSectionProps) {
   return (
     <div
-      className={cn("rounded-xl p-6 transition-all duration-200", className)}
+      className={cn("rounded-xl py-6 transition-all duration-200", className)}
       {...props}
     >
       <h2 className="text-xl font-medium mb-2 text-primary">{title}</h2>
@@ -44,7 +44,7 @@ export function SettingsItem({
   return (
     <div
       className={cn(
-        "flex justify-between items-center p-4 bg-background/50 rounded-lg border border-border/30 transition-all duration-200",
+        "flex justify-between items-center p-4 bg-background/50 rounded-lg border border-border transition-all duration-200",
         className,
       )}
       {...props}
