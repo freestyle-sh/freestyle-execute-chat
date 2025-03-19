@@ -24,10 +24,15 @@ import { insertMessage } from "@/lib/actions/insert-message";
 import ChatMessage from "./message";
 import { useRouter } from "next/navigation";
 import { ChatContainer } from "./ui/chat-container";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { chatExists } from "@/lib/actions/check-chat";
 import { useSidebarStore } from "@/lib/stores/sidebar";
-import { listModules } from "@/lib/actions/list-modules";
+import { useModulesStore } from "@/lib/stores/modules";
+import {
+  listModules,
+  type ModuleWithRequirements,
+} from "@/lib/actions/list-modules";
+import { capitalize } from "@/lib/typography";
 
 const MobileHeader = ({ title }: { title: string }) => {
   const { toggleMobile } = useSidebarStore();
@@ -77,7 +82,7 @@ export function ChatUI(props: {
   useEffect(() => {
     if (props.initialMessages.length > 0) {
       const firstUserMessage = props.initialMessages.find(
-        (msg) => msg.role === "user"
+        (msg) => msg.role === "user",
       );
       if (firstUserMessage?.content) {
         // Create a title from the first ~25 chars of the first message
@@ -133,7 +138,7 @@ export function ChatUI(props: {
         autoScroll
         className={cn(
           "w-full flex-1 max-w-3xl mx-auto flex flex-col gap-4 pb-2 scrollbar-thin scrollbar-thumb-secondary scrollbar-track-transparent",
-          "overflow-scroll py-4"
+          "overflow-scroll py-4",
         )}
       >
         {messages.length === 0 ? (
@@ -155,7 +160,7 @@ export function ChatUI(props: {
             event?: {
               preventDefault?: () => void;
             },
-            chatRequestOptions?: ChatRequestOptions
+            chatRequestOptions?: ChatRequestOptions,
           ) => {
             handleSubmit(event, chatRequestOptions);
 
@@ -165,6 +170,7 @@ export function ChatUI(props: {
           input={input}
           handleValueChange={handleInputChange}
           isLoading={status === "streaming" || status === "submitted"}
+          chatId={props.chatId}
         />
       </div>
     </div>
@@ -176,21 +182,113 @@ export function PromptInputBasic(props: {
     event?: {
       preventDefault?: () => void;
     },
-    chatRequestOptions?: ChatRequestOptions
+    chatRequestOptions?: ChatRequestOptions,
   ) => void;
   input: string;
   isLoading: boolean;
   handleValueChange: (
-    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>
+    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
   ) => void;
+  chatId?: string; // Make chatId optional for homepage usage
 }) {
   // State to track if module tray is open
   const [isModuleTrayOpen, setIsModuleTrayOpen] = useState(false);
+  const queryClient = useQueryClient();
 
+  // Use in-memory module store when no chatId is provided (homepage)
+  const { selectedModules, toggleModule } = useModulesStore();
+
+  // Fetch modules for both scenarios - only difference is chatId for enabled status
   const { data: modules = [] } = useQuery({
-    queryKey: ["modules"],
-    queryFn: () => listModules(),
+    queryKey: ["modules", props.chatId || "homepage"],
+    queryFn: () => listModules(props.chatId),
   });
+
+  const toggleModuleMutation = useMutation({
+    mutationFn: async ({
+      moduleId,
+      enabled,
+    }: {
+      moduleId: string;
+      enabled: boolean;
+    }) => {
+      try {
+        const response = await fetch("/api/chat/modules", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            chatId: props.chatId,
+            moduleId,
+            enabled,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to toggle module");
+        }
+
+        return await response.json();
+      } catch (error) {
+        console.error("Error toggling module:", error);
+        throw error;
+      }
+    },
+    onMutate: async ({ moduleId, enabled }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["modules", props.chatId] });
+
+      // Snapshot the previous value
+      const previousModules = queryClient.getQueryData([
+        "modules",
+        props.chatId,
+      ]);
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(
+        ["modules", props.chatId],
+        (old: ModuleWithRequirements[] | undefined) => {
+          if (!old) return [];
+          return old.map((module) => {
+            if (module.id === moduleId) {
+              return { ...module, isEnabled: enabled };
+            }
+            return module;
+          });
+        },
+      );
+
+      return { previousModules };
+    },
+    onError: (err, variables, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousModules) {
+        queryClient.setQueryData(
+          ["modules", props.chatId],
+          context.previousModules,
+        );
+      }
+    },
+    onSettled: () => {
+      // Always refetch after error or success to make sure the server state
+      // is reflected in the UI
+      queryClient.invalidateQueries({ queryKey: ["modules", props.chatId] });
+    },
+  });
+
+  const handleToggleModule = (moduleId: string, currentEnabled?: boolean) => {
+    // Toggle the current state (default to false if undefined)
+    const newEnabledState = !(currentEnabled ?? false);
+
+    if (props.chatId) {
+      // Use the mutation for persisted chats
+      toggleModuleMutation.mutate({ moduleId, enabled: newEnabledState });
+    } else {
+      // Use the zustand store for homepage (non-persisted) chat
+      toggleModule(moduleId, newEnabledState);
+    }
+  };
 
   return (
     <PromptInput
@@ -207,37 +305,102 @@ export function PromptInputBasic(props: {
       <div className="flex flex-col justify-between mb-2">
         <div className="flex justify-between">
           <div className="flex flex-wrap gap-2 items-center">
-            {modules.map((module, index) => (
-              <div
-                key={`enabled-${index.toString()}`}
-                className="inline-flex items-center px-3 py-1.5 rounded-2xl border cursor-pointer transition-all text-xs active:scale-95 module-bg"
-                style={
-                  {
-                    "--module-light": `#${module.lightModeColor}`,
-                    "--module-dark": `#${module.darkModeColor}`,
-                  } as React.CSSProperties
-                }
-              >
-                <div
-                  // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
-                  dangerouslySetInnerHTML={{
-                    __html: module.svg,
-                  }}
-                  className="w-4 h-4 mr-1.5 object-contain module-fill"
-                  style={
-                    {
-                      "--module-light": `#${module.lightModeColor}`,
-                      "--module-dark": `#${module.darkModeColor}`,
-                    } as React.CSSProperties
-                  }
-                />
+            {props.chatId
+              ? // Show modules from the database for persisted chats
+                modules
+                  .filter((module) => module.isConfigured)
+                  .map((module, index) => (
+                    <div
+                      key={`enabled-${index.toString()}`}
+                      className={cn(
+                        "inline-flex items-center px-3 py-1.5 rounded-2xl border cursor-pointer transition-all text-xs active:scale-95",
+                        module.isEnabled === false
+                          ? "opacity-50 bg-muted/30"
+                          : "module-bg",
+                      )}
+                      style={
+                        {
+                          "--module-light": `#${module.lightModeColor}`,
+                          "--module-dark": `#${module.darkModeColor}`,
+                        } as React.CSSProperties
+                      }
+                      onClick={() =>
+                        handleToggleModule(module.id, module.isEnabled)
+                      }
+                    >
+                      <div
+                        // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
+                        dangerouslySetInnerHTML={{
+                          __html: module.svg,
+                        }}
+                        className={cn(
+                          "w-4 h-4 mr-1.5 object-contain",
+                          module.isEnabled === false
+                            ? "opacity-50"
+                            : "module-fill",
+                        )}
+                        style={
+                          {
+                            "--module-light": `#${module.lightModeColor}`,
+                            "--module-dark": `#${module.darkModeColor}`,
+                          } as React.CSSProperties
+                        }
+                      />
 
-                <span className="capitalize module-text">{module.name}</span>
-              </div>
-            ))}
+                      <span>{capitalize(module.name)}</span>
+                    </div>
+                  ))
+              : // Show modules from store for homepage (non-persisted) chat
+                modules
+                  .filter((module) => module.isConfigured)
+                  .map((module, index) => {
+                    // Check if this module exists in the store
+                    const moduleState = selectedModules[module.id];
+                    const isEnabled = moduleState?.enabled;
+
+                    return (
+                      <div
+                        key={`homepage-${index.toString()}`}
+                        className={cn(
+                          "inline-flex items-center px-3 py-1.5 rounded-2xl border cursor-pointer transition-all text-xs active:scale-95",
+                          isEnabled === false || isEnabled === undefined
+                            ? "opacity-50 bg-muted/30"
+                            : "module-bg",
+                        )}
+                        style={
+                          {
+                            "--module-light": `#${module.lightModeColor}`,
+                            "--module-dark": `#${module.darkModeColor}`,
+                          } as React.CSSProperties
+                        }
+                        onClick={() => handleToggleModule(module.id, isEnabled)}
+                      >
+                        <div
+                          // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
+                          dangerouslySetInnerHTML={{
+                            __html: module.svg,
+                          }}
+                          className={cn(
+                            "w-4 h-4 mr-1.5 object-contain",
+                            isEnabled === false || isEnabled === undefined
+                              ? "opacity-50"
+                              : "module-fill",
+                          )}
+                          style={
+                            {
+                              "--module-light": `#${module.lightModeColor}`,
+                              "--module-dark": `#${module.darkModeColor}`,
+                            } as React.CSSProperties
+                          }
+                        />
+
+                        <span>{capitalize(module.name)}</span>
+                      </div>
+                    );
+                  })}
           </div>
           <div>
-            {(modules.length ?? 0) > 0 && (
+            {modules.filter((module) => !module.isConfigured).length > 0 && (
               <motion.button
                 onClick={() => {
                   setIsModuleTrayOpen(!isModuleTrayOpen);
@@ -246,7 +409,7 @@ export function PromptInputBasic(props: {
                   "inline-flex items-center gap-0.5 px-3 py-1.5 cursor-pointer text-xs hover:text-foreground rounded-2xl border border-border/20 hover:bg-muted/10",
                   isModuleTrayOpen
                     ? "text-foreground bg-muted/10"
-                    : "text-muted-foreground"
+                    : "text-muted-foreground",
                 )}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
@@ -294,9 +457,10 @@ export function PromptInputBasic(props: {
               className="flex flex-col gap-1 w-full bg-background/60 backdrop-blur-sm"
             >
               <div className="h-px w-full bg-border p-0 m-0" />
-              <div className="flex flex-wrap gap-1 px-0.5 m-0">
+              <div className="flex flex-wrap gap-1 m-0">
                 <div className="w-full">
-                  {(modules?.length ?? 0) > 0 && (
+                  {modules.filter((module) => !module.isConfigured).length >
+                    0 && (
                     <div className="flex items-center">
                       <div className="text-xs font-medium text-muted-foreground">
                         Unconfigured
@@ -305,32 +469,34 @@ export function PromptInputBasic(props: {
                   )}
                 </div>
 
-                {modules.map((module, index) => (
-                  <motion.div
-                    key={`unconfigured-${index.toString()}`}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 0.6 }}
-                    transition={{ duration: 0.2, delay: 0.1 + index * 0.02 }}
-                    className="bg-sidebar inline-flex items-center px-3 py-1.5 rounded-2xl border border-border/20 cursor-pointer transition-all text-xs active:scale-95"
-                  >
-                    <div
-                      // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
-                      dangerouslySetInnerHTML={{
-                        __html: module.svg,
-                      }}
-                      className="w-4 h-4 mr-1.5 object-contain opacity-70 module-fill"
-                      style={
-                        {
-                          "--module-light": `#${module.lightModeColor}`,
-                          "--module-dark": `#${module.darkModeColor}`,
-                        } as React.CSSProperties
-                      }
-                    />
-                    <span className="opacity-70 capitalize module-text">
-                      {module.name}
-                    </span>
-                  </motion.div>
-                ))}
+                {modules
+                  .filter((module) => !module.isConfigured)
+                  .map((module, index) => (
+                    <motion.div
+                      key={`unconfigured-${index.toString()}`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 0.6 }}
+                      transition={{ duration: 0.2, delay: 0.1 + index * 0.02 }}
+                      className="bg-sidebar inline-flex items-center px-3 py-1.5 rounded-2xl border border-border/20 cursor-not-allowed transition-all text-xs"
+                    >
+                      <div
+                        // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
+                        dangerouslySetInnerHTML={{
+                          __html: module.svg,
+                        }}
+                        className="w-4 h-4 mr-1.5 object-contain opacity-70 module-fill"
+                        style={
+                          {
+                            "--module-light": `#${module.lightModeColor}`,
+                            "--module-dark": `#${module.darkModeColor}`,
+                          } as React.CSSProperties
+                        }
+                      />
+                      <span className="opacity-70">
+                        {capitalize(module.name)}
+                      </span>
+                    </motion.div>
+                  ))}
               </div>
             </motion.div>
           )}
@@ -351,7 +517,7 @@ export function PromptInputBasic(props: {
             size="default"
             className={cn(
               props.isLoading ? "w-8" : "w-14",
-              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out hover:bg-primary/90"
+              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out hover:bg-primary/90",
             )}
             onClick={props.handleSubmit}
           >

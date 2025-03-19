@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { chatsTable, messagesTable, usersTable } from "@/db/schema";
+import { chatsTable, messagesTable, usersTable, chatModulesEnabledTable } from "@/db/schema";
 import { STACKAUTHID } from "./tempuserid";
 import type { TextUIPart } from "@ai-sdk/ui-utils";
 import { smallModel } from "@/lib/model";
@@ -60,7 +60,9 @@ export async function maybeUpdateChatTitle(chatId: string): Promise<boolean> {
   return false;
 }
 
-export async function createChat(firstMessage?: string) {
+import type { ModuleState } from "@/lib/stores/modules";
+
+export async function createChat(firstMessage?: string, selectedModules?: Record<string, ModuleState>) {
   "use server";
 
   await db
@@ -102,6 +104,27 @@ export async function createChat(firstMessage?: string) {
     generateChatTitle(firstMessage, chatId).catch((err) => {
       console.error("Background title generation failed:", err);
     });
+  }
+
+  // Apply selected modules to the new chat if provided
+  if (selectedModules && Object.keys(selectedModules).length > 0) {
+    try {
+      const moduleEntries = Object.entries(selectedModules);
+      for (const [moduleId, { enabled }] of moduleEntries) {
+        if (moduleId) {
+          await db.insert(chatModulesEnabledTable).values({
+            chatId,
+            moduleId,
+            enabled,
+          }).onConflictDoUpdate({
+            target: [chatModulesEnabledTable.chatId, chatModulesEnabledTable.moduleId],
+            set: { enabled }
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Failed to apply modules to chat:", error);
+    }
   }
 
   return chatId;

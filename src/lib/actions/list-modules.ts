@@ -1,15 +1,142 @@
 "use server";
 import { db } from "@/db";
-import { type FreestyleModule, freestyleModulesTable } from "@/db/schema";
-import { desc } from "drizzle-orm";
+import {
+  type FreestyleModule,
+  freestyleModulesConfigurationsTable,
+  freestyleModulesEnvironmentVariableRequirementsTable,
+  freestyleModulesTable,
+  chatModulesEnabledTable,
+} from "@/db/schema";
+import { and, desc, eq } from "drizzle-orm";
+import { STACKAUTHID } from "./tempuserid";
 
-export async function listModules(): Promise<FreestyleModule[]> {
+export type ModuleWithRequirements = FreestyleModule & {
+  environmentVariableRequirements: {
+    id: string;
+    moduleId: string;
+    name: string;
+    description: string | null;
+    example: string | null;
+    required: boolean;
+    public: boolean;
+  }[];
+  isConfigured: boolean;
+  isEnabled?: boolean;
+};
+
+export async function listModules(
+  chatId?: string,
+): Promise<ModuleWithRequirements[]> {
   "use server";
 
+  // Use a placeholder user ID until authentication is implemented
+  const userId = STACKAUTHID;
+
+  // Get all modules ordered by priority
   const modules = await db
     .select()
     .from(freestyleModulesTable)
     .orderBy(desc(freestyleModulesTable.priority));
 
-  return modules;
+  // For each module, get its environment variable requirements and check if it's configured
+  const modulesWithRequirements = await Promise.all(
+    modules.map(async (module) => {
+      const environmentVariableRequirements = await db
+        .select()
+        .from(freestyleModulesEnvironmentVariableRequirementsTable)
+        .where(
+          eq(
+            freestyleModulesEnvironmentVariableRequirementsTable.moduleId,
+            module.id,
+          ),
+        );
+
+      // Get existing configurations for this module and user
+      const configurations = await db
+        .select()
+        .from(freestyleModulesConfigurationsTable)
+        .innerJoin(
+          freestyleModulesEnvironmentVariableRequirementsTable,
+          eq(
+            freestyleModulesConfigurationsTable.environmentVariableId,
+            freestyleModulesEnvironmentVariableRequirementsTable.id,
+          ),
+        )
+        .where(
+          and(
+            eq(
+              freestyleModulesEnvironmentVariableRequirementsTable.moduleId,
+              module.id,
+            ),
+            eq(freestyleModulesConfigurationsTable.userId, userId),
+          ),
+        );
+
+      // Determine if module is configured
+      const isConfigured = determineIfModuleIsConfigured(
+        environmentVariableRequirements,
+        configurations.map((config) => ({
+          environmentVariableRequirementId:
+            config.FreestyleModulesEnvironmentVariableRequirements.id,
+          value: config.FreestyleModulesConfigurations.value,
+        })),
+      );
+
+      // If chatId is provided, check if the module is enabled for this chat
+      let isEnabled = undefined;
+      if (chatId) {
+        const enabledEntry = await db
+          .select()
+          .from(chatModulesEnabledTable)
+          .where(
+            and(
+              eq(chatModulesEnabledTable.chatId, chatId),
+              eq(chatModulesEnabledTable.moduleId, module.id),
+            ),
+          )
+          .then((rows) => rows[0]);
+
+        // If there's an entry, use its enabled state, otherwise default to true for configured modules
+        isEnabled = enabledEntry ? enabledEntry.enabled : isConfigured;
+      }
+
+      return {
+        ...module,
+        environmentVariableRequirements,
+        isConfigured,
+        isEnabled,
+      };
+    }),
+  );
+
+  return modulesWithRequirements;
+}
+
+// Helper function to determine if a module is configured
+function determineIfModuleIsConfigured(
+  requirements: {
+    id: string;
+    required: boolean;
+  }[],
+  configurations: {
+    environmentVariableRequirementId: string;
+    value: string;
+  }[],
+): boolean {
+  const hasRequiredConfigs = requirements.some((req) => req.required);
+
+  if (hasRequiredConfigs) {
+    // If the module has required configs, check that all required ones are filled
+    return requirements
+      .filter((req) => req.required)
+      .every((req) => {
+        const config = configurations.find(
+          (c) => c.environmentVariableRequirementId === req.id,
+        );
+        return config && config.value.trim() !== "";
+      });
+  } else {
+    // If no required configs, then it's configured if any config exists
+    return configurations.length > 0;
+  }
 }

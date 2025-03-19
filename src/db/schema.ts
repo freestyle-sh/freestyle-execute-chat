@@ -46,7 +46,7 @@ export const messagesTable = pgTable(
   (table) => [
     // speed up lookups by chatId
     index().on(table.chatId),
-  ]
+  ],
 );
 
 export type Message = InferSelectModel<typeof messagesTable> & SdkMessage;
@@ -91,9 +91,11 @@ export const freestyleModulesEnvironmentVariableRequirementsTable = pgTable(
   "FreestyleModulesEnvironmentVariableRequirements",
   {
     id: uuid("id").primaryKey().notNull().defaultRandom(),
-    moduleId: uuid("moduleId").references(() => freestyleModulesTable.id, {
-      onDelete: "cascade",
-    }),
+    moduleId: uuid("moduleId")
+      .notNull()
+      .references(() => freestyleModulesTable.id, {
+        onDelete: "cascade",
+      }),
     name: varchar("name", { length: 256 }).notNull(),
     description: text("description"),
     example: text("example"),
@@ -103,25 +105,50 @@ export const freestyleModulesEnvironmentVariableRequirementsTable = pgTable(
   (table) => [
     // speed up lookups by moduleId
     index().on(table.moduleId),
-  ]
+  ],
 );
 
 export const freestyleModulesConfigurationsTable = pgTable(
   "FreestyleModulesConfigurations",
   {
-    userId: uuid("userId").references(() => usersTable.id, {
-      onDelete: "cascade",
-    }),
-    environmentVariableId: uuid("environmentVariableId").references(
-      () => freestyleModulesEnvironmentVariableRequirementsTable.id,
-      {
+    userId: uuid("userId")
+      .notNull()
+      .references(() => usersTable.id, {
         onDelete: "cascade",
-      }
-    ),
+      }),
+    environmentVariableId: uuid("environmentVariableId")
+      .notNull()
+      .references(
+        () => freestyleModulesEnvironmentVariableRequirementsTable.id,
+        {
+          onDelete: "cascade",
+        },
+      ),
     value: text("value").notNull(),
   },
   (table) => [
     primaryKey({ columns: [table.userId, table.environmentVariableId] }),
     index().on(table.userId),
-  ]
+  ],
+);
+
+export const chatModulesEnabledTable = pgTable(
+  "ChatModulesEnabled",
+  {
+    chatId: uuid("chatId")
+      .notNull()
+      .references(() => chatsTable.id, {
+        onDelete: "cascade",
+      }),
+    moduleId: uuid("moduleId")
+      .notNull()
+      .references(() => freestyleModulesTable.id, {
+        onDelete: "cascade",
+      }),
+    enabled: boolean("enabled").notNull().default(true),
+  },
+  (table) => [
+    primaryKey({ columns: [table.chatId, table.moduleId] }),
+    index().on(table.chatId),
+  ],
 );
