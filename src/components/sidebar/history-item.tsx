@@ -178,7 +178,12 @@ export function SidebarHistoryItem({
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setIsRenaming(true)}>
+            <DropdownMenuItem
+              onClick={() => {
+                setNewName(title);
+                setIsRenaming(true);
+              }}
+            >
               <PenIcon className="mr-2 h-4 w-4" />
               <span>Rename</span>
             </DropdownMenuItem>
