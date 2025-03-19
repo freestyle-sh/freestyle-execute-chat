@@ -1,5 +1,6 @@
 import { db } from "@/db";
 import { messagesTable } from "@/db/schema";
+import { maybeUpdateChatTitle } from "@/lib/actions/create-chat";
 import { claudeSonnetModel } from "@/lib/model";
 import { type Message, streamText } from "ai";
 import { executeTool } from "freestyle-sandboxes/ai";
@@ -28,6 +29,10 @@ export async function POST(request: Request) {
       chatId,
     });
   }
+
+  maybeUpdateChatTitle(chatId).catch((error) =>
+    console.error("Failed to update chat title:", error),
+  );
 
   console.log("JSON", json, "CHAT ID", chatId);
 

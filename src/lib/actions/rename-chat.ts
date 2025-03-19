@@ -12,3 +12,4 @@ export async function renameChat(id: string, newName: string) {
     .set({ name: newName })
     .where(eq(chatsTable.id, id));
 }
+
