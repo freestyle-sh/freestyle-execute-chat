@@ -7,7 +7,10 @@ import { toast } from "sonner";
 import { SettingsSection } from "@/components/settings";
 import { ModuleConfigDrawer } from "@/components/module-config";
 import { ModuleIcon } from "@/components/module-icon";
-import { listModules, type ModuleWithConfig } from "@/lib/actions/list-modules";
+import {
+  listModules,
+  type ModuleWithRequirements,
+} from "@/lib/actions/list-modules";
 import { Skeleton } from "@/components/ui/skeleton";
 
 async function saveModuleConfiguration(
@@ -34,7 +37,11 @@ async function saveModuleConfiguration(
   }
 }
 
-export function ModulesSettings() {
+interface ModulesSettingsProps {
+  moduleToOpen?: string | null;
+}
+
+export function ModulesSettings({ moduleToOpen }: ModulesSettingsProps = {}) {
   const queryClient = useQueryClient();
 
   // We only need basic module info and their requirements
@@ -58,8 +65,8 @@ export function ModulesSettings() {
     }) => saveModuleConfiguration(moduleId, configs),
     onSuccess: (_, variables) => {
       // Invalidate the specific module config that was updated
-      queryClient.invalidateQueries({ 
-        queryKey: ['moduleConfig', variables.moduleId] 
+      queryClient.invalidateQueries({
+        queryKey: ["moduleConfig", variables.moduleId],
       });
     },
   });
@@ -158,6 +165,7 @@ export function ModulesSettings() {
                 <ModuleConfigDrawer
                   module={module}
                   onConfigSave={handleConfigSave}
+                  defaultOpen={moduleToOpen === module.id}
                 />
               ) : (
                 <div className="text-xs text-muted-foreground italic">
@@ -171,4 +179,3 @@ export function ModulesSettings() {
     </SettingsSection>
   );
 }
-
