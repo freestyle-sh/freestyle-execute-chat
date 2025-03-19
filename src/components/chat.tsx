@@ -220,7 +220,6 @@ export function ChatUI(props: {
           input={input}
           handleValueChange={handleInputChange}
           isLoading={status === "streaming" || status === "submitted"}
-          modules={modules}
         />
       </div>
     </div>
@@ -274,15 +273,14 @@ export function PromptInputBasic(props: {
                   backgroundColor: `#${module.color}35`,
                 }}
               >
-                <img
-                  src={`data:image/svg+xml;base64,${btoa(module.svg)}`}
-                  alt={module.name}
-                  className={cn(
-                    "w-4 h-4 mr-1.5 object-contain fill-red stroke-red text-red"
-                  )}
+                <div
+                  // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
+                  dangerouslySetInnerHTML={{
+                    __html: module.svg,
+                  }}
+                  className={cn("w-4 h-4 mr-1.5 object-contain")}
                   style={{
-                    stroke: `#${module.color}`,
-                    color: `#${module.color}`,
+                    fill: `#${module.color}`,
                   }}
                 />
 
@@ -366,10 +364,15 @@ export function PromptInputBasic(props: {
                     transition={{ duration: 0.2, delay: 0.1 + index * 0.02 }}
                     className="bg-sidebar inline-flex items-center px-3 py-1.5 rounded-2xl border border-border/20 shadow-sm cursor-pointer hover:shadow-md transition-all text-xs active:scale-95"
                   >
-                    <img
-                      src={module.svg}
-                      alt={module.name}
+                    <div
+                      // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
+                      dangerouslySetInnerHTML={{
+                        __html: module.svg,
+                      }}
                       className="w-4 h-4 mr-1.5 object-contain opacity-70"
+                      style={{
+                        fill: `#${module.color}`,
+                      }}
                     />
                     <span className="opacity-70">{module.name}</span>
                   </motion.div>
