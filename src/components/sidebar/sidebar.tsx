@@ -1,3 +1,5 @@
+"use client";
+
 import { SettingsIcon } from "lucide-react";
 import Link from "next/link";
 
@@ -13,11 +15,22 @@ import { SidebarToggleButton } from "./toggle-button";
 import Logo from "../logo";
 import { SidebarHistory } from "./history";
 import { SidebarCreateChat } from "./create-chat-button";
+import { useSidebarStore, useSidebarInit } from "@/lib/stores/sidebar";
 
 export function ChatSidebar() {
+  const { openMobile, setOpenMobile } = useSidebarStore();
+
+  // Initialize sidebar with mobile closed on mount
+  useSidebarInit();
+
   return (
-    <Sidebar collapsible="icon" className="transition-all duration-300">
-      <SidebarHeader className="border-b border-sidebar-border pb-2">
+    <Sidebar
+      collapsible="icon"
+      className="transition-all duration-300"
+      openMobile={openMobile}
+      onOpenChangeMobile={setOpenMobile}
+    >
+      <SidebarHeader className="border-b border-sidebar-border pb-2 h-12">
         <Link href={"/"}>
           <Logo className="stroke-primary" />
         </Link>

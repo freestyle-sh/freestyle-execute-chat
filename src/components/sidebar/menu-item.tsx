@@ -13,7 +13,7 @@ interface SidebarMenuItemProps {
   className?: string;
 }
 
-export async function SidebarMenuLinkItem({
+export function SidebarMenuLinkItem({
   href,
   icon: Icon,
   label,

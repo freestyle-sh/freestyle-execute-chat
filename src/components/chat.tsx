@@ -26,38 +26,29 @@ import { useRouter } from "next/navigation";
 import { ChatContainer } from "./ui/chat-container";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { chatExists } from "@/lib/actions/check-chat";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useSidebarStore } from "@/lib/stores/sidebar";
 import { listModules } from "@/lib/actions/list-modules";
 
-function MobileHeader({
-  title,
-  className,
-}: {
-  title: string;
-  className?: string;
-}) {
-  const { toggle } = useSidebarStore();
+const MobileHeader = ({ title }: { title: string }) => {
+  const { toggleMobile } = useSidebarStore();
 
   return (
-    <div
-      className={cn(
-        "h-14 w-full border-b flex items-center justify-between px-4",
-        className
-      )}
-    >
-      <h1 className="font-medium text-lg truncate">{title}</h1>
+    <div className="h-12 w-full border-b items-center justify-between px-4 sticky top-0 z-10 bg-background/90 backdrop-blur-sm hidden max-md:flex">
       <Button
         variant="ghost"
         size="icon"
-        onClick={toggle}
+        onClick={toggleMobile}
         aria-label="Toggle Sidebar"
       >
         <MenuIcon className="h-5 w-5" />
       </Button>
+      <h1 className="font-medium  truncate absolute left-1/2 -translate-x-1/2">
+        {title}
+      </h1>
+      <div className="w-10"></div> {/* Spacer to balance the layout */}
     </div>
   );
-}
+};
 
 export function ChatUI(props: {
   chatId: string;
@@ -69,8 +60,6 @@ export function ChatUI(props: {
   const router = useRouter();
   const queryClient = useQueryClient();
   const hasRunRef = useRef(false);
-  const isMobile = useIsMobile();
-  const { isOpen } = useSidebarStore();
   const [chatTitle, setChatTitle] = useState<string>("New Chat");
 
   const { data: exists = true } = useQuery({
@@ -137,11 +126,9 @@ export function ChatUI(props: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Show header in mobile view when sidebar is closed
-  const showMobileHeader = isMobile && !isOpen;
-
   return (
     <div className="flex flex-col h-svh">
+      <MobileHeader title={chatTitle} />
       <ChatContainer
         autoScroll
         className={cn(
