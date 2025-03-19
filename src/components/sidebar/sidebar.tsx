@@ -1,6 +1,6 @@
 "use client";
 
-import { SettingsIcon } from "lucide-react";
+import { SettingsIcon, GithubIcon } from "lucide-react";
 import Link from "next/link";
 
 import {
@@ -16,6 +16,7 @@ import Logo from "../logo";
 import { SidebarHistory } from "./history";
 import { SidebarCreateChat } from "./create-chat-button";
 import { useSidebarStore, useSidebarInit } from "@/lib/stores/sidebar";
+import { siGithub } from "simple-icons";
 
 export function ChatSidebar() {
   const { openMobile, setOpenMobile } = useSidebarStore();
@@ -41,6 +42,11 @@ export function ChatSidebar() {
       </SidebarContent>
       <SidebarFooter className="border-t border-sidebar-border pt-2">
         <SidebarMenu>
+          <SidebarMenuLinkItem
+            href="https://github.com/freestyle-sh/freestyle-execute-chat"
+            label="Github"
+            icon={GithubIcon}
+          />
           <SidebarMenuLinkItem
             href="/settings"
             icon={SettingsIcon}
