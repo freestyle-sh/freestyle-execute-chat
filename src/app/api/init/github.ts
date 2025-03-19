@@ -13,7 +13,7 @@ export default async function initGithub() {
       name: "github",
       svg: siGithub.svg,
       lightModeColor: siGithub.hex,
-      darkModeColor: siGithub.hex,
+      darkModeColor: "ffffff",
       nodeModules: {
         octokit: "4.1.0",
       },
