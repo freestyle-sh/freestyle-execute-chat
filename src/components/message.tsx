@@ -27,7 +27,7 @@ export function UserMessage({ message }: { message: UIMessage }) {
   return (
     <>
       {message.parts.map((part, index) => (
-        <Message shadow-sm
+        <Message
           key={`msg-${message.id}-part-${index.toString()}`}
           className="justify-end animate-slide-in-right"
         >
