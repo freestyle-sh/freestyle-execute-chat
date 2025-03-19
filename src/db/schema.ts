@@ -42,23 +42,6 @@ export const messagesTable = pgTable("Messages", {
 
 export type Message = InferSelectModel<typeof messagesTable> & SdkMessage;
 
-export const moduleConfig = pgTable("ModuleConfig", {
-  id: uuid("id").primaryKey().notNull().defaultRandom(),
-  moduleId: varchar("moduleId", { length: 64 }).notNull(),
-  userId: uuid("userId").references(() => usersTable.id),
-  enabled: boolean("enabled").default(false).notNull(),
-  envVars: json("envVars").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-});
-
-export type ModuleConfig = Omit<
-  InferSelectModel<typeof moduleConfig>,
-  "envVars"
-> & {
-  envVars: Record<string, string>;
-};
-
 export const userFormResponse = pgTable("UserFormResponse", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   chatId: uuid("chatId")
