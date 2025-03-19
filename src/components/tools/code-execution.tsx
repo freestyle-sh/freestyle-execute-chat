@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { ToolInvocation } from "ai";
+import type { ToolInvocation } from "ai";
 import { Terminal } from "lucide-react";
 import { ToolOutput, ToolOutputBadge } from "@/components/ui/tool-output";
 
@@ -29,32 +29,44 @@ export const CodeExecution = ({ execution, className }: CodeExecutionProps) => {
   // Extract script and result, handling both custom format and ToolInvocation
   let script: string | undefined;
   let result: ExecutionResult | undefined;
-  
-  if ('args' in execution && execution.args.script) {
+
+  if ("args" in execution && execution.args.script) {
     script = execution.args.script;
-  } else if ('input' in execution && typeof execution.input === 'object' && execution.input) {
+  } else if (
+    "input" in execution &&
+    typeof execution.input === "object" &&
+    execution.input
+  ) {
     // Handle tool invocation format
     const input = execution.input as Record<string, unknown>;
-    if ('script' in input && typeof input.script === 'string') {
+    if ("script" in input && typeof input.script === "string") {
       script = input.script;
     }
   }
-  
-  if ('result' in execution) {
+
+  if ("result" in execution) {
     result = execution.result;
-  } else if ('output' in execution && execution.output) {
+  } else if ("output" in execution && execution.output) {
     result = execution.output as ExecutionResult;
   }
 
   // Determine badge text and variant based on result
-  let badgeText = "JavaScript";
-  let badgeVariant: "default" | "success" | "error" | "pending" | "info" | "warning" = "info";
+  const badgeText = "JavaScript";
+  const badgeVariant:
+    | "default"
+    | "success"
+    | "error"
+    | "pending"
+    | "info"
+    | "warning" = "info";
 
   return (
     <ToolOutput
       title="Code Execution"
       icon={Terminal}
-      badge={<ToolOutputBadge variant={badgeVariant}>{badgeText}</ToolOutputBadge>}
+      badge={
+        <ToolOutputBadge variant={badgeVariant}>{badgeText}</ToolOutputBadge>
+      }
       input={script}
       result={result}
       inputLanguage="javascript"
@@ -62,3 +74,4 @@ export const CodeExecution = ({ execution, className }: CodeExecutionProps) => {
     />
   );
 };
+
