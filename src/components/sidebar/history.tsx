@@ -8,6 +8,7 @@ import { SidebarMenuItem, SidebarMenuSkeleton } from "../ui/sidebar";
 import ClientOnly from "../client-only";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronDownIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function SidebarHistory() {
   const { data: chats = [], isLoading } = useQuery({
@@ -57,14 +58,17 @@ export function SidebarHistory() {
             ))}
       </div>
       {/* Scroll indicator */}
-      {hasMoreBelow && (
-        <div className="absolute bottom-0 inset-x-0 flex justify-center pointer-events-none">
-          <div className="bg-gradient-to-t from-sidebar h-8 w-full absolute bottom-0 opacity-70" />
-          <div className="h-8 flex items-center justify-center text-muted-foreground z-10">
-            <ChevronDownIcon className="h-4 w-4 opacity-70" />
-          </div>
+      <div className="absolute bottom-0 inset-x-0 flex justify-center pointer-events-none">
+        <div className="bg-gradient-to-t from-sidebar h-8 w-full absolute bottom-0 opacity-70" />
+        <div className="h-8 flex items-center justify-center text-muted-foreground z-10">
+          <ChevronDownIcon
+            className={cn(
+              "h-4 w-4 transition-opacity duration-200",
+              hasMoreBelow ? "opacity-70" : "opacity-0",
+            )}
+          />
         </div>
-      )}
+      </div>
     </SidebarSection>
   );
 }
