@@ -1,7 +1,7 @@
 import * as React from "react";
 import type { SVGProps } from "react";
 
-export default function SvgComponent({
+export default function LogoComponent({
   size = 24,
   ...props
 }: {

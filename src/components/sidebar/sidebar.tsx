@@ -13,7 +13,6 @@ import { SidebarToggleButton } from "./toggle-button";
 import Logo from "../logo";
 import { SidebarHistory } from "./history";
 import { SidebarCreateChat } from "./create-chat-button";
-import ClientOnly from "../client-only";
 
 export function ChatSidebar() {
   return (

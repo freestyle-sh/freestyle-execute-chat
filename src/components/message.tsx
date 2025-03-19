@@ -1,5 +1,6 @@
 "use client";
 
+import LogoComponent from "./logo";
 import { CodeExecution } from "./tools/code-execution";
 import { SendFeedback } from "./tools/send-feedback";
 // import type { Components } from "react-markdown";
@@ -50,12 +51,15 @@ export function AIMessage({ message }: { message: UIMessage }) {
           className="justify-start animate-slide-up max-w-[85%]"
         >
           {index === 0 && (
-            <MessageAvatar
-              src="/avatars/ai.png"
-              alt="AI"
-              fallback="AI"
-              className="mt-1"
-            />
+            // <MessageAvatar
+            //   src="/avatars/ai.png"
+            //   alt="AI"
+            //   fallback="AI"
+            //   className="mt-1"
+            // />
+            <div className="size-9 bg-primary/5 border rounded-full aspect-square flex items-center justify-center">
+              <LogoComponent className=" size-6 stroke-primary" />
+            </div>
           )}
           {index !== 0 && <div className="w-8" />} {/* Spacing for alignment */}
           {part.type === "text" && (
