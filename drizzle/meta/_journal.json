@@ -50,6 +50,13 @@
       "when": 1742360084956,
       "tag": "0006_striped_rhino",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1742360185044,
+      "tag": "0007_keen_magdalene",
+      "breakpoints": true
     }
   ]
 }

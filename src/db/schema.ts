@@ -78,7 +78,7 @@ export const freestyleModulesTable = pgTable("FreestyleModules", {
   example: text("example").notNull(),
   svg: text("svg").notNull(),
   color: varchar("color", { length: 16 }).notNull(),
-  createdAt: timestamp("created_at").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
   priority: integer("priority").notNull().default(0),
   setupInstructions: text("setup_instructions"),
   documentation: text("documentation"),
