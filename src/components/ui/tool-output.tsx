@@ -20,6 +20,7 @@ import {
   Check,
 } from "lucide-react";
 import { type HTMLAttributes, type ReactNode, useState } from "react";
+import { toast } from "sonner";
 
 export type ToolResult = {
   _type: "success" | "error" | "pending";
@@ -72,6 +73,7 @@ const CopyButton = ({
     onClick();
     setHasCopied(true);
 
+    toast("Copied to clipboard");
     // Reset after 2 seconds
     setTimeout(() => {
       setHasCopied(false);
@@ -135,7 +137,7 @@ export const ToolOutput = ({
       const inputObj = toolInvocation.input as Record<string, unknown>;
       // Find first string property to use as input
       const firstStringProp = Object.entries(inputObj).find(
-        ([_, value]) => typeof value === "string",
+        ([_, value]) => typeof value === "string"
       );
       if (firstStringProp) {
         processedInput = firstStringProp[1] as string;
@@ -256,11 +258,11 @@ export const ToolOutput = ({
             isSuccess
               ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/30"
               : isError
-                ? "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30"
-                : isPending
-                  ? "border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950/30"
-                  : "",
-            "transition-colors duration-200",
+              ? "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30"
+              : isPending
+              ? "border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950/30"
+              : "",
+            "transition-colors duration-200"
           )}
         >
           {/* Result Header */}
@@ -363,7 +365,7 @@ export const ToolOutputBadge = ({
           "bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300",
         variant === "default" &&
           "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
-        className,
+        className
       )}
       {...props}
     >
@@ -371,4 +373,3 @@ export const ToolOutputBadge = ({
     </span>
   );
 };
-
