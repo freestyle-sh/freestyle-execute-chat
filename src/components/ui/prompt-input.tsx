@@ -79,7 +79,7 @@ function PromptInput({
           onSubmit,
         }}
       >
-        <div className="flex flex-col">
+        <div className="flex flex-col w-full">
           <div
             className={cn(
               "border-input bg-background rounded-3xl border focus-within:shadow-lg transition-all duration-200 focus-within:border-primary/30",
