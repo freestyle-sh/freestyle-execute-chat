@@ -33,6 +33,7 @@ import {
   type ModuleWithRequirements,
 } from "@/lib/actions/list-modules";
 import { capitalize } from "@/lib/typography";
+import { Skeleton } from "./ui/skeleton";
 
 const MobileHeader = ({ title }: { title: string }) => {
   const { toggleMobile } = useSidebarStore();
@@ -50,7 +51,7 @@ const MobileHeader = ({ title }: { title: string }) => {
       <h1 className="font-medium  truncate absolute left-1/2 -translate-x-1/2">
         {title}
       </h1>
-      <div className="w-10"></div> {/* Spacer to balance the layout */}
+      <div className="w-10" />
     </div>
   );
 };
@@ -82,7 +83,7 @@ export function ChatUI(props: {
   useEffect(() => {
     if (props.initialMessages.length > 0) {
       const firstUserMessage = props.initialMessages.find(
-        (msg) => msg.role === "user"
+        (msg) => msg.role === "user",
       );
       if (firstUserMessage?.content) {
         // Create a title from the first ~25 chars of the first message
@@ -138,7 +139,7 @@ export function ChatUI(props: {
         autoScroll
         className={cn(
           "w-full flex-1 max-w-3xl mx-auto flex flex-col gap-4 pb-2",
-          "overflow-scroll py-4 scrollbar-none"
+          "overflow-scroll py-4 scrollbar-none",
         )}
       >
         {messages.length === 0 ? (
@@ -160,7 +161,7 @@ export function ChatUI(props: {
             event?: {
               preventDefault?: () => void;
             },
-            chatRequestOptions?: ChatRequestOptions
+            chatRequestOptions?: ChatRequestOptions,
           ) => {
             handleSubmit(event, chatRequestOptions);
 
@@ -182,12 +183,12 @@ export function PromptInputBasic(props: {
     event?: {
       preventDefault?: () => void;
     },
-    chatRequestOptions?: ChatRequestOptions
+    chatRequestOptions?: ChatRequestOptions,
   ) => void;
   input: string;
   isLoading: boolean;
   handleValueChange: (
-    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>
+    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
   ) => void;
   chatId?: string; // Make chatId optional for homepage usage
 }) {
@@ -200,7 +201,7 @@ export function PromptInputBasic(props: {
   const { selectedModules, toggleModule } = useModulesStore();
 
   // Fetch modules for both scenarios - only difference is chatId for enabled status
-  const { data: modules = [] } = useQuery({
+  const { data: modules = [], isLoading: isLoadingModules } = useQuery({
     queryKey: ["modules", props.chatId || "homepage"],
     queryFn: () => listModules(props.chatId),
   });
@@ -257,7 +258,7 @@ export function PromptInputBasic(props: {
             }
             return module;
           });
-        }
+        },
       );
 
       return { previousModules };
@@ -267,7 +268,7 @@ export function PromptInputBasic(props: {
       if (context?.previousModules) {
         queryClient.setQueryData(
           ["modules", props.chatId],
-          context.previousModules
+          context.previousModules,
         );
       }
     },
@@ -306,18 +307,56 @@ export function PromptInputBasic(props: {
       <div className="flex flex-col justify-between mb-2">
         <div className="flex justify-between">
           <div className="flex flex-wrap gap-2 items-center">
-            {props.chatId
-              ? // Show modules from the database for persisted chats
-                modules
-                  .filter((module) => module.isConfigured)
-                  .map((module, index) => (
+            {isLoadingModules ? (
+              // Loading skeleton state with exact same styles as actual pills
+              <>
+                <div className="inline-flex items-center px-3 py-1.5 rounded-2xl border transition-all text-xs opacity-70 bg-muted/30">
+                  <Skeleton className="w-4 h-4 mr-1.5 rounded-sm" />
+                  <Skeleton className="w-16 h-3.5" />
+                </div>
+                <div className="inline-flex items-center px-3 py-1.5 rounded-2xl border transition-all text-xs opacity-70 bg-muted/30">
+                  <Skeleton className="w-4 h-4 mr-1.5 rounded-sm" />
+                  <Skeleton className="w-20 h-3.5" />
+                </div>
+                <div className="inline-flex items-center px-3 py-1.5 rounded-2xl border transition-all text-xs opacity-70 bg-muted/30">
+                  <Skeleton className="w-4 h-4 mr-1.5 rounded-sm" />
+                  <Skeleton className="w-14 h-3.5" />
+                </div>
+              </>
+            ) : props.chatId ? (
+              // Show modules from the database for persisted chats
+              modules
+                .filter((module) => module.isConfigured)
+                .map((module, index) => (
+                  <button
+                    type="button"
+                    key={`enabled-${index.toString()}`}
+                    className={cn(
+                      "inline-flex items-center px-3 py-1.5 rounded-2xl border cursor-pointer transition-all text-xs active:scale-95",
+                      module.isEnabled === false
+                        ? "opacity-50 bg-muted/30"
+                        : "module-bg",
+                    )}
+                    style={
+                      {
+                        "--module-light": `#${module.lightModeColor}`,
+                        "--module-dark": `#${module.darkModeColor}`,
+                      } as React.CSSProperties
+                    }
+                    onClick={() =>
+                      handleToggleModule(module.id, module.isEnabled)
+                    }
+                  >
                     <div
-                      key={`enabled-${index.toString()}`}
+                      // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
+                      dangerouslySetInnerHTML={{
+                        __html: module.svg,
+                      }}
                       className={cn(
-                        "inline-flex items-center px-3 py-1.5 rounded-2xl border cursor-pointer transition-all text-xs active:scale-95",
+                        "w-4 h-4 mr-1.5 object-contain",
                         module.isEnabled === false
-                          ? "opacity-50 bg-muted/30"
-                          : "module-bg"
+                          ? "opacity-50"
+                          : "module-fill",
                       )}
                       style={
                         {
@@ -325,9 +364,37 @@ export function PromptInputBasic(props: {
                           "--module-dark": `#${module.darkModeColor}`,
                         } as React.CSSProperties
                       }
-                      onClick={() =>
-                        handleToggleModule(module.id, module.isEnabled)
+                    />
+
+                    <span>{capitalize(module.name)}</span>
+                  </button>
+                ))
+            ) : (
+              // Show modules from store for homepage (non-persisted) chat
+              modules
+                .filter((module) => module.isConfigured)
+                .map((module, index) => {
+                  // Check if this module exists in the store
+                  const moduleState = selectedModules[module.id];
+                  const isEnabled = moduleState?.enabled;
+
+                  return (
+                    <button
+                      type="button"
+                      key={`homepage-${index.toString()}`}
+                      className={cn(
+                        "inline-flex items-center px-3 py-1.5 rounded-2xl border cursor-pointer transition-all text-xs active:scale-95",
+                        isEnabled === false || isEnabled === undefined
+                          ? "opacity-50 bg-muted/30"
+                          : "module-bg",
+                      )}
+                      style={
+                        {
+                          "--module-light": `#${module.lightModeColor}`,
+                          "--module-dark": `#${module.darkModeColor}`,
+                        } as React.CSSProperties
                       }
+                      onClick={() => handleToggleModule(module.id, isEnabled)}
                     >
                       <div
                         // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
@@ -336,9 +403,9 @@ export function PromptInputBasic(props: {
                         }}
                         className={cn(
                           "w-4 h-4 mr-1.5 object-contain",
-                          module.isEnabled === false
+                          isEnabled === false || isEnabled === undefined
                             ? "opacity-50"
-                            : "module-fill"
+                            : "module-fill",
                         )}
                         style={
                           {
@@ -349,92 +416,53 @@ export function PromptInputBasic(props: {
                       />
 
                       <span>{capitalize(module.name)}</span>
-                    </div>
-                  ))
-              : // Show modules from store for homepage (non-persisted) chat
-                modules
-                  .filter((module) => module.isConfigured)
-                  .map((module, index) => {
-                    // Check if this module exists in the store
-                    const moduleState = selectedModules[module.id];
-                    const isEnabled = moduleState?.enabled;
-
-                    return (
-                      <div
-                        key={`homepage-${index.toString()}`}
-                        className={cn(
-                          "inline-flex items-center px-3 py-1.5 rounded-2xl border cursor-pointer transition-all text-xs active:scale-95",
-                          isEnabled === false || isEnabled === undefined
-                            ? "opacity-50 bg-muted/30"
-                            : "module-bg"
-                        )}
-                        style={
-                          {
-                            "--module-light": `#${module.lightModeColor}`,
-                            "--module-dark": `#${module.darkModeColor}`,
-                          } as React.CSSProperties
-                        }
-                        onClick={() => handleToggleModule(module.id, isEnabled)}
-                      >
-                        <div
-                          // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
-                          dangerouslySetInnerHTML={{
-                            __html: module.svg,
-                          }}
-                          className={cn(
-                            "w-4 h-4 mr-1.5 object-contain",
-                            isEnabled === false || isEnabled === undefined
-                              ? "opacity-50"
-                              : "module-fill"
-                          )}
-                          style={
-                            {
-                              "--module-light": `#${module.lightModeColor}`,
-                              "--module-dark": `#${module.darkModeColor}`,
-                            } as React.CSSProperties
-                          }
-                        />
-
-                        <span>{capitalize(module.name)}</span>
-                      </div>
-                    );
-                  })}
+                    </button>
+                  );
+                })
+            )}
           </div>
           <div>
-            {modules.filter((module) => !module.isConfigured).length > 0 && (
-              <motion.button
-                onClick={() => {
-                  setIsModuleTrayOpen(!isModuleTrayOpen);
-                }}
-                className={cn(
-                  "inline-flex items-center gap-0.5 px-3 py-1.5 cursor-pointer text-xs hover:text-foreground rounded-2xl border border-border/20 hover:bg-muted/10",
-                  isModuleTrayOpen
-                    ? "text-foreground bg-muted/10"
-                    : "text-muted-foreground"
-                )}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
-                transition={{ duration: 0.2 }}
-              >
-                <span>more</span>
-                <motion.svg
-                  animate={{ rotate: isModuleTrayOpen ? 180 : 0 }}
+            {isLoadingModules ? (
+              // Skeleton for "more" button with exact same styles
+              <div className="inline-flex items-center gap-0.5 px-3 py-1.5 rounded-2xl border border-border/20 opacity-70">
+                <Skeleton className="w-10 h-3.5" />
+              </div>
+            ) : (
+              modules.filter((module) => !module.isConfigured).length > 0 && (
+                <motion.button
+                  onClick={() => {
+                    setIsModuleTrayOpen(!isModuleTrayOpen);
+                  }}
+                  className={cn(
+                    "inline-flex items-center gap-0.5 px-3 py-1.5 cursor-pointer text-xs hover:text-foreground rounded-2xl border border-border/20 hover:bg-muted/10",
+                    isModuleTrayOpen
+                      ? "text-foreground bg-muted/10"
+                      : "text-muted-foreground",
+                  )}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
                   transition={{ duration: 0.2 }}
-                  className="w-3 h-3"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
                 >
-                  <title>Expand</title>
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M5 15l7-7 7 7"
-                  />
-                </motion.svg>
-              </motion.button>
+                  <span>more</span>
+                  <motion.svg
+                    animate={{ rotate: isModuleTrayOpen ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="w-3 h-3"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <title>Expand</title>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 15l7-7 7 7"
+                    />
+                  </motion.svg>
+                </motion.button>
+              )
             )}
           </div>
         </div>
@@ -521,7 +549,7 @@ export function PromptInputBasic(props: {
             size="default"
             className={cn(
               props.isLoading ? "w-8" : "w-14",
-              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out hover:bg-primary/90"
+              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out hover:bg-primary/90",
             )}
             onClick={props.handleSubmit}
           >
