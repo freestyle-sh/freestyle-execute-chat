@@ -108,8 +108,9 @@ export async function listModules(
           )
           .then((rows) => rows[0]);
 
-        // If there's an entry, use its enabled state, otherwise default to true for configured modules
-        isEnabled = enabledEntry ? enabledEntry.enabled : isConfigured;
+        // If there's an entry, use its enabled state, otherwise default to false (not enabled)
+        // This ensures only explicitly enabled modules are active
+        isEnabled = enabledEntry ? enabledEntry.enabled : false;
       }
 
       return {
