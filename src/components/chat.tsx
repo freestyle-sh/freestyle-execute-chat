@@ -56,21 +56,23 @@ const MobileHeader = ({ title }: { title: string }) => {
   );
 };
 
-export function ChatUI(props: {
+export function ChatUI({
+  chatId,
+  initialMessages,
+  respond,
+}: {
   chatId: string;
   initialMessages: Message[];
   respond: boolean;
 }) {
-  // Define module status: enabled, disabled, or unconfigured with branding
-
   const router = useRouter();
   const queryClient = useQueryClient();
   const hasRunRef = useRef(false);
   const [chatTitle, setChatTitle] = useState<string>("New Chat");
 
   const { data: exists = true } = useQuery({
-    queryKey: ["chats", props.chatId],
-    queryFn: () => chatExists(props.chatId),
+    queryKey: ["chats", chatId],
+    queryFn: () => chatExists(chatId),
   });
 
   useEffect(() => {
@@ -81,8 +83,8 @@ export function ChatUI(props: {
 
   // Get chat title from the first user message, if available
   useEffect(() => {
-    if (props.initialMessages.length > 0) {
-      const firstUserMessage = props.initialMessages.find(
+    if (initialMessages.length > 0) {
+      const firstUserMessage = initialMessages.find(
         (msg) => msg.role === "user",
       );
       if (firstUserMessage?.content) {
@@ -91,46 +93,41 @@ export function ChatUI(props: {
         setChatTitle(title + (title.length >= 25 ? "..." : ""));
       }
     }
-  }, [props.initialMessages]);
+  }, [initialMessages]);
 
   const { messages, input, handleInputChange, handleSubmit, status, reload } =
     useChat({
-      initialMessages: props.initialMessages,
+      initialMessages,
       fetch: async (req, init) => {
         return fetch(req, {
           ...init,
           headers: {
             ...init?.headers,
-            "chat-id": props.chatId,
+            "chat-id": chatId,
             "allow-first-message":
-              props.initialMessages.length >= 1 ? "false" : "true",
+              initialMessages.length >= 1 ? "false" : "true",
           },
         });
       },
       onFinish: async (message) => {
         console.log("onFinish", message);
 
-        await insertMessage(props.chatId, message);
+        await insertMessage(chatId, message);
 
         // Invalidate chats list to update sidebar history order
         queryClient.invalidateQueries({ queryKey: ["chats"] });
       },
     });
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: it's ok
   useEffect(() => {
     if (hasRunRef.current) return; // already ran
     hasRunRef.current = true;
-    async function r() {
-      if (props.respond && messages[messages.length - 1]?.role === "user") {
-        // remove the ?respond query param
-        router.push(`/chat/${props.chatId}`, {});
-        await reload();
-      }
+    if (respond && messages[messages.length - 1]?.role === "user") {
+      // remove the ?respond query param
+      router.push(`/chat/${chatId}`, {});
+      reload();
     }
-    r();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [router, respond, chatId, reload, messages]);
 
   return (
     <div className="flex flex-col h-svh">
@@ -171,7 +168,7 @@ export function ChatUI(props: {
           input={input}
           handleValueChange={handleInputChange}
           isLoading={status === "streaming" || status === "submitted"}
-          chatId={props.chatId}
+          chatId={chatId}
         />
       </div>
     </div>
