@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ModuleIcon } from "@/components/module-icon";
 import { Markdown } from "@/components/ui/markdown";
+import { getModuleConfiguration } from "@/lib/actions/list-modules";
 
 import {
   Drawer,
@@ -95,6 +96,7 @@ export function ModuleConfigDrawer({
   const formSchema = createFormSchema();
   type FormValues = z.infer<typeof formSchema>;
 
+
   // Use React Query to fetch module configurations
   const {
     data: configData,
@@ -104,10 +106,12 @@ export function ModuleConfigDrawer({
   } = useQuery({
     queryKey: ["moduleConfig", module.id],
     queryFn: async () => {
-      const response = await fetch(`/api/modules/${module.id}/config`);
-      if (!response.ok) throw new Error("Failed to fetch configurations");
-      const data = await response.json();
-      return data.configurations || [];
+      try {
+        const data = await getModuleConfiguration(module.id);
+        return data.configurations || [];
+      } catch (error) {
+        throw new Error("Failed to fetch configurations");
+      }
     },
     // Only refetch when dialog opens or module ID changes
     enabled: true,

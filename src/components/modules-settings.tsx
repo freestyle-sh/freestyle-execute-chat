@@ -13,27 +13,17 @@ import {
 } from "@/lib/actions/list-modules";
 import { Skeleton } from "@/components/ui/skeleton";
 
+// Import server action
+import { saveModuleConfiguration as saveConfig } from "@/lib/actions/list-modules";
+
 async function saveModuleConfiguration(
   moduleId: string,
   configs: Record<string, string>,
 ): Promise<void> {
-  const response = await fetch("/api/modules/config", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      moduleId,
-      configurations: Object.entries(configs).map(([envVarId, value]) => ({
-        environmentVariableRequirementId: envVarId,
-        value,
-      })),
-    }),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to save configuration");
+  try {
+    await saveConfig(moduleId, configs);
+  } catch (error) {
+    throw new Error(error instanceof Error ? error.message : "Failed to save configuration");
   }
 }
 
