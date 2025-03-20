@@ -295,23 +295,21 @@ export function PromptInputBasic({
         <div className="flex justify-between">
           <div className="flex flex-wrap gap-2 items-center">
             {isLoadingModules ? (
-              // Loading skeleton state with exact same styles as actual pills
               <>
-                <div className="inline-flex items-center px-3 py-1.5 rounded-2xl border transition-all text-xs opacity-70 bg-muted/30">
+                <div className="inline-flex items-center px-2 py-1.5 rounded-2xl border transition-all text-xs opacity-70 bg-muted/30">
                   <Skeleton className="w-4 h-4 mr-1.5 rounded-sm" />
                   <Skeleton className="w-16 h-3.5" />
                 </div>
-                <div className="inline-flex items-center px-3 py-1.5 rounded-2xl border transition-all text-xs opacity-70 bg-muted/30">
+                <div className="inline-flex items-center px-2 py-1.5 rounded-2xl border transition-all text-xs opacity-70 bg-muted/30">
                   <Skeleton className="w-4 h-4 mr-1.5 rounded-sm" />
                   <Skeleton className="w-20 h-3.5" />
                 </div>
-                <div className="inline-flex items-center px-3 py-1.5 rounded-2xl border transition-all text-xs opacity-70 bg-muted/30">
+                <div className="inline-flex items-center px-2 py-1.5 rounded-2xl border transition-all text-xs opacity-70 bg-muted/30">
                   <Skeleton className="w-4 h-4 mr-1.5 rounded-sm" />
                   <Skeleton className="w-14 h-3.5" />
                 </div>
               </>
             ) : chatId ? (
-              // Show modules from the database for persisted chats
               modules
                 .filter((module) => module.isConfigured)
                 .map((module, index) => (
