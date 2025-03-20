@@ -164,7 +164,7 @@ function determineIfModuleIsConfigured(
  */
 export async function getModuleConfiguration(moduleId: string) {
   "use server";
-  
+
   // Use a placeholder user ID for now
   const userId = STACKAUTHID;
 
@@ -233,10 +233,10 @@ export type ModuleConfigInput = z.infer<typeof configurationSchema>;
  */
 export async function saveModuleConfiguration(
   moduleId: string,
-  configs: Record<string, string>
+  configs: Record<string, string>,
 ) {
   "use server";
-  
+
   const userId = STACKAUTHID;
 
   // Transform the configs object into the expected format
@@ -266,7 +266,9 @@ export async function saveModuleConfiguration(
 
   for (const config of validatedData.configurations) {
     if (!validEnvVarIds.has(config.environmentVariableRequirementId)) {
-      throw new Error(`Invalid environment variable requirement ID: ${config.environmentVariableRequirementId}`);
+      throw new Error(
+        `Invalid environment variable requirement ID: ${config.environmentVariableRequirementId}`,
+      );
     }
   }
 
@@ -306,7 +308,7 @@ export async function saveModuleConfiguration(
         }
         return { success: true, action: "unchanged" };
       }
-      
+
       // Insert new configuration
       return db.insert(freestyleModulesConfigurationsTable).values({
         userId,
@@ -318,3 +320,4 @@ export async function saveModuleConfiguration(
 
   return { success: true };
 }
+
