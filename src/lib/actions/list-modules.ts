@@ -321,3 +321,42 @@ export async function saveModuleConfiguration(
   return { success: true };
 }
 
+/**
+ * Delete all configurations for a module
+ */
+export async function deleteModuleConfiguration(moduleId: string) {
+  "use server";
+  
+  const userId = STACKAUTHID;
+  
+  // Get all environment variable requirements for this module
+  const envVarRequirements = await db
+    .select()
+    .from(freestyleModulesEnvironmentVariableRequirementsTable)
+    .where(
+      eq(
+        freestyleModulesEnvironmentVariableRequirementsTable.moduleId,
+        moduleId,
+      ),
+    );
+    
+  // Delete all configurations for this module and user
+  await Promise.all(
+    envVarRequirements.map(async (requirement) => {
+      return db
+        .delete(freestyleModulesConfigurationsTable)
+        .where(
+          and(
+            eq(freestyleModulesConfigurationsTable.userId, userId),
+            eq(
+              freestyleModulesConfigurationsTable.environmentVariableId,
+              requirement.id,
+            ),
+          ),
+        );
+    }),
+  );
+  
+  return { success: true };
+}
+
