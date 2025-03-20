@@ -69,7 +69,7 @@ import type { ModuleState } from "@/lib/stores/modules";
 
 export async function createChat(
   firstMessage?: string,
-  selectedModules?: Record<string, ModuleState>
+  selectedModules?: Record<string, ModuleState>,
 ) {
   "use server";
 
@@ -115,12 +115,11 @@ export async function createChat(
   }
 
   // Apply selected modules to the new chat if provided
-  if (selectedModules && Object.keys(selectedModules).length > 0) {
+  if (selectedModules) {
     try {
-      const moduleEntries = Object.entries(selectedModules);
-      for (const [moduleId, { enabled }] of moduleEntries) {
-        if (moduleId) {
-          await db
+      await Promise.all(
+        Object.entries(selectedModules).map(([moduleId, { enabled }]) =>
+          db
             .insert(chatModulesEnabledTable)
             .values({
               chatId,
@@ -132,10 +131,12 @@ export async function createChat(
                 chatModulesEnabledTable.chatId,
                 chatModulesEnabledTable.moduleId,
               ],
-              set: { enabled },
-            });
-        }
-      }
+              set: {
+                enabled: enabled ?? false,
+              },
+            }),
+        ),
+      );
     } catch (error) {
       console.error("Failed to apply modules to chat:", error);
     }

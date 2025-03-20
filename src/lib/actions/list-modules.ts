@@ -37,7 +37,7 @@ export type ModuleWithRequirements = FreestyleModule & {
 };
 
 export async function listModules(
-  chatId?: string
+  chatId?: string,
 ): Promise<ModuleWithRequirements[]> {
   "use server";
 
@@ -59,8 +59,8 @@ export async function listModules(
         .where(
           eq(
             freestyleModulesEnvironmentVariableRequirementsTable.moduleId,
-            module.id
-          )
+            module.id,
+          ),
         );
 
       // Get existing configurations for this module and user
@@ -71,17 +71,17 @@ export async function listModules(
           freestyleModulesEnvironmentVariableRequirementsTable,
           eq(
             freestyleModulesConfigurationsTable.environmentVariableId,
-            freestyleModulesEnvironmentVariableRequirementsTable.id
-          )
+            freestyleModulesEnvironmentVariableRequirementsTable.id,
+          ),
         )
         .where(
           and(
             eq(
               freestyleModulesEnvironmentVariableRequirementsTable.moduleId,
-              module.id
+              module.id,
             ),
-            eq(freestyleModulesConfigurationsTable.userId, userId)
-          )
+            eq(freestyleModulesConfigurationsTable.userId, userId),
+          ),
         );
 
       // Determine if module is configured
@@ -91,7 +91,7 @@ export async function listModules(
           environmentVariableRequirementId:
             config.FreestyleModulesEnvironmentVariableRequirements.id,
           value: config.FreestyleModulesConfigurations.value,
-        }))
+        })),
       );
 
       // If chatId is provided, check if the module is enabled for this chat
@@ -103,8 +103,8 @@ export async function listModules(
           .where(
             and(
               eq(chatModulesEnabledTable.chatId, chatId),
-              eq(chatModulesEnabledTable.moduleId, module.id)
-            )
+              eq(chatModulesEnabledTable.moduleId, module.id),
+            ),
           )
           .then((rows) => rows[0]);
 
@@ -122,7 +122,7 @@ export async function listModules(
         })),
         isEnabled,
       };
-    })
+    }),
   );
 
   return modulesWithRequirements;
@@ -137,7 +137,7 @@ function determineIfModuleIsConfigured(
   configurations: {
     environmentVariableRequirementId: string;
     value: string;
-  }[]
+  }[],
 ): boolean {
   const hasRequiredConfigs = requirements.some((req) => req.required);
 
@@ -147,12 +147,12 @@ function determineIfModuleIsConfigured(
       .filter((req) => req.required)
       .every((req) => {
         const config = configurations.find(
-          (c) => c.environmentVariableRequirementId === req.id
+          (c) => c.environmentVariableRequirementId === req.id,
         );
         return config && config.value.trim() !== "";
       });
-  } else {
-    // If no required configs, then it's configured if any config exists
-    return configurations.length > 0;
   }
+
+  // If no required configs, then it's configured if any config exists
+  return configurations.length > 0;
 }

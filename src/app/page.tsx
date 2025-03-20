@@ -19,11 +19,12 @@ export default function Home() {
     if (prompt.trim()) {
       // Get selected modules from store
       const selectedModules = getSelectedModules();
+      console.log("Selected Modules:", selectedModules);
       const id = await createChat(prompt.trim(), selectedModules);
 
       // Clear selected modules after creating chat
       clearSelectedModules();
-      
+
       queryClient.invalidateQueries({ queryKey: ["chats"] });
 
       router.push(`/chat/${id}?respond`);
