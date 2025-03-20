@@ -23,7 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useOptimistic, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { deleteChat } from "@/lib/actions/delete-chat";
 import { renameChat } from "@/lib/actions/rename-chat";
@@ -48,16 +48,28 @@ export function SidebarHistoryItem({
   const [hovered, setHovered] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState(title);
+  const [_, startTransition] = useTransition();
+  const [optimisticTitle, updateOptimisticTitle] = useOptimistic(
+    title,
+    (_, newTitle: string) => newTitle,
+  );
 
   const [href, isActive] = useMemo(() => {
     const href = `/chat/${id}`;
     return [href, pathname === href];
   }, [id, pathname]);
 
-  const handleRename = async () => {
+  const handleRename = () => {
     if (newName.trim() === "") {
       return;
     }
+
+    setIsRenaming(false);
+
+    // Immediately update the displayed title optimistically
+    startTransition(() => {
+      updateOptimisticTitle(newName);
+    });
 
     toast.promise(
       renameChat(id, newName).then(() =>
@@ -69,8 +81,6 @@ export function SidebarHistoryItem({
         error: "Error renaming chat",
       },
     );
-
-    setIsRenaming(false);
   };
 
   const cancelRename = () => {
@@ -86,7 +96,6 @@ export function SidebarHistoryItem({
         <div
           className={cn(
             "flex gap-1 items-center justify-between w-full h-8 px-1 rounded-md",
-            // "!bg-sidebar-accent",
           )}
         >
           <Input
@@ -140,7 +149,7 @@ export function SidebarHistoryItem({
       className={cn("relative", className)}
     >
       <SidebarMenuButton
-        tooltip={title}
+        tooltip={optimisticTitle}
         isActive={isActive}
         asChild
         className="transition-all duration-150"
@@ -152,7 +161,9 @@ export function SidebarHistoryItem({
         >
           <span className="flex items-center gap-2">
             {sidebar.open ? (
-              <span className={cn(isActive ? "font-medium" : "")}>{title}</span>
+              <span className={cn(isActive ? "font-medium" : "")}>
+                {optimisticTitle}
+              </span>
             ) : (
               <MessageSquareIcon className={cn("h-4 w-4")} />
             )}
