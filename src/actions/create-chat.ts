@@ -65,7 +65,7 @@ export async function maybeUpdateChatTitle(chatId: string): Promise<boolean> {
   return false;
 }
 
-import type { ModuleState } from "@/lib/stores/modules";
+import type { ModuleState } from "@/stores/modules";
 
 export async function createChat(
   firstMessage?: string,

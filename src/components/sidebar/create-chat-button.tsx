@@ -7,10 +7,10 @@ import {
   SidebarMenu,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
-import { createChat } from "@/lib/actions/create-chat";
+import { createChat } from "@/actions/create-chat";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { useSidebarStore } from "@/lib/stores/sidebar";
+import { useSidebarStore } from "@/stores/sidebar";
 
 export function SidebarCreateChat() {
   const queryClient = useQueryClient();

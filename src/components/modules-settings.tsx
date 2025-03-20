@@ -5,11 +5,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { SettingsSection } from "@/components/settings";
 import { ModuleConfigDrawer } from "@/components/module-config";
 import { ModuleIcon } from "@/components/module-icon";
-import { listModules } from "@/lib/actions/list-modules";
+import { listModules } from "@/actions/list-modules";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Import server action
-import { saveModuleConfiguration as saveConfig } from "@/lib/actions/list-modules";
+import { saveModuleConfiguration as saveConfig } from "@/actions/list-modules";
 
 async function saveModuleConfiguration(
   moduleId: string,

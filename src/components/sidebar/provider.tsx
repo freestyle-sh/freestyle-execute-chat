@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { SidebarProvider as BaseSidebarProvider } from "@/components/ui/sidebar";
-import { useSidebarStore } from "@/lib/stores/sidebar";
+import { useSidebarStore } from "@/stores/sidebar";
 import ClientOnly from "../client-only";
 
 interface SidebarProviderProps {

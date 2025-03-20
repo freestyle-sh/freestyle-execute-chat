@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { messagesTable } from "@/db/schema";
-import { maybeUpdateChatTitle } from "@/lib/actions/create-chat";
-import { listModules } from "@/lib/actions/list-modules";
+import { maybeUpdateChatTitle } from "@/actions/create-chat";
+import { listModules } from "@/actions/list-modules";
 import { claudeSonnetModel } from "@/lib/model";
 import { systemPrompt } from "@/lib/system-prompt";
 import { sendFeedbackTool } from "@/lib/tools/send-feedback";

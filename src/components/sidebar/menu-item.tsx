@@ -4,7 +4,7 @@ import {
   SidebarMenuItem as BaseSidebarMenuItem,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
-import { useSidebarStore } from "@/lib/stores/sidebar";
+import { useSidebarStore } from "@/stores/sidebar";
 
 interface SidebarMenuItemProps {
   icon: LucideIcon;

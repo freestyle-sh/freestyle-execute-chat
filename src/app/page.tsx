@@ -4,9 +4,9 @@ import { useState } from "react";
 
 import { PromptInputBasic } from "@/components/chat";
 import { useTransitionRouter } from "next-view-transitions";
-import { createChat } from "@/lib/actions/create-chat";
+import { createChat } from "@/actions/create-chat";
 import { useQueryClient } from "@tanstack/react-query";
-import { useModulesStore } from "@/lib/stores/modules";
+import { useModulesStore } from "@/stores/modules";
 
 export default function Home() {
   const [prompt, setPrompt] = useState("");
