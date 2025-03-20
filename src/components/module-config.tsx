@@ -409,8 +409,7 @@ export function ModuleConfigDrawer({
           <DialogHeader>
             <DialogTitle>Confirm Removal</DialogTitle>
             <DialogDescription>
-              Are you sure you want to remove all configuration for{" "}
-              {module.name}? This action cannot be undone.
+              {`Are you sure you want to remove all configuration for ${capitalize(module.name)}? This action cannot be undone.`}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4 gap-2 sm:justify-center">
