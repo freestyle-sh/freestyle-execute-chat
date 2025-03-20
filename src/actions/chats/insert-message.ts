@@ -2,7 +2,7 @@
 import { db } from "@/db";
 import { chatsTable, messagesTable } from "@/db/schema";
 import { and, eq, count } from "drizzle-orm";
-import { STACKAUTHID } from "./tempuserid";
+import { STACKAUTHID } from "../auth/tempuserid";
 import type { Message } from "ai";
 
 export async function insertMessage(chatId: string, message: Message) {

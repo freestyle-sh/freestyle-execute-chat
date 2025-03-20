@@ -7,7 +7,7 @@ import {
   usersTable,
   chatModulesEnabledTable,
 } from "@/db/schema";
-import { STACKAUTHID } from "./tempuserid";
+import { STACKAUTHID } from "../auth/tempuserid";
 import type { TextUIPart } from "@ai-sdk/ui-utils";
 import { claudeSonnetModel } from "@/lib/model";
 import { generateText } from "ai";

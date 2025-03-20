@@ -2,7 +2,7 @@
 import { db } from "@/db";
 import { chatsTable, messagesTable } from "@/db/schema";
 import { eq, desc, sql, max } from "drizzle-orm";
-import { STACKAUTHID } from "./tempuserid";
+import { STACKAUTHID } from "../auth/tempuserid";
 
 export async function listChats() {
   "use server";

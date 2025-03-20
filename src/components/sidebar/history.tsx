@@ -1,6 +1,6 @@
 "use client";
 
-import { listChats } from "@/actions/list-chats";
+import { listChats } from "@/actions/chats/list-chats";
 import { SidebarHistoryItem } from "./history-item";
 import { SidebarSection } from "./section";
 import { useQuery } from "@tanstack/react-query";

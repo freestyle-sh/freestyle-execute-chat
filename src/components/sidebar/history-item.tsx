@@ -25,8 +25,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useMemo, useState, useOptimistic, useTransition } from "react";
 import { cn } from "@/lib/utils";
-import { deleteChat } from "@/actions/delete-chat";
-import { renameChat } from "@/actions/rename-chat";
+import { deleteChat } from "@/actions/chats/delete-chat";
+import { renameChat } from "@/actions/chats/rename-chat";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";

@@ -12,7 +12,7 @@ import {
   getModuleConfiguration,
   deleteModuleConfiguration,
   type ModuleWithRequirements,
-} from "@/actions/list-modules";
+} from "@/actions/modules/list-modules";
 
 import {
   Drawer,

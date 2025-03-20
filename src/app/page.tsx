@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { PromptInputBasic } from "@/components/chat";
 import { useTransitionRouter } from "next-view-transitions";
-import { createChat } from "@/actions/create-chat";
+import { createChat } from "@/actions/chats/create-chat";
 import { useQueryClient } from "@tanstack/react-query";
 import { useModulesStore } from "@/stores/modules";
 

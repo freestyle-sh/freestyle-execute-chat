@@ -19,22 +19,22 @@ import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import type { Message } from "@/db/schema";
-import { insertMessage } from "@/actions/insert-message";
+import { insertMessage } from "@/actions/chats/insert-message";
 // import { useTransitionRouter } from "next-view-transitions";
 import ChatMessage from "./message";
 import { useRouter } from "next/navigation";
 import { ChatContainer } from "./ui/chat-container";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { chatExists } from "@/actions/check-chat";
+import { chatExists } from "@/actions/chats/check-chat";
 import { useSidebarStore } from "@/stores/sidebar";
 import { useModulesStore } from "@/stores/modules";
 import {
   listModules,
   type ModuleWithRequirements,
-} from "@/actions/list-modules";
+} from "@/actions/modules/list-modules";
 import { capitalize } from "@/lib/typography";
 import { Skeleton } from "./ui/skeleton";
-import { toggleChatModule } from "@/actions/toggle-chat-module";
+import { toggleChatModule } from "@/actions/modules/toggle-chat-module";
 
 const MobileHeader = ({ title }: { title: string }) => {
   const { toggleMobile } = useSidebarStore();

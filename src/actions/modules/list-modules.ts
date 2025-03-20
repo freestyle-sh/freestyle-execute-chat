@@ -8,7 +8,7 @@ import {
   chatModulesEnabledTable,
 } from "@/db/schema";
 import { and, desc, eq } from "drizzle-orm";
-import { STACKAUTHID } from "./tempuserid";
+import { STACKAUTHID } from "../auth/tempuserid";
 import { z } from "zod";
 
 export type ModuleWithRequirements = FreestyleModule & {
@@ -326,9 +326,9 @@ export async function saveModuleConfiguration(
  */
 export async function deleteModuleConfiguration(moduleId: string) {
   "use server";
-  
+
   const userId = STACKAUTHID;
-  
+
   // Get all environment variable requirements for this module
   const envVarRequirements = await db
     .select()
@@ -339,7 +339,7 @@ export async function deleteModuleConfiguration(moduleId: string) {
         moduleId,
       ),
     );
-    
+
   // Delete all configurations for this module and user
   await Promise.all(
     envVarRequirements.map(async (requirement) => {
@@ -356,7 +356,6 @@ export async function deleteModuleConfiguration(moduleId: string) {
         );
     }),
   );
-  
+
   return { success: true };
 }
-
