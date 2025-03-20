@@ -10,17 +10,19 @@ export type ChatModuleStatus = {
   enabled: boolean;
 };
 
-export async function getChatModules(chatId: string): Promise<ChatModuleStatus[]> {
+export async function getChatModules(
+  chatId: string,
+): Promise<ChatModuleStatus[]> {
   try {
     const enabledModules = await db
       .select()
       .from(chatModulesEnabledTable)
       .where(eq(chatModulesEnabledTable.chatId, chatId));
-    
-    return enabledModules.map(module => ({
+
+    return enabledModules.map((module) => ({
       chatId: module.chatId,
       moduleId: module.moduleId,
-      enabled: module.enabled
+      enabled: module.enabled,
     }));
   } catch (error) {
     console.error("Error fetching chat modules:", error);
@@ -28,11 +30,15 @@ export async function getChatModules(chatId: string): Promise<ChatModuleStatus[]
   }
 }
 
-export async function toggleChatModule(
-  chatId: string,
-  moduleId: string,
-  enabled: boolean
-): Promise<ChatModuleStatus> {
+export async function toggleChatModule({
+  chatId,
+  moduleId,
+  enabled,
+}: {
+  chatId: string;
+  moduleId: string;
+  enabled: boolean;
+}): Promise<ChatModuleStatus> {
   try {
     // Check if there's an existing entry
     const existingEntry = await db
@@ -41,10 +47,10 @@ export async function toggleChatModule(
       .where(
         and(
           eq(chatModulesEnabledTable.chatId, chatId),
-          eq(chatModulesEnabledTable.moduleId, moduleId)
-        )
+          eq(chatModulesEnabledTable.moduleId, moduleId),
+        ),
       )
-      .then(rows => rows[0]);
+      .then((rows) => rows[0]);
 
     if (existingEntry) {
       // Update existing entry
@@ -54,8 +60,8 @@ export async function toggleChatModule(
         .where(
           and(
             eq(chatModulesEnabledTable.chatId, chatId),
-            eq(chatModulesEnabledTable.moduleId, moduleId)
-          )
+            eq(chatModulesEnabledTable.moduleId, moduleId),
+          ),
         );
     } else {
       // Insert new entry
@@ -69,10 +75,11 @@ export async function toggleChatModule(
     return {
       chatId,
       moduleId,
-      enabled
+      enabled,
     };
   } catch (error) {
     console.error("Error toggling chat module:", error);
     throw new Error("Failed to toggle chat module");
   }
 }
+

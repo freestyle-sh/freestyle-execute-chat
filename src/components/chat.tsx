@@ -34,6 +34,7 @@ import {
 } from "@/lib/actions/list-modules";
 import { capitalize } from "@/lib/typography";
 import { Skeleton } from "./ui/skeleton";
+import { toggleChatModule } from "@/lib/actions/toggle-chat-module";
 
 const MobileHeader = ({ title }: { title: string }) => {
   const { toggleMobile } = useSidebarStore();
@@ -154,7 +155,7 @@ export function ChatUI({
       </ChatContainer>
       <div className="w-full pb-4">
         <PromptInputBasic
-          handleSubmit={(
+          handleSubmitAction={(
             event?: {
               preventDefault?: () => void;
             },
@@ -166,7 +167,7 @@ export function ChatUI({
             queryClient.invalidateQueries({ queryKey: ["chats"] });
           }}
           input={input}
-          handleValueChange={handleInputChange}
+          handleValueChangeAction={handleInputChange}
           isLoading={status === "streaming" || status === "submitted"}
           chatId={chatId}
         />
@@ -175,19 +176,25 @@ export function ChatUI({
   );
 }
 
-export function PromptInputBasic(props: {
-  handleSubmit: (
+export function PromptInputBasic({
+  input,
+  isLoading,
+  chatId,
+  handleSubmitAction: handleSubmit,
+  handleValueChangeAction: handleValueChange,
+}: {
+  input: string;
+  isLoading: boolean;
+  chatId?: string; // Make chatId optional for homepage usage
+  handleValueChangeAction: (
+    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
+  ) => void;
+  handleSubmitAction: (
     event?: {
       preventDefault?: () => void;
     },
     chatRequestOptions?: ChatRequestOptions,
   ) => void;
-  input: string;
-  isLoading: boolean;
-  handleValueChange: (
-    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
-  ) => void;
-  chatId?: string; // Make chatId optional for homepage usage
 }) {
   // State to track if module tray is open
   const [isModuleTrayOpen, setIsModuleTrayOpen] = useState(false);
@@ -199,8 +206,8 @@ export function PromptInputBasic(props: {
 
   // Fetch modules for both scenarios - only difference is chatId for enabled status
   const { data: modules = [], isLoading: isLoadingModules } = useQuery({
-    queryKey: ["modules", props.chatId || "homepage"],
-    queryFn: () => listModules(props.chatId),
+    queryKey: ["modules", chatId || "homepage"],
+    queryFn: () => listModules(chatId),
   });
 
   const toggleModuleMutation = useMutation({
@@ -211,42 +218,28 @@ export function PromptInputBasic(props: {
       moduleId: string;
       enabled: boolean;
     }) => {
-      try {
-        const response = await fetch("/api/chat/modules", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            chatId: props.chatId,
-            moduleId,
-            enabled,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to toggle module");
-        }
-
-        return await response.json();
-      } catch (error) {
-        console.error("Error toggling module:", error);
-        throw error;
+      if (!chatId) {
+        return;
       }
+
+      const status = await toggleChatModule({
+        chatId,
+        moduleId,
+        enabled,
+      });
+
+      return status;
     },
     onMutate: async ({ moduleId, enabled }) => {
       // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["modules", props.chatId] });
+      await queryClient.cancelQueries({ queryKey: ["modules", chatId] });
 
       // Snapshot the previous value
-      const previousModules = queryClient.getQueryData([
-        "modules",
-        props.chatId,
-      ]);
+      const previousModules = queryClient.getQueryData(["modules", chatId]);
 
       // Optimistically update to the new value
       queryClient.setQueryData(
-        ["modules", props.chatId],
+        ["modules", chatId],
         (old: ModuleWithRequirements[] | undefined) => {
           if (!old) return [];
           return old.map((module) => {
@@ -263,16 +256,13 @@ export function PromptInputBasic(props: {
     onError: (err, variables, context) => {
       // If the mutation fails, use the context returned from onMutate to roll back
       if (context?.previousModules) {
-        queryClient.setQueryData(
-          ["modules", props.chatId],
-          context.previousModules,
-        );
+        queryClient.setQueryData(["modules", chatId], context.previousModules);
       }
     },
     onSettled: () => {
       // Always refetch after error or success to make sure the server state
       // is reflected in the UI
-      queryClient.invalidateQueries({ queryKey: ["modules", props.chatId] });
+      queryClient.invalidateQueries({ queryKey: ["modules", chatId] });
     },
   });
 
@@ -280,7 +270,7 @@ export function PromptInputBasic(props: {
     // Toggle the current state (default to false if undefined)
     const newEnabledState = !(currentEnabled ?? false);
 
-    if (props.chatId) {
+    if (chatId) {
       // Use the mutation for persisted chats
       toggleModuleMutation.mutate({ moduleId, enabled: newEnabledState });
     } else {
@@ -291,14 +281,14 @@ export function PromptInputBasic(props: {
 
   return (
     <PromptInput
-      value={props.input}
+      value={input}
       onValueChange={(value) =>
-        props.handleValueChange({
+        handleValueChange({
           target: { value },
         } as ChangeEvent<HTMLTextAreaElement>)
       }
-      onSubmit={props.handleSubmit}
-      isLoading={props.isLoading}
+      onSubmit={handleSubmit}
+      isLoading={isLoading}
       className="max-w-3xl mx-auto promptbox w-full transition-all duration-200 focus-within:shadow-none backdrop-blur-sm bg-background/90"
     >
       <div className="flex flex-col justify-between mb-2">
@@ -320,7 +310,7 @@ export function PromptInputBasic(props: {
                   <Skeleton className="w-14 h-3.5" />
                 </div>
               </>
-            ) : props.chatId ? (
+            ) : chatId ? (
               // Show modules from the database for persisted chats
               modules
                 .filter((module) => module.isConfigured)
@@ -539,18 +529,18 @@ export function PromptInputBasic(props: {
       />
       <PromptInputActions className="justify-end pt-2">
         <PromptInputAction
-          tooltip={props.isLoading ? "Stop generation" : "Send message"}
+          tooltip={isLoading ? "Stop generation" : "Send message"}
         >
           <Button
             variant="default"
             size="default"
             className={cn(
-              props.isLoading ? "w-8" : "w-14",
+              isLoading ? "w-8" : "w-14",
               "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out hover:bg-primary/90",
             )}
-            onClick={props.handleSubmit}
+            onClick={handleSubmit}
           >
-            {props.isLoading ? (
+            {isLoading ? (
               <Square className="fill-secondary" />
             ) : (
               <span className="flex flex-row gap-0.5 items-center transition-all">
