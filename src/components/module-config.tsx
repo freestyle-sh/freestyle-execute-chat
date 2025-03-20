@@ -8,11 +8,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ModuleIcon } from "@/components/module-icon";
 import { Markdown } from "@/components/ui/markdown";
-import {
-  getModuleConfiguration,
-  deleteModuleConfiguration,
-  type ModuleWithRequirements,
-} from "@/actions/modules/list-modules";
+import type { ModuleWithRequirements } from "@/actions/modules/list-modules";
 
 import {
   Drawer,
@@ -38,6 +34,8 @@ import { Input } from "@/components/ui/input";
 import { SettingsItem } from "@/components/settings";
 import { cn } from "@/lib/utils";
 import { capitalize } from "@/lib/typography";
+import { getModuleConfiguration } from "@/actions/modules/get-config";
+import { deleteModuleConfiguration } from "@/actions/modules/delete-config";
 
 type EnvVarRequirement = {
   id: string;

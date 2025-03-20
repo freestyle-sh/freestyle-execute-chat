@@ -7,22 +7,7 @@ import { ModuleConfigDrawer } from "@/components/module-config";
 import { ModuleIcon } from "@/components/module-icon";
 import { listModules } from "@/actions/modules/list-modules";
 import { Skeleton } from "@/components/ui/skeleton";
-
-// Import server action
-import { saveModuleConfiguration as saveConfig } from "@/actions/modules/list-modules";
-
-async function saveModuleConfiguration(
-  moduleId: string,
-  configs: Record<string, string>,
-): Promise<void> {
-  try {
-    await saveConfig(moduleId, configs);
-  } catch (error) {
-    throw new Error(
-      error instanceof Error ? error.message : "Failed to save configuration",
-    );
-  }
-}
+import { saveModuleConfiguration } from "@/actions/modules/set-config";
 
 interface ModulesSettingsProps {
   moduleToOpen?: string | null;
