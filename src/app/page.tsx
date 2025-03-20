@@ -13,17 +13,11 @@ export default function Home() {
   const queryClient = useQueryClient();
   const router = useTransitionRouter();
   const isLoading = false;
-  const { getSelectedModules, clearSelectedModules } = useModulesStore();
+  const selectedModules = useModulesStore((state) => state.selectedModules);
 
   const handleSubmit = async () => {
     if (prompt.trim()) {
-      // Get selected modules from store
-      const selectedModules = getSelectedModules();
-      console.log("Selected Modules:", selectedModules);
       const id = await createChat(prompt.trim(), selectedModules);
-
-      // Clear selected modules after creating chat
-      clearSelectedModules();
 
       queryClient.invalidateQueries({ queryKey: ["chats"] });
 
@@ -44,7 +38,6 @@ export default function Home() {
           input={prompt}
           isLoading={isLoading}
           handleValueChange={(e) => setPrompt(e.target.value)}
-          // onChange={handleInputChange}
         />
 
         <div className="text-muted-foreground text-center text-sm mt-6 flex items-center gap-2 before:content-[''] before:h-[1px] before:w-12 before:bg-border after:content-[''] after:h-[1px] after:w-12 after:bg-border">
