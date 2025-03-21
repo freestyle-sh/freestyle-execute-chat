@@ -33,12 +33,8 @@ export async function POST(request: Request) {
   const envVars = Object.fromEntries(
     modules
       .filter((module) => module.isConfigured)
-      .map((module) => {
-        return module.configurations;
-      })
-      .map((configurations) => {
-        // get name and value
-        return configurations.map((configuration) => {
+      .flatMap((module) => {
+        return module.configurations.map((configuration) => {
           return [configuration.name, configuration.value];
         });
       }),
