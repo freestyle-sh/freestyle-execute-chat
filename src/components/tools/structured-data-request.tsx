@@ -38,13 +38,13 @@ export type StructuredDataRequestProps = {
   className?: string;
 };
 
-export const StructuredDataRequest = ({
+export function StructuredDataRequest({
   request,
   formResponseId,
   state,
   formData,
   className,
-}: StructuredDataRequestProps) => {
+}: StructuredDataRequestProps) {
   // Extract request from the props, handling both custom format and ToolInvocation
   let title = "";
   let description = "";
@@ -351,4 +351,4 @@ export const StructuredDataRequest = ({
       className={className}
     />
   );
-};
+}
