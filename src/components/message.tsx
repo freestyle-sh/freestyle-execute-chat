@@ -1,12 +1,15 @@
 "use client";
 
+import { getStructuredDataResponse } from "@/actions/chats/get-structured-data";
 import LogoComponent from "./logo";
 import { CodeExecution } from "./tools/code-execution";
 import { SendFeedback } from "./tools/send-feedback";
 import { RequestDocs } from "./tools/request-docs";
+import { StructuredDataRequest } from "./tools/structured-data-request";
 // import type { Components } from "react-markdown";
 import { Message, MessageContent, MessageAvatar } from "./ui/message";
-import type { UIMessage } from "ai";
+import type { ToolInvocation, UIMessage } from "ai";
+import { useState, useEffect } from "react";
 // Markdown components for future use if needed
 /*
 const markdownComponents: Partial<Components> = {
@@ -14,7 +17,13 @@ const markdownComponents: Partial<Components> = {
 };
 */
 
-export function UserMessage({ message }: { message: UIMessage }) {
+export function UserMessage({
+  chatId,
+  message,
+}: {
+  chatId: string;
+  message: UIMessage;
+}) {
   if (!message.parts || message.parts.length === 0) {
     return (
       <Message className="justify-end animate-slide-in-right">
@@ -43,7 +52,13 @@ export function UserMessage({ message }: { message: UIMessage }) {
   );
 }
 
-export function AIMessage({ message }: { message: UIMessage }) {
+export function AIMessage({
+  chatId,
+  message,
+}: {
+  chatId: string;
+  message: UIMessage;
+}) {
   return (
     <>
       {message.parts.map((part, index) => (
@@ -52,12 +67,6 @@ export function AIMessage({ message }: { message: UIMessage }) {
           className="justify-start animate-slide-up max-w-[85%]"
         >
           {index === 0 && (
-            // <MessageAvatar
-            //   src="/avatars/ai.png"
-            //   alt="AI"
-            //   fallback="AI"
-            //   className="mt-1"
-            // />
             <div className="size-9 bg-primary/5 border rounded-full aspect-square flex items-center justify-center">
               <LogoComponent className=" size-6 stroke-primary" />
             </div>
@@ -83,6 +92,12 @@ export function AIMessage({ message }: { message: UIMessage }) {
               {part.toolInvocation.toolName === "requestDocumentation" && (
                 <RequestDocs request={part.toolInvocation} />
               )}
+              {part.toolInvocation.toolName === "structuredDataRequest" && (
+                <StructuredDataRequestWrapper
+                  request={part.toolInvocation}
+                  chatId={chatId}
+                />
+              )}
             </>
           )}
         </Message>
@@ -91,11 +106,84 @@ export function AIMessage({ message }: { message: UIMessage }) {
   );
 }
 
-export default function ChatMessage({ message }: { message: UIMessage }) {
+function StructuredDataRequestWrapper({
+  request,
+  chatId,
+}: {
+  request: ToolInvocation;
+  chatId: string;
+}) {
+  const [formResponse, setFormResponse] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Extract toolCallId from request
+  const toolCallId = request.toolCallId;
+
+  useEffect(() => {
+    const fetchFormResponse = async () => {
+      try {
+        if (!toolCallId || !chatId) {
+          console.error("Missing toolCallId or chatId", { toolCallId, chatId });
+          setLoading(false);
+          return;
+        }
+
+        const response = await getStructuredDataResponse(chatId, toolCallId);
+        setFormResponse(response);
+      } catch (error) {
+        console.error("Error fetching form response:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFormResponse();
+
+    // Poll for updates every 2 seconds
+    const interval = setInterval(fetchFormResponse, 2000);
+    return () => clearInterval(interval);
+  }, [toolCallId, chatId]);
+
+  if (loading) {
+    return (
+      <div className="animate-pulse p-4 rounded-md bg-muted/20 border">
+        <div className="h-4 w-3/4 bg-muted rounded mb-2" />
+        <div className="h-4 w-1/2 bg-muted rounded" />
+      </div>
+    );
+  }
+
+  if (!formResponse) {
+    return (
+      <div className="p-4 rounded-md bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+        <p className="text-sm text-red-700 dark:text-red-400">
+          Error: Could not load the data request form. Please try again.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <StructuredDataRequest
+      request={request}
+      formResponseId={formResponse.id}
+      state={formResponse.state}
+      formData={formResponse.formData}
+    />
+  );
+}
+
+export default function ChatMessage({
+  chatId,
+  message,
+}: {
+  chatId: string;
+  message: UIMessage;
+}) {
   switch (message.role) {
     case "user":
-      return <UserMessage message={message} />;
+      return <UserMessage chatId={chatId} message={message} />;
     default:
-      return <AIMessage message={message} />;
+      return <AIMessage chatId={chatId} message={message} />;
   }
 }
