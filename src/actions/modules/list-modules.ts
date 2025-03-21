@@ -8,7 +8,7 @@ import {
   chatModulesEnabledTable,
 } from "@/db/schema";
 import { and, desc, eq } from "drizzle-orm";
-import { STACKAUTHID } from "@/actions/auth/tempuserid";
+import { stackServerApp } from "@/stack";
 
 // Helper function to determine if a module is configured
 function determineIfModuleIsConfigured(
@@ -70,8 +70,8 @@ export async function listModules(
 ): Promise<ModuleWithRequirements[]> {
   "use server";
 
-  // Use a placeholder user ID until authentication is implemented
-  const userId = STACKAUTHID;
+  const user = await stackServerApp.getUser({ or: "anonymous" });
+  const userId = user.id;
 
   // Get all modules ordered by priority
   const modules = await db

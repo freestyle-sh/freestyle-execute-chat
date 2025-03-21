@@ -1,19 +1,22 @@
 "use server";
 import { db } from "@/db";
 import { chatsTable, messagesTable } from "@/db/schema";
-import { and, eq, count } from "drizzle-orm";
-import { STACKAUTHID } from "../auth/tempuserid";
+import { eq } from "drizzle-orm";
 import type { Message } from "ai";
+import { stackServerApp } from "@/stack";
 
 export async function insertMessage(chatId: string, message: Message) {
   "use server";
+
+  const user = await stackServerApp.getUser({ or: "anonymous" });
+  const userId = user.id;
 
   const chat = await db
     .select()
     .from(chatsTable)
     .where(eq(chatsTable.id, chatId));
 
-  if (chat[0].userId !== STACKAUTHID) {
+  if (chat[0].userId !== userId) {
     throw new Error("Chat does not belong to user");
   }
 
