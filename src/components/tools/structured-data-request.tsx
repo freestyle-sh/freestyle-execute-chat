@@ -3,13 +3,14 @@
 import type { ToolInvocation } from "ai";
 import { FormInput } from "lucide-react";
 import { ToolOutput, ToolOutputBadge } from "@/components/ui/tool-output";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { updateStructuredDataResponse } from "@/actions/chats/get-structured-data";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export type StructuredDataRequestProps = {
   request:
@@ -45,8 +46,8 @@ export const StructuredDataRequest = ({
   className,
 }: StructuredDataRequestProps) => {
   // Extract request from the props, handling both custom format and ToolInvocation
-  let title: string = "";
-  let description: string = "";
+  let title = "";
+  let description = "";
   let fields: Array<{
     id: string;
     label: string;
@@ -56,48 +57,104 @@ export const StructuredDataRequest = ({
     required?: boolean;
     validation?: string;
   }> = [];
-  let chatId: string = "";
-  let toolCallId: string = "";
 
   if ("args" in request) {
     title = request.args.title;
     description = request.args.description;
     fields = request.args.fields;
-    chatId = request.args.chatId;
-    toolCallId = request.args.toolCallId;
-  } else if (
-    "input" in request &&
-    typeof request.input === "object" &&
-    request.input
-  ) {
+  } else if ("input" in request) {
     // Handle tool invocation format
-    const input = request.input as Record<string, unknown>;
-    if ("title" in input && typeof input.title === "string") {
-      title = input.title;
-    }
-    if ("description" in input && typeof input.description === "string") {
-      description = input.description;
-    }
-    if ("fields" in input && Array.isArray(input.fields)) {
-      fields = input.fields as any[];
-    }
-    if ("chatId" in input && typeof input.chatId === "string") {
-      chatId = input.chatId;
-    }
-    if ("toolCallId" in input && typeof input.toolCallId === "string") {
-      toolCallId = input.toolCallId;
+    // Type assertion to make TypeScript happy
+    const reqWithInput = request as { input: Record<string, unknown> };
+    const input = reqWithInput.input;
+
+    if (input && typeof input === "object") {
+      if ("title" in input && typeof input.title === "string") {
+        title = input.title;
+      }
+      if ("description" in input && typeof input.description === "string") {
+        description = input.description;
+      }
+      if ("fields" in input && Array.isArray(input.fields)) {
+        fields = input.fields as Array<{
+          id: string;
+          label: string;
+          type: string;
+          placeholder?: string;
+          options?: string[];
+          required?: boolean;
+          validation?: string;
+        }>;
+      }
     }
   }
 
   // Use form data from props or initialize new form data
-  const [formValues, setFormValues] = useState<Record<string, any>>(
+  const [formValues, setFormValues] = useState<Record<string, unknown>>(
     formData || {},
   );
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Setup React Query
+  const queryClient = useQueryClient();
+
+  // Create mutations for form submission and cancellation
+  const submitMutation = useMutation({
+    mutationFn: async (data: {
+      id: string;
+      state: string;
+      formData?: Record<string, unknown>;
+    }) => {
+      return updateStructuredDataResponse(data.id, {
+        state: data.state,
+        formData: data.formData,
+      });
+    },
+    onSuccess: () => {
+      // Invalidate any queries that might depend on this data
+      queryClient.invalidateQueries({
+        queryKey: ["formResponse"],
+      });
+      toast.success("Form submitted successfully");
+    },
+    onError: (error) => {
+      console.error("Error submitting form:", error);
+      toast.error("Failed to submit form");
+    },
+  });
+
+  const cancelMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return updateStructuredDataResponse(id, {
+        state: "cancelled",
+      });
+    },
+    onSuccess: () => {
+      // Invalidate any queries that might depend on this data
+      queryClient.invalidateQueries({
+        queryKey: ["formResponse"],
+      });
+      toast.info("Form request cancelled");
+    },
+    onError: (error) => {
+      console.error("Error cancelling form:", error);
+      toast.error("Failed to cancel form request");
+    },
+  });
+
+  // Get submission state from mutations
+  const isSubmitting = submitMutation.isPending || cancelMutation.isPending;
 
   // Validation function
-  const validateField = (field: any, value: any) => {
+  const validateField = (
+    field: {
+      id: string;
+      label: string;
+      required?: boolean;
+      validation?: string;
+    },
+    value: unknown,
+  ) => {
     if (
       field.required &&
       (!value || (typeof value === "string" && value.trim() === ""))
@@ -115,7 +172,10 @@ export const StructuredDataRequest = ({
     return "";
   };
 
-  const handleChange = (field: any, value: any) => {
+  const handleChange = (
+    field: { id: string; label: string },
+    value: unknown,
+  ) => {
     setFormValues((prev) => ({
       ...prev,
       [field.id]: value,
@@ -134,13 +194,13 @@ export const StructuredDataRequest = ({
     const errors: Record<string, string> = {};
     let hasErrors = false;
 
-    fields.forEach((field) => {
+    for (const field of fields) {
       const error = validateField(field, formValues[field.id]);
       if (error) {
         errors[field.id] = error;
         hasErrors = true;
       }
-    });
+    }
 
     setFormErrors(errors);
 
@@ -148,33 +208,17 @@ export const StructuredDataRequest = ({
       return;
     }
 
-    setIsSubmitting(true);
-
-    try {
-      await updateStructuredDataResponse(formResponseId, {
-        state: "submitted",
-        formData: formValues,
-      });
-
-      toast.success("Form submitted successfully");
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      toast.error("Failed to submit form");
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Use the mutation to submit
+    submitMutation.mutate({
+      id: formResponseId,
+      state: "submitted",
+      formData: formValues,
+    });
   };
 
   const handleCancel = async () => {
-    try {
-      await updateStructuredDataResponse(formResponseId, {
-        state: "cancelled",
-      });
-      toast.info("Form request cancelled");
-    } catch (error) {
-      console.error("Error cancelling form:", error);
-      toast.error("Failed to cancel form request");
-    }
+    // Use the mutation to cancel
+    cancelMutation.mutate(formResponseId);
   };
 
   // Render different UI based on state
@@ -232,15 +276,15 @@ export const StructuredDataRequest = ({
               {field.type === "textarea" ? (
                 <Textarea
                   id={field.id}
-                  placeholder={field.placeholder}
-                  value={formValues[field.id] || ""}
+                  placeholder={field.placeholder || undefined}
+                  value={(formValues[field.id] as string) || ""}
                   onChange={(e) => handleChange(field, e.target.value)}
                   className={cn(formErrors[field.id] && "border-red-500")}
                 />
               ) : field.type === "select" ? (
                 <select
                   id={field.id}
-                  value={formValues[field.id] || ""}
+                  value={(formValues[field.id] as string) || ""}
                   onChange={(e) => handleChange(field, e.target.value)}
                   className={cn(
                     "w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary",
@@ -268,8 +312,8 @@ export const StructuredDataRequest = ({
                 <Input
                   id={field.id}
                   type={field.type}
-                  placeholder={field.placeholder}
-                  value={formValues[field.id] || ""}
+                  placeholder={field.placeholder || undefined}
+                  value={(formValues[field.id] as string) || ""}
                   onChange={(e) => handleChange(field, e.target.value)}
                   className={cn(formErrors[field.id] && "border-red-500")}
                 />
@@ -308,4 +352,3 @@ export const StructuredDataRequest = ({
     />
   );
 };
-

@@ -9,7 +9,7 @@ import { StructuredDataRequest } from "./tools/structured-data-request";
 // import type { Components } from "react-markdown";
 import { Message, MessageContent, MessageAvatar } from "./ui/message";
 import type { ToolInvocation, UIMessage } from "ai";
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 // Markdown components for future use if needed
 /*
 const markdownComponents: Partial<Components> = {
@@ -113,38 +113,28 @@ function StructuredDataRequestWrapper({
   request: ToolInvocation;
   chatId: string;
 }) {
-  const [formResponse, setFormResponse] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
   // Extract toolCallId from request
   const toolCallId = request.toolCallId;
-
-  useEffect(() => {
-    const fetchFormResponse = async () => {
-      try {
-        if (!toolCallId || !chatId) {
-          console.error("Missing toolCallId or chatId", { toolCallId, chatId });
-          setLoading(false);
-          return;
-        }
-
-        const response = await getStructuredDataResponse(chatId, toolCallId);
-        setFormResponse(response);
-      } catch (error) {
-        console.error("Error fetching form response:", error);
-      } finally {
-        setLoading(false);
+  
+  // Use React Query to fetch and poll form response data
+  const { data: formResponse, isLoading, error } = useQuery({
+    queryKey: ["formResponse", chatId, toolCallId],
+    queryFn: async () => {
+      if (!toolCallId || !chatId) {
+        throw new Error("Missing toolCallId or chatId");
       }
-    };
+      const response = await getStructuredDataResponse(chatId, toolCallId);
+      return response || null;
+    },
+    // Enable polling to check for updates
+    refetchInterval: 2000,
+    // Keep data fresh for a short time (500ms)
+    staleTime: 500, 
+    // Don't refetch on window focus to avoid UI jitter
+    refetchOnWindowFocus: false,
+  });
 
-    fetchFormResponse();
-
-    // Poll for updates every 2 seconds
-    const interval = setInterval(fetchFormResponse, 2000);
-    return () => clearInterval(interval);
-  }, [toolCallId, chatId]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="animate-pulse p-4 rounded-md bg-muted/20 border">
         <div className="h-4 w-3/4 bg-muted rounded mb-2" />
@@ -153,7 +143,7 @@ function StructuredDataRequestWrapper({
     );
   }
 
-  if (!formResponse) {
+  if (error || !formResponse) {
     return (
       <div className="p-4 rounded-md bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
         <p className="text-sm text-red-700 dark:text-red-400">
@@ -168,7 +158,7 @@ function StructuredDataRequestWrapper({
       request={request}
       formResponseId={formResponse.id}
       state={formResponse.state}
-      formData={formResponse.formData}
+      formData={formResponse.formData as Record<string, unknown> | null}
     />
   );
 }
