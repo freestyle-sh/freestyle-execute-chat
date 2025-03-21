@@ -6,19 +6,12 @@ import { CodeExecution } from "./tools/code-execution";
 import { SendFeedback } from "./tools/send-feedback";
 import { RequestDocs } from "./tools/request-docs";
 import { StructuredDataRequest } from "./tools/structured-data-request";
-// import type { Components } from "react-markdown";
-import { Message, MessageContent, MessageAvatar } from "./ui/message";
+import { Message, MessageContent } from "./ui/message";
 import type { ToolInvocation, UIMessage } from "ai";
 import { useQuery } from "@tanstack/react-query";
-// Markdown components for future use if needed
-/*
-const markdownComponents: Partial<Components> = {
-  h1: ({ children }) => <h1 className="text-2xl font-bold mb-2">{children}</h1>,
-};
-*/
 
 export function UserMessage({
-  chatId,
+  chatId: _,
   message,
 }: {
   chatId: string;

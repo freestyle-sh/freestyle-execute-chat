@@ -2,7 +2,6 @@ import { tool } from "ai";
 import { z } from "zod";
 import { userFormResponsesTable } from "@/db/schema";
 import { db } from "@/db";
-import { eq } from "drizzle-orm";
 
 export function structuredDataRequestTool({ chatId }: { chatId: string }) {
   return tool({
@@ -69,4 +68,3 @@ export function structuredDataRequestTool({ chatId }: { chatId: string }) {
     },
   });
 }
-
