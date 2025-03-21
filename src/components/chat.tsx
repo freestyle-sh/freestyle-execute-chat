@@ -310,38 +310,22 @@ export function PromptInputBasic({
                 </div>
               </>
             ) : chatId ? (
-              modules
-                .filter((module) => module.isConfigured)
-                .map((module, index) => (
-                  <button
-                    type="button"
-                    key={`enabled-${index.toString()}`}
-                    className={cn(
-                      "inline-flex items-center px-3 py-1.5 rounded-2xl border cursor-pointer transition-all text-xs active:scale-95",
-                      module.isEnabled === false
-                        ? "opacity-50 bg-muted/30"
-                        : "module-bg",
-                    )}
-                    style={
-                      {
-                        "--module-light": `#${module.lightModeColor}`,
-                        "--module-dark": `#${module.darkModeColor}`,
-                      } as React.CSSProperties
-                    }
-                    onClick={() =>
-                      handleToggleModule(module.id, module.isEnabled)
-                    }
-                  >
-                    <div
-                      // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
-                      dangerouslySetInnerHTML={{
-                        __html: module.svg,
-                      }}
+              modules.filter((module) => module.isConfigured).length === 0 ? (
+                <div className="text-xs text-muted-foreground px-1">
+                  No modules configured.
+                </div>
+              ) : (
+                modules
+                  .filter((module) => module.isConfigured)
+                  .map((module, index) => (
+                    <button
+                      type="button"
+                      key={`enabled-${index.toString()}`}
                       className={cn(
-                        "w-4 h-4 mr-1.5 object-contain",
+                        "inline-flex items-center px-3 py-1.5 rounded-2xl border cursor-pointer transition-all text-xs active:scale-95",
                         module.isEnabled === false
-                          ? "opacity-50"
-                          : "module-fill",
+                          ? "opacity-50 bg-muted/30"
+                          : "module-bg",
                       )}
                       style={
                         {
@@ -349,13 +333,39 @@ export function PromptInputBasic({
                           "--module-dark": `#${module.darkModeColor}`,
                         } as React.CSSProperties
                       }
-                    />
+                      onClick={() =>
+                        handleToggleModule(module.id, module.isEnabled)
+                      }
+                    >
+                      <div
+                        // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
+                        dangerouslySetInnerHTML={{
+                          __html: module.svg,
+                        }}
+                        className={cn(
+                          "w-4 h-4 mr-1.5 object-contain",
+                          module.isEnabled === false
+                            ? "opacity-50"
+                            : "module-fill",
+                        )}
+                        style={
+                          {
+                            "--module-light": `#${module.lightModeColor}`,
+                            "--module-dark": `#${module.darkModeColor}`,
+                          } as React.CSSProperties
+                        }
+                      />
 
-                    <span>{capitalize(module.name)}</span>
-                  </button>
-                ))
+                      <span>{capitalize(module.name)}</span>
+                    </button>
+                  ))
+              )
+            ) : // Show modules from store for homepage (non-persisted) chat
+            modules.filter((module) => module.isConfigured).length === 0 ? (
+              <div className="text-xs text-muted-foreground px-1">
+                No modules configured.
+              </div>
             ) : (
-              // Show modules from store for homepage (non-persisted) chat
               modules
                 .filter((module) => module.isConfigured)
                 .map((module, index) => {
