@@ -113,11 +113,13 @@ function StructuredDataRequestWrapper({
   request: ToolInvocation;
   chatId: string;
 }) {
-  // Extract toolCallId from request
   const toolCallId = request.toolCallId;
-  
-  // Use React Query to fetch and poll form response data
-  const { data: formResponse, isLoading, error } = useQuery({
+
+  const {
+    data: formResponse,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["formResponse", chatId, toolCallId],
     queryFn: async () => {
       if (!toolCallId || !chatId) {
@@ -126,12 +128,6 @@ function StructuredDataRequestWrapper({
       const response = await getStructuredDataResponse(chatId, toolCallId);
       return response || null;
     },
-    // Enable polling to check for updates
-    refetchInterval: 2000,
-    // Keep data fresh for a short time (500ms)
-    staleTime: 500, 
-    // Don't refetch on window focus to avoid UI jitter
-    refetchOnWindowFocus: false,
   });
 
   if (isLoading) {
