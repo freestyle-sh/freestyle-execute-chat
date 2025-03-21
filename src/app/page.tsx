@@ -4,11 +4,13 @@ import { useState } from "react";
 
 import { PromptInputBasic } from "@/components/chat";
 import { useTransitionRouter } from "next-view-transitions";
-import { createChat } from "@/lib/actions/create-chat";
+import { createChat } from "@/actions/chats/create-chat";
 import { useQueryClient } from "@tanstack/react-query";
-import { useModulesStore } from "@/lib/stores/modules";
+import { useModulesStore } from "@/stores/modules";
+import { useUser } from "@stackframe/stack";
 
 export default function Home() {
+  const user = useUser({ or: "anonymous" });
   const [prompt, setPrompt] = useState("");
   const queryClient = useQueryClient();
   const router = useTransitionRouter();

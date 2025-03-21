@@ -1,31 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 
 import { SettingsSection } from "@/components/settings";
 import { ModuleConfigDrawer } from "@/components/module-config";
 import { ModuleIcon } from "@/components/module-icon";
-import {
-  listModules,
-  type ModuleWithRequirements,
-} from "@/lib/actions/list-modules";
+import { listModules } from "@/actions/modules/list-modules";
 import { Skeleton } from "@/components/ui/skeleton";
-
-// Import server action
-import { saveModuleConfiguration as saveConfig } from "@/lib/actions/list-modules";
-
-async function saveModuleConfiguration(
-  moduleId: string,
-  configs: Record<string, string>,
-): Promise<void> {
-  try {
-    await saveConfig(moduleId, configs);
-  } catch (error) {
-    throw new Error(error instanceof Error ? error.message : "Failed to save configuration");
-  }
-}
+import { saveModuleConfiguration } from "@/actions/modules/set-config";
 
 interface ModulesSettingsProps {
   moduleToOpen?: string | null;
@@ -154,7 +136,7 @@ export function ModulesSettings({ moduleToOpen }: ModulesSettingsProps = {}) {
               {module.environmentVariableRequirements.length > 0 ? (
                 <ModuleConfigDrawer
                   module={module}
-                  onConfigSave={handleConfigSave}
+                  onConfigSaveAction={handleConfigSave}
                   defaultOpen={moduleToOpen === module.id}
                 />
               ) : (

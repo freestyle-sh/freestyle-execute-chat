@@ -82,4 +82,3 @@ export async function toggleChatModule({
     throw new Error("Failed to toggle chat module");
   }
 }
-

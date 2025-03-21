@@ -1,7 +1,7 @@
+import { maybeUpdateChatTitle } from "@/actions/chats/create-chat";
+import { listModules } from "@/actions/modules/list-modules";
 import { db } from "@/db";
 import { messagesTable } from "@/db/schema";
-import { maybeUpdateChatTitle } from "@/lib/actions/create-chat";
-import { listModules } from "@/lib/actions/list-modules";
 import { claudeSonnetModel } from "@/lib/model";
 import { systemPrompt } from "@/lib/system-prompt";
 import { sendFeedbackTool } from "@/lib/tools/send-feedback";
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     modules
       .filter((module) => module.isEnabled)
       .map((module) => module.nodeModules as Record<string, string>)
-      .flatMap(Object.entries)
+      .flatMap(Object.entries),
   );
 
   const envVars = Object.fromEntries(
@@ -41,8 +41,7 @@ export async function POST(request: Request) {
         return configurations.map((configuration) => {
           return [configuration.name, configuration.value];
         });
-      })
-      .flat()
+      }),
   );
 
   console.log("NODE MODULES", nodeModules);
@@ -70,7 +69,7 @@ export async function POST(request: Request) {
   }
 
   maybeUpdateChatTitle(chatId).catch((error) =>
-    console.error("Failed to update chat title:", error)
+    console.error("Failed to update chat title:", error),
   );
 
   console.log("JSON", json, "CHAT ID", chatId);

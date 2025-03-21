@@ -7,12 +7,14 @@ import {
   usersTable,
   chatModulesEnabledTable,
 } from "@/db/schema";
-import { STACKAUTHID } from "./tempuserid";
 import type { TextUIPart } from "@ai-sdk/ui-utils";
 import { claudeSonnetModel } from "@/lib/model";
 import { generateText } from "ai";
 import { renameChat } from "./rename-chat";
 import { asc, eq } from "drizzle-orm";
+
+import type { ModuleState } from "@/stores/modules";
+import { stackServerApp } from "@/stack";
 
 export async function generateChatTitle(message: string, chatId: string) {
   try {
@@ -65,19 +67,20 @@ export async function maybeUpdateChatTitle(chatId: string): Promise<boolean> {
   return false;
 }
 
-import type { ModuleState } from "@/lib/stores/modules";
-
 export async function createChat(
   firstMessage?: string,
   selectedModules?: Record<string, ModuleState>,
 ) {
   "use server";
 
+  const user = await stackServerApp.getUser({ or: "anonymous" });
+  const userId = user.id;
+
   await db
     .insert(usersTable)
     .values({
       stackId: "STACKAUTH",
-      id: STACKAUTHID,
+      id: userId,
     })
     .onConflictDoNothing();
 
@@ -86,7 +89,7 @@ export async function createChat(
     .values({
       createdAt: new Date(),
       id: crypto.randomUUID(),
-      userId: STACKAUTHID,
+      userId: userId,
     })
     .returning();
 

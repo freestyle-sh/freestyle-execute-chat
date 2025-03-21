@@ -19,22 +19,22 @@ import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import type { Message } from "@/db/schema";
-import { insertMessage } from "@/lib/actions/insert-message";
+import { insertMessage } from "@/actions/chats/insert-message";
 // import { useTransitionRouter } from "next-view-transitions";
 import ChatMessage from "./message";
 import { useRouter } from "next/navigation";
 import { ChatContainer } from "./ui/chat-container";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { chatExists } from "@/lib/actions/check-chat";
-import { useSidebarStore } from "@/lib/stores/sidebar";
-import { useModulesStore } from "@/lib/stores/modules";
+import { chatExists } from "@/actions/chats/check-chat";
+import { useSidebarStore } from "@/stores/sidebar";
+import { useModulesStore } from "@/stores/modules";
 import {
   listModules,
   type ModuleWithRequirements,
-} from "@/lib/actions/list-modules";
+} from "@/actions/modules/list-modules";
 import { capitalize } from "@/lib/typography";
 import { Skeleton } from "./ui/skeleton";
-import { toggleChatModule } from "@/lib/actions/toggle-chat-module";
+import { toggleChatModule } from "@/actions/modules/toggle-chat-module";
 
 const MobileHeader = ({ title }: { title: string }) => {
   const { toggleMobile } = useSidebarStore();
@@ -295,55 +295,37 @@ export function PromptInputBasic({
         <div className="flex justify-between">
           <div className="flex flex-wrap gap-2 items-center">
             {isLoadingModules ? (
-              // Loading skeleton state with exact same styles as actual pills
               <>
-                <div className="inline-flex items-center px-3 py-1.5 rounded-2xl border transition-all text-xs opacity-70 bg-muted/30">
+                <div className="inline-flex items-center px-2 py-1.5 rounded-2xl border transition-all text-xs opacity-70 bg-muted/30">
                   <Skeleton className="w-4 h-4 mr-1.5 rounded-sm" />
                   <Skeleton className="w-16 h-3.5" />
                 </div>
-                <div className="inline-flex items-center px-3 py-1.5 rounded-2xl border transition-all text-xs opacity-70 bg-muted/30">
+                <div className="inline-flex items-center px-2 py-1.5 rounded-2xl border transition-all text-xs opacity-70 bg-muted/30">
                   <Skeleton className="w-4 h-4 mr-1.5 rounded-sm" />
                   <Skeleton className="w-20 h-3.5" />
                 </div>
-                <div className="inline-flex items-center px-3 py-1.5 rounded-2xl border transition-all text-xs opacity-70 bg-muted/30">
+                <div className="inline-flex items-center px-2 py-1.5 rounded-2xl border transition-all text-xs opacity-70 bg-muted/30">
                   <Skeleton className="w-4 h-4 mr-1.5 rounded-sm" />
                   <Skeleton className="w-14 h-3.5" />
                 </div>
               </>
             ) : chatId ? (
-              // Show modules from the database for persisted chats
-              modules
-                .filter((module) => module.isConfigured)
-                .map((module, index) => (
-                  <button
-                    type="button"
-                    key={`enabled-${index.toString()}`}
-                    className={cn(
-                      "inline-flex items-center px-3 py-1.5 rounded-2xl border cursor-pointer transition-all text-xs active:scale-95",
-                      module.isEnabled === false
-                        ? "opacity-50 bg-muted/30"
-                        : "module-bg"
-                    )}
-                    style={
-                      {
-                        "--module-light": `#${module.lightModeColor}`,
-                        "--module-dark": `#${module.darkModeColor}`,
-                      } as React.CSSProperties
-                    }
-                    onClick={() =>
-                      handleToggleModule(module.id, module.isEnabled)
-                    }
-                  >
-                    <div
-                      // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
-                      dangerouslySetInnerHTML={{
-                        __html: module.svg,
-                      }}
+              modules.filter((module) => module.isConfigured).length === 0 ? (
+                <div className="text-xs text-muted-foreground px-1">
+                  No modules configured.
+                </div>
+              ) : (
+                modules
+                  .filter((module) => module.isConfigured)
+                  .map((module, index) => (
+                    <button
+                      type="button"
+                      key={`enabled-${index.toString()}`}
                       className={cn(
-                        "w-4 h-4 mr-1.5 object-contain",
+                        "inline-flex items-center px-3 py-1.5 rounded-2xl border cursor-pointer transition-all text-xs active:scale-95",
                         module.isEnabled === false
-                          ? "opacity-50"
-                          : "module-fill"
+                          ? "opacity-50 bg-muted/30"
+                          : "module-bg"
                       )}
                       style={
                         {
@@ -351,13 +333,39 @@ export function PromptInputBasic({
                           "--module-dark": `#${module.darkModeColor}`,
                         } as React.CSSProperties
                       }
-                    />
+                      onClick={() =>
+                        handleToggleModule(module.id, module.isEnabled)
+                      }
+                    >
+                      <div
+                        // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
+                        dangerouslySetInnerHTML={{
+                          __html: module.svg,
+                        }}
+                        className={cn(
+                          "w-4 h-4 mr-1.5 object-contain",
+                          module.isEnabled === false
+                            ? "opacity-50"
+                            : "module-fill"
+                        )}
+                        style={
+                          {
+                            "--module-light": `#${module.lightModeColor}`,
+                            "--module-dark": `#${module.darkModeColor}`,
+                          } as React.CSSProperties
+                        }
+                      />
 
-                    <span>{capitalize(module.name)}</span>
-                  </button>
-                ))
+                      <span>{capitalize(module.name)}</span>
+                    </button>
+                  ))
+              )
+            ) : // Show modules from store for homepage (non-persisted) chat
+            modules.filter((module) => module.isConfigured).length === 0 ? (
+              <div className="text-xs text-muted-foreground px-1">
+                No modules configured.
+              </div>
             ) : (
-              // Show modules from store for homepage (non-persisted) chat
               modules
                 .filter((module) => module.isConfigured)
                 .map((module, index) => {

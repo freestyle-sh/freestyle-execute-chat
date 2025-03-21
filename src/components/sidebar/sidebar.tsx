@@ -15,7 +15,7 @@ import { SidebarToggleButton } from "./toggle-button";
 import Logo from "../logo";
 import { SidebarHistory } from "./history";
 import { SidebarCreateChat } from "./create-chat-button";
-import { useSidebarStore, useSidebarInit } from "@/lib/stores/sidebar";
+import { useSidebarStore, useSidebarInit } from "@/stores/sidebar";
 import { siGithub } from "simple-icons";
 
 export function ChatSidebar() {

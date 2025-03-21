@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { StackProvider, StackTheme } from "@stackframe/stack";
+import { stackServerApp } from "../stack";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ViewTransitions } from "next-view-transitions";
 
@@ -31,12 +33,12 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
+        ><StackProvider app={stackServerApp}><StackTheme>
           <Providers>
             <ChatSidebar />
             <main className="w-screen">{children}</main>
           </Providers>
-        </body>
+        </StackTheme></StackProvider></body>
       </html>
     </ViewTransitions>
   );
