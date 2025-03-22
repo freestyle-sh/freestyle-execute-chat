@@ -345,7 +345,7 @@ export function PromptInputBasic({
                         className={cn(
                           "w-4 h-4 mr-1.5 object-contain",
                           module.isEnabled === false
-                            ? "opacity-50"
+                            ? "opacity-50 dark:fill-gray-400"
                             : "module-fill"
                         )}
                         style={
@@ -356,7 +356,9 @@ export function PromptInputBasic({
                         }
                       />
 
-                      <span>{capitalize(module.name)}</span>
+                      <span className={module.isEnabled ? "text-module" : ""}>
+                        {capitalize(module.name)}
+                      </span>
                     </button>
                   ))
               )

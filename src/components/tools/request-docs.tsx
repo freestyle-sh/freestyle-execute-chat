@@ -71,15 +71,17 @@ export const RequestDocs = ({ request, className }: RequestDocsProps) => {
   return (
     <>
       <ToolOutput
-        title="Documentation Request"
+        title={
+          <>
+            Loaded documentation for <b>{request.args.moduleId}</b> into context
+          </>
+        }
         icon={FileQuestion}
         badge={
           <ToolOutputBadge variant={badgeVariant}>
             Documentation
           </ToolOutputBadge>
         }
-        input={query && `Query: ${query}`}
-        result={result}
         className={className}
       />
     </>
