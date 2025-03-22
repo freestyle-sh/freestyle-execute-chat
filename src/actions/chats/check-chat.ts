@@ -1,9 +1,9 @@
 "use server";
 import { db } from "@/db";
-import { chatsTable } from "@/db/schema";
+import { type Chat, chatsTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
-export async function chatExists(id: string): Promise<boolean> {
+export async function getChatInfo(id: string): Promise<Chat | undefined> {
   "use server";
 
   return await db
@@ -11,5 +11,5 @@ export async function chatExists(id: string): Promise<boolean> {
     .from(chatsTable)
     .where(eq(chatsTable.id, id))
     .limit(1)
-    .then((result) => result.length > 0);
+    .then((result) => (result.length > 0 ? result[0] : undefined));
 }

@@ -34,6 +34,7 @@ export type StructuredDataRequestProps = {
   formData: Record<string, unknown> | null;
   className?: string;
   chatId: string;
+  addToolResultAction: ReturnType<typeof useChat>["addToolResult"];
 };
 
 export function StructuredDataRequest({
@@ -43,11 +44,8 @@ export function StructuredDataRequest({
   state,
   formData,
   className,
+  addToolResultAction,
 }: StructuredDataRequestProps) {
-  const { addToolResult, reload } = useChat({
-    id: chatId,
-  });
-
   // Extract request from the props, handling both custom format and ToolInvocation
   let title = "";
   let description = "";
@@ -92,6 +90,10 @@ export function StructuredDataRequest({
     }
   }
 
+  const { addToolResult } = useChat({
+    id: chatId,
+  });
+
   // Use form data from props or initialize new form data
   const [formValues, setFormValues] = useState<Record<string, unknown>>(
     formData ?? {},
@@ -103,19 +105,21 @@ export function StructuredDataRequest({
 
   // Create mutations for form submission and cancellation
   const submitMutation = useMutation({
-    mutationFn: (data: {
+    mutationFn: async (data: {
       id: string;
       state: string;
       formData: Record<string, unknown>;
     }) => {
-      addToolResult({
-        toolCallId: request.toolCallId,
-        result: `Form submitted successfully with data: ${JSON.stringify(data.formData, null, 2)}`,
-      });
+      const toolCallId = request.toolCallId;
 
-      return updateStructuredDataResponse(data.id, {
+      await updateStructuredDataResponse(data.id, {
         state: data.state,
         formData: data.formData,
+      });
+
+      addToolResultAction({
+        toolCallId,
+        result: `Form submitted successfully with data: ${JSON.stringify(data.formData, null, 2)}`,
       });
     },
     onSuccess: () => {
@@ -132,14 +136,16 @@ export function StructuredDataRequest({
   });
 
   const cancelMutation = useMutation({
-    mutationFn: (id: string) => {
-      addToolResult({
-        toolCallId: request.toolCallId,
-        result: "Form request cancelled",
+    mutationFn: async (id: string) => {
+      const toolCallId = request.toolCallId;
+
+      await updateStructuredDataResponse(id, {
+        state: "cancelled",
       });
 
-      return updateStructuredDataResponse(id, {
-        state: "cancelled",
+      addToolResultAction({
+        toolCallId,
+        result: "Form request cancelled",
       });
     },
     onSuccess: () => {

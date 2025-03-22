@@ -12,6 +12,7 @@ import { StructuredDataRequest } from "./tools/structured-data-request";
 import { Message, MessageContent } from "./ui/message";
 import type { ToolInvocation, UIMessage } from "ai";
 import { useQuery } from "@tanstack/react-query";
+import { useChat } from "@ai-sdk/react";
 
 export function UserMessage({
   chatId: _,
@@ -51,9 +52,11 @@ export function UserMessage({
 export function AIMessage({
   chatId,
   message,
+  addToolResultAction,
 }: {
   chatId: string;
   message: UIMessage;
+  addToolResultAction: ReturnType<typeof useChat>["addToolResult"];
 }) {
   return (
     <>
@@ -92,6 +95,7 @@ export function AIMessage({
                 <StructuredDataRequestWrapper
                   request={part.toolInvocation}
                   chatId={chatId}
+                  addToolResultAction={addToolResultAction}
                 />
               )}
             </>
@@ -105,9 +109,11 @@ export function AIMessage({
 function StructuredDataRequestWrapper({
   request,
   chatId,
+  addToolResultAction,
 }: {
   request: ToolInvocation;
   chatId: string;
+  addToolResultAction: ReturnType<typeof useChat>["addToolResult"];
 }) {
   const toolCallId = request.toolCallId;
 
@@ -151,6 +157,7 @@ function StructuredDataRequestWrapper({
 
   return (
     <StructuredDataRequest
+      addToolResultAction={addToolResultAction}
       chatId={chatId}
       request={request}
       formResponseId={formResponse.id}
@@ -163,14 +170,22 @@ function StructuredDataRequestWrapper({
 export default function ChatMessage({
   chatId,
   message,
+  addToolResultAction,
 }: {
   chatId: string;
   message: UIMessage;
+  addToolResultAction: ReturnType<typeof useChat>["addToolResult"];
 }) {
   switch (message.role) {
     case "user":
       return <UserMessage chatId={chatId} message={message} />;
     default:
-      return <AIMessage chatId={chatId} message={message} />;
+      return (
+        <AIMessage
+          addToolResultAction={addToolResultAction}
+          chatId={chatId}
+          message={message}
+        />
+      );
   }
 }

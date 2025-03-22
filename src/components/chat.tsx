@@ -15,7 +15,13 @@ import {
   Square,
 } from "lucide-react";
 import type { ChatRequestOptions } from "ai";
-import { type ChangeEvent, useEffect, useRef, useState } from "react";
+import {
+  type ChangeEvent,
+  createContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import type { Message } from "@/db/schema";
@@ -25,7 +31,7 @@ import ChatMessage from "./message";
 import { useRouter } from "next/navigation";
 import { ChatContainer } from "./chat-container";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { chatExists } from "@/actions/chats/check-chat";
+import { getChatInfo } from "@/actions/chats/check-chat";
 import { useSidebarStore } from "@/stores/sidebar";
 import { useModulesStore } from "@/stores/modules";
 import {
@@ -69,57 +75,48 @@ export function ChatUI({
   const router = useRouter();
   const queryClient = useQueryClient();
   const hasRunRef = useRef(false);
-  const [chatTitle, setChatTitle] = useState<string>("New Chat");
 
-  const { data: exists = true } = useQuery({
+  const { data: chat } = useQuery({
     queryKey: ["chats", chatId],
-    queryFn: () => chatExists(chatId),
+    queryFn: () =>
+      getChatInfo(chatId).then((chat) => {
+        if (chat === undefined) {
+          router.replace("/");
+        }
+        return chat;
+      }),
   });
 
-  useEffect(() => {
-    if (!exists) {
-      router.replace("/");
-    }
-  }, [exists, router]);
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    status,
+    reload,
+    addToolResult,
+  } = useChat({
+    id: chatId,
+    initialMessages,
+    fetch: async (req, init) => {
+      return fetch(req, {
+        ...init,
+        headers: {
+          ...init?.headers,
+          "chat-id": chatId,
+          "allow-first-message": initialMessages.length >= 1 ? "false" : "true",
+        },
+      });
+    },
+    onFinish: async (message) => {
+      console.log("onFinish", message);
 
-  // Get chat title from the first user message, if available
-  useEffect(() => {
-    if (initialMessages.length > 0) {
-      const firstUserMessage = initialMessages.find(
-        (msg) => msg.role === "user",
-      );
-      if (firstUserMessage?.content) {
-        // Create a title from the first ~25 chars of the first message
-        const title = firstUserMessage.content.substring(0, 25);
-        setChatTitle(title + (title.length >= 25 ? "..." : ""));
-      }
-    }
-  }, [initialMessages]);
+      await insertMessage(chatId, message);
 
-  const { messages, input, handleInputChange, handleSubmit, status, reload } =
-    useChat({
-      id: chatId,
-      initialMessages,
-      fetch: async (req, init) => {
-        return fetch(req, {
-          ...init,
-          headers: {
-            ...init?.headers,
-            "chat-id": chatId,
-            "allow-first-message":
-              initialMessages.length >= 1 ? "false" : "true",
-          },
-        });
-      },
-      onFinish: async (message) => {
-        console.log("onFinish", message);
-
-        await insertMessage(chatId, message);
-
-        // Invalidate chats list to update sidebar history order
-        queryClient.invalidateQueries({ queryKey: ["chats"] });
-      },
-    });
+      // Invalidate chats list to update sidebar history order
+      queryClient.invalidateQueries({ queryKey: ["chats"] });
+    },
+  });
 
   useEffect(() => {
     if (hasRunRef.current) return; // already ran
@@ -133,7 +130,7 @@ export function ChatUI({
 
   return (
     <div className="flex flex-col h-svh">
-      <MobileHeader title={chatTitle} />
+      <MobileHeader title={chat?.name ?? "Untitled"} />
       <ChatContainer
         autoScroll
         className={cn(
@@ -150,7 +147,12 @@ export function ChatUI({
           </div>
         ) : (
           messages.map((message) => (
-            <ChatMessage key={message.id} message={message} chatId={chatId} />
+            <ChatMessage
+              addToolResultAction={addToolResult}
+              key={message.id}
+              message={message}
+              chatId={chatId}
+            />
           ))
         )}
       </ChatContainer>
