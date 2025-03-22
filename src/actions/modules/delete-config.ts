@@ -1,17 +1,20 @@
 "use server";
 import { db } from "@/db";
-import { STACKAUTHID } from "@/actions/auth/tempuserid";
 import {
   freestyleModulesConfigurationsTable,
   freestyleModulesEnvironmentVariableRequirementsTable,
 } from "@/db/schema";
+import { stackServerApp } from "@/stack";
 import { and, eq } from "drizzle-orm";
 
 /**
  * Delete all configurations for a module
  */
 export async function deleteModuleConfiguration(moduleId: string) {
-  const userId = STACKAUTHID;
+  const user = await stackServerApp.getUser({
+    or: "anonymous",
+  });
+  const userId = user.id;
 
   // Get all environment variable requirements for this module
   const envVarRequirements = await db
@@ -20,8 +23,8 @@ export async function deleteModuleConfiguration(moduleId: string) {
     .where(
       eq(
         freestyleModulesEnvironmentVariableRequirementsTable.moduleId,
-        moduleId,
-      ),
+        moduleId
+      )
     );
 
   // Delete all configurations for this module and user
@@ -34,11 +37,11 @@ export async function deleteModuleConfiguration(moduleId: string) {
             eq(freestyleModulesConfigurationsTable.userId, userId),
             eq(
               freestyleModulesConfigurationsTable.environmentVariableId,
-              requirement.id,
-            ),
-          ),
+              requirement.id
+            )
+          )
         );
-    }),
+    })
   );
 
   return { success: true };

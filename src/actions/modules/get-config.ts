@@ -1,12 +1,12 @@
 "use server";
 
 import { db } from "@/db";
-import { STACKAUTHID } from "@/actions/auth/tempuserid";
 import {
   freestyleModulesConfigurationsTable,
   freestyleModulesEnvironmentVariableRequirementsTable,
 } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
+import { stackServerApp } from "@/stack";
 
 /**
  * Get module configuration for a specific module
@@ -15,8 +15,10 @@ export async function getModuleConfiguration(moduleId: string) {
   "use server";
 
   // Use a placeholder user ID for now
-  const userId = STACKAUTHID;
-
+  const user = await stackServerApp.getUser({
+    or: "anonymous",
+  });
+  const userId = user.id;
   // Get all environment variable requirements for this module
   const requirements = await db
     .select()
@@ -24,8 +26,8 @@ export async function getModuleConfiguration(moduleId: string) {
     .where(
       eq(
         freestyleModulesEnvironmentVariableRequirementsTable.moduleId,
-        moduleId,
-      ),
+        moduleId
+      )
     );
 
   // Get existing configurations for this module and user
@@ -36,17 +38,17 @@ export async function getModuleConfiguration(moduleId: string) {
       freestyleModulesEnvironmentVariableRequirementsTable,
       eq(
         freestyleModulesConfigurationsTable.environmentVariableId,
-        freestyleModulesEnvironmentVariableRequirementsTable.id,
-      ),
+        freestyleModulesEnvironmentVariableRequirementsTable.id
+      )
     )
     .where(
       and(
         eq(
           freestyleModulesEnvironmentVariableRequirementsTable.moduleId,
-          moduleId,
+          moduleId
         ),
-        eq(freestyleModulesConfigurationsTable.userId, userId),
-      ),
+        eq(freestyleModulesConfigurationsTable.userId, userId)
+      )
     );
 
   // Map configurations to a more user-friendly format

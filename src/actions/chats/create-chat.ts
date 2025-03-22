@@ -69,7 +69,7 @@ export async function maybeUpdateChatTitle(chatId: string): Promise<boolean> {
 
 export async function createChat(
   firstMessage?: string,
-  selectedModules?: Record<string, ModuleState>,
+  selectedModules?: Record<string, ModuleState>
 ) {
   "use server";
 
@@ -79,7 +79,7 @@ export async function createChat(
   await db
     .insert(usersTable)
     .values({
-      stackId: "STACKAUTH",
+      stackId: userId,
       id: userId,
     })
     .onConflictDoNothing();
@@ -137,8 +137,8 @@ export async function createChat(
               set: {
                 enabled: enabled ?? false,
               },
-            }),
-        ),
+            })
+        )
       );
     } catch (error) {
       console.error("Failed to apply modules to chat:", error);

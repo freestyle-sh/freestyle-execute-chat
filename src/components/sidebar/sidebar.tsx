@@ -1,6 +1,6 @@
 "use client";
 
-import { SettingsIcon, GithubIcon } from "lucide-react";
+import { SettingsIcon, GithubIcon, LogInIcon } from "lucide-react";
 import Link from "next/link";
 
 import {
@@ -16,11 +16,15 @@ import Logo from "../logo";
 import { SidebarHistory } from "./history";
 import { SidebarCreateChat } from "./create-chat-button";
 import { useSidebarStore, useSidebarInit } from "@/stores/sidebar";
-import { siGithub } from "simple-icons";
+// import { siGithub } from "simple-icons";
+import { UserButton, useUser } from "@stackframe/stack";
+import { Router } from "next/router";
+import { useRouter } from "next/navigation";
 
 export function ChatSidebar() {
   const { openMobile, setOpenMobile } = useSidebarStore();
-
+  const user = useUser();
+  const router = useRouter();
   // Initialize sidebar with mobile closed on mount
   useSidebarInit();
 
@@ -48,11 +52,27 @@ export function ChatSidebar() {
             target="_blank"
             icon={GithubIcon}
           />
-          <SidebarMenuLinkItem
-            href="/settings"
-            icon={SettingsIcon}
-            label="Settings"
-          />
+          {user ? (
+            <>
+              <SidebarMenuLinkItem
+                href="/settings"
+                icon={SettingsIcon}
+                label="Settings"
+              />
+              <SidebarMenuLinkItem
+                href="/handler/signout"
+                icon={LogInIcon}
+                label="Logout"
+              />
+            </>
+          ) : (
+            <SidebarMenuLinkItem
+              href="/handler/signin"
+              icon={LogInIcon}
+              label="Login"
+            />
+          )}
+
           <SidebarToggleButton />
         </SidebarMenu>
       </SidebarFooter>

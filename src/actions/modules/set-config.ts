@@ -1,12 +1,12 @@
 "use server";
 import { z } from "zod";
-import { STACKAUTHID } from "@/actions/auth/tempuserid";
 import { db } from "@/db";
 import {
   freestyleModulesConfigurationsTable,
   freestyleModulesEnvironmentVariableRequirementsTable,
 } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
+import { stackServerApp } from "@/stack";
 
 // Schema for configuration data
 const configurationSchema = z.object({
@@ -15,7 +15,7 @@ const configurationSchema = z.object({
     z.object({
       environmentVariableRequirementId: z.string().uuid(),
       value: z.string(),
-    }),
+    })
   ),
 });
 
@@ -26,9 +26,12 @@ export type ModuleConfigInput = z.infer<typeof configurationSchema>;
  */
 export async function saveModuleConfiguration(
   moduleId: string,
-  configs: Record<string, string>,
+  configs: Record<string, string>
 ) {
-  const userId = STACKAUTHID;
+  const user = await stackServerApp.getUser({
+    or: "anonymous",
+  });
+  const userId = user.id;
 
   // Transform the configs object into the expected format
   const configurations = Object.entries(configs).map(([envVarId, value]) => ({
@@ -49,8 +52,8 @@ export async function saveModuleConfiguration(
     .where(
       eq(
         freestyleModulesEnvironmentVariableRequirementsTable.moduleId,
-        moduleId,
-      ),
+        moduleId
+      )
     );
 
   const validEnvVarIds = new Set(envVarRequirements.map((req) => req.id));
@@ -58,7 +61,7 @@ export async function saveModuleConfiguration(
   for (const config of validatedData.configurations) {
     if (!validEnvVarIds.has(config.environmentVariableRequirementId)) {
       throw new Error(
-        `Invalid environment variable requirement ID: ${config.environmentVariableRequirementId}`,
+        `Invalid environment variable requirement ID: ${config.environmentVariableRequirementId}`
       );
     }
   }
@@ -75,9 +78,9 @@ export async function saveModuleConfiguration(
             eq(freestyleModulesConfigurationsTable.userId, userId),
             eq(
               freestyleModulesConfigurationsTable.environmentVariableId,
-              config.environmentVariableRequirementId,
-            ),
-          ),
+              config.environmentVariableRequirementId
+            )
+          )
         )
         .then((rows) => rows[0]);
 
@@ -92,9 +95,9 @@ export async function saveModuleConfiguration(
                 eq(freestyleModulesConfigurationsTable.userId, userId),
                 eq(
                   freestyleModulesConfigurationsTable.environmentVariableId,
-                  config.environmentVariableRequirementId,
-                ),
-              ),
+                  config.environmentVariableRequirementId
+                )
+              )
             );
         }
         return { success: true, action: "unchanged" };
@@ -106,7 +109,7 @@ export async function saveModuleConfiguration(
         environmentVariableId: config.environmentVariableRequirementId,
         value: config.value,
       });
-    }),
+    })
   );
 
   return { success: true };
