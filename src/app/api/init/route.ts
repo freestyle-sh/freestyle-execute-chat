@@ -8,6 +8,7 @@ import initStripe from "./stripe";
 import initSlack from "./slack";
 import initGithub from "./github";
 import initExa from "./exa";
+import initAWS from "./aws";
 
 export async function POST() {
   await db.delete(freestyleModulesTable);
@@ -20,6 +21,7 @@ export async function POST() {
   await initSlack();
   await initGithub();
   await initExa();
+  await initAWS();
 
   return new Response("Initialized", { status: 200 });
 }
