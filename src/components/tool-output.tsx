@@ -60,13 +60,13 @@ export type ToolOutputProps = {
 };
 
 // Copy button with feedback
-const CopyButton = ({
+function CopyButton({
   onClick,
   title,
 }: {
   onClick: () => void;
   title: string;
-}) => {
+}) {
   const [hasCopied, setHasCopied] = useState(false);
 
   const handleCopy = () => {
@@ -91,35 +91,30 @@ const CopyButton = ({
       {hasCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
     </Button>
   );
-};
+}
 
-export const ToolOutput = ({
+export function ToolOutput({
   // Container props
   className,
   variant = "default",
-
   // Header content
   headerContent,
   title,
   icon: Icon,
   badge,
   actions,
-
   // Main content
   children,
   content,
-
   // For code-specific content
   input,
   inputLanguage = "text",
-
   // For result handling
   result,
   resultLanguage,
-
   // Tool invocation data
   toolInvocation,
-}: ToolOutputProps) => {
+}: ToolOutputProps) {
   const [showLogs, setShowLogs] = useState(false);
 
   // Extract data from toolInvocation if provided
@@ -137,7 +132,7 @@ export const ToolOutput = ({
       const inputObj = toolInvocation.input as Record<string, unknown>;
       // Find first string property to use as input
       const firstStringProp = Object.entries(inputObj).find(
-        ([_, value]) => typeof value === "string"
+        ([_, value]) => typeof value === "string",
       );
       if (firstStringProp) {
         processedInput = firstStringProp[1] as string;
@@ -258,11 +253,11 @@ export const ToolOutput = ({
             isSuccess
               ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/30"
               : isError
-              ? "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30"
-              : isPending
-              ? "border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950/30"
-              : "",
-            "transition-colors duration-200"
+                ? "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30"
+                : isPending
+                  ? "border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950/30"
+                  : "",
+            "transition-colors duration-200",
           )}
         >
           {/* Result Header */}
@@ -337,9 +332,9 @@ export const ToolOutput = ({
       )}
     </div>
   );
-};
+}
 
-export const ToolOutputBadge = ({
+export function ToolOutputBadge({
   children,
   className,
   variant = "default",
@@ -348,7 +343,7 @@ export const ToolOutputBadge = ({
   children: ReactNode;
   className?: string;
   variant?: "default" | "success" | "error" | "pending" | "info" | "warning";
-} & HTMLAttributes<HTMLSpanElement>) => {
+} & HTMLAttributes<HTMLSpanElement>) {
   return (
     <span
       className={cn(
@@ -365,11 +360,11 @@ export const ToolOutputBadge = ({
           "bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300",
         variant === "default" &&
           "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
-        className
+        className,
       )}
       {...props}
     >
       {children}
     </span>
   );
-};
+}

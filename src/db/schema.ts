@@ -54,8 +54,10 @@ export type Message = InferSelectModel<typeof messagesTable> & SdkMessage;
 export const userFormResponsesTable = pgTable("UserFormResponse", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   chatId: uuid("chatId")
-    .references(() => chatsTable.id)
-    .notNull(),
+    .notNull()
+    .references(() => chatsTable.id, {
+      onDelete: "cascade",
+    }),
   toolCallId: varchar("toolCallId", { length: 128 }).notNull(),
   formTitle: varchar("formTitle", { length: 256 }),
   state: varchar("state", { length: 32 }).notNull(), // "idle", "submitted", "cancelled"

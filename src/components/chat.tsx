@@ -6,7 +6,7 @@ import {
   PromptInputAction,
   PromptInputActions,
   PromptInputTextarea,
-} from "@/components/ui/prompt-input";
+} from "@/components/prompt-input";
 import { Button } from "@/components/ui/button";
 import {
   CommandIcon,
@@ -15,7 +15,14 @@ import {
   Square,
 } from "lucide-react";
 import type { ChatRequestOptions } from "ai";
-import { type ChangeEvent, useEffect, useRef, useState } from "react";
+import {
+  type ChangeEvent,
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import type { Message } from "@/db/schema";
@@ -23,9 +30,9 @@ import { insertMessage } from "@/actions/chats/insert-message";
 // import { useTransitionRouter } from "next-view-transitions";
 import ChatMessage from "./message";
 import { useRouter } from "next/navigation";
-import { ChatContainer } from "./ui/chat-container";
+import { ChatContainer } from "./chat-container";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { chatExists } from "@/actions/chats/check-chat";
+import { getChatInfo } from "@/actions/chats/check-chat";
 import { useSidebarStore } from "@/stores/sidebar";
 import { useModulesStore } from "@/stores/modules";
 import {
@@ -57,6 +64,31 @@ const MobileHeader = ({ title }: { title: string }) => {
   );
 };
 
+export type CurrentChatContext = {
+  chatId: string;
+  addToolResult: ({
+    toolCallId,
+    result,
+  }: {
+    toolCallId: string;
+    result: unknown;
+  }) => void;
+};
+
+export const CurrentChatContext = createContext<CurrentChatContext | undefined>(
+  undefined,
+);
+
+export function useCurrentChat() {
+  const context = useContext(CurrentChatContext);
+
+  if (context === undefined) {
+    throw new Error("useCurrentChat must be used within a CurrentChatProvider");
+  }
+
+  return context;
+}
+
 export function ChatUI({
   chatId,
   initialMessages,
@@ -69,56 +101,46 @@ export function ChatUI({
   const router = useRouter();
   const queryClient = useQueryClient();
   const hasRunRef = useRef(false);
-  const [chatTitle, setChatTitle] = useState<string>("New Chat");
 
-  const { data: exists = true } = useQuery({
+  const { data: chat } = useQuery({
     queryKey: ["chats", chatId],
-    queryFn: () => chatExists(chatId),
+    queryFn: () =>
+      getChatInfo(chatId).then((chat) => {
+        if (chat === undefined) {
+          router.replace("/");
+        }
+        return chat ?? null;
+      }),
   });
 
-  useEffect(() => {
-    if (!exists) {
-      router.replace("/");
-    }
-  }, [exists, router]);
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    status,
+    reload,
+    addToolResult,
+  } = useChat({
+    id: chatId,
+    initialMessages,
+    fetch: async (req, init) => {
+      return fetch(req, {
+        ...init,
+        headers: {
+          ...init?.headers,
+          "chat-id": chatId,
+          "allow-first-message": initialMessages.length >= 1 ? "false" : "true",
+        },
+      });
+    },
+    onFinish: async (message) => {
+      await insertMessage(chatId, message);
 
-  // Get chat title from the first user message, if available
-  useEffect(() => {
-    if (initialMessages.length > 0) {
-      const firstUserMessage = initialMessages.find(
-        (msg) => msg.role === "user"
-      );
-      if (firstUserMessage?.content) {
-        // Create a title from the first ~25 chars of the first message
-        const title = firstUserMessage.content.substring(0, 25);
-        setChatTitle(title + (title.length >= 25 ? "..." : ""));
-      }
-    }
-  }, [initialMessages]);
-
-  const { messages, input, handleInputChange, handleSubmit, status, reload } =
-    useChat({
-      initialMessages,
-      fetch: async (req, init) => {
-        return fetch(req, {
-          ...init,
-          headers: {
-            ...init?.headers,
-            "chat-id": chatId,
-            "allow-first-message":
-              initialMessages.length >= 1 ? "false" : "true",
-          },
-        });
-      },
-      onFinish: async (message) => {
-        console.log("onFinish", message);
-
-        await insertMessage(chatId, message);
-
-        // Invalidate chats list to update sidebar history order
-        queryClient.invalidateQueries({ queryKey: ["chats"] });
-      },
-    });
+      // Invalidate chats list to update sidebar history order
+      queryClient.invalidateQueries({ queryKey: ["chats"] });
+    },
+  });
 
   useEffect(() => {
     if (hasRunRef.current) return; // already ran
@@ -131,48 +153,50 @@ export function ChatUI({
   }, [router, respond, chatId, reload, messages]);
 
   return (
-    <div className="flex flex-col h-svh">
-      <MobileHeader title={chatTitle} />
-      <ChatContainer
-        autoScroll
-        className={cn(
-          "w-full flex-1 max-w-3xl mx-auto flex flex-col gap-4 pb-2",
-          "overflow-scroll py-4 scrollbar-none"
-        )}
-      >
-        {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-32 text-muted-foreground animate-fade-in">
-            <div className="p-4 rounded-lg text-center">
-              <p className="italic mb-2">No messages yet</p>
-              <p className="text-sm">Start the conversation below!</p>
+    <CurrentChatContext.Provider value={{ chatId, addToolResult }}>
+      <div className="flex flex-col h-svh">
+        <MobileHeader title={chat?.name ?? "Untitled"} />
+        <ChatContainer
+          autoScroll
+          className={cn(
+            "w-full flex-1 max-w-3xl mx-auto flex flex-col gap-4 pb-2",
+            "overflow-scroll py-4 scrollbar-none",
+          )}
+        >
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-32 text-muted-foreground animate-fade-in">
+              <div className="p-4 rounded-lg text-center">
+                <p className="italic mb-2">No messages yet</p>
+                <p className="text-sm">Start the conversation below!</p>
+              </div>
             </div>
-          </div>
-        ) : (
-          messages.map((message) => (
-            <ChatMessage key={message.id} message={message} />
-          ))
-        )}
-      </ChatContainer>
-      <div className="w-full pb-4">
-        <PromptInputBasic
-          handleSubmitAction={(
-            event?: {
-              preventDefault?: () => void;
-            },
-            chatRequestOptions?: ChatRequestOptions
-          ) => {
-            handleSubmit(event, chatRequestOptions);
+          ) : (
+            messages.map((message) => (
+              <ChatMessage key={message.id} message={message} chatId={chatId} />
+            ))
+          )}
+        </ChatContainer>
+        <div className="w-full pb-4">
+          <PromptInputBasic
+            handleSubmitAction={(
+              event?: {
+                preventDefault?: () => void;
+              },
+              chatRequestOptions?: ChatRequestOptions,
+            ) => {
+              handleSubmit(event, chatRequestOptions);
 
-            // Invalidate the chat list when user submits a message
-            queryClient.invalidateQueries({ queryKey: ["chats"] });
-          }}
-          input={input}
-          handleValueChangeAction={handleInputChange}
-          isLoading={status === "streaming" || status === "submitted"}
-          chatId={chatId}
-        />
+              // Invalidate the chat list when user submits a message
+              queryClient.invalidateQueries({ queryKey: ["chats"] });
+            }}
+            input={input}
+            handleValueChangeAction={handleInputChange}
+            isLoading={status === "streaming" || status === "submitted"}
+            chatId={chatId}
+          />
+        </div>
       </div>
-    </div>
+    </CurrentChatContext.Provider>
   );
 }
 
@@ -187,13 +211,13 @@ export function PromptInputBasic({
   isLoading: boolean;
   chatId?: string; // Make chatId optional for homepage usage
   handleValueChangeAction: (
-    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>
+    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
   ) => void;
   handleSubmitAction: (
     event?: {
       preventDefault?: () => void;
     },
-    chatRequestOptions?: ChatRequestOptions
+    chatRequestOptions?: ChatRequestOptions,
   ) => void;
 }) {
   // State to track if module tray is open
@@ -248,7 +272,7 @@ export function PromptInputBasic({
             }
             return module;
           });
-        }
+        },
       );
 
       return { previousModules };
@@ -325,7 +349,7 @@ export function PromptInputBasic({
                         "inline-flex items-center px-3 py-1.5 rounded-2xl border cursor-pointer transition-all text-xs active:scale-95",
                         module.isEnabled === false
                           ? "opacity-50 bg-muted/30"
-                          : "module-bg"
+                          : "module-bg",
                       )}
                       style={
                         {
@@ -346,7 +370,7 @@ export function PromptInputBasic({
                           "w-4 h-4 mr-1.5 object-contain",
                           module.isEnabled === false
                             ? "opacity-50 dark:fill-gray-400"
-                            : "module-fill"
+                            : "module-fill",
                         )}
                         style={
                           {
@@ -383,7 +407,7 @@ export function PromptInputBasic({
                         "inline-flex items-center px-3 py-1.5 rounded-2xl border cursor-pointer transition-all text-xs active:scale-95",
                         isEnabled === false || isEnabled === undefined
                           ? "opacity-50 bg-muted/30 dark:fill-gray-300"
-                          : "module-bg"
+                          : "module-bg",
                       )}
                       style={
                         {
@@ -402,7 +426,7 @@ export function PromptInputBasic({
                           "w-4 h-4 mr-1.5 object-contain",
                           isEnabled === false || isEnabled === undefined
                             ? "opacity-50"
-                            : "module-fill"
+                            : "module-fill",
                         )}
                         style={
                           {
@@ -442,7 +466,7 @@ export function PromptInputBasic({
                     "inline-flex items-center gap-0.5 px-3 py-1.5 cursor-pointer text-xs hover:text-foreground rounded-2xl border border-border/20 hover:bg-muted/10",
                     isModuleTrayOpen
                       ? "text-foreground bg-muted/10"
-                      : "text-muted-foreground"
+                      : "text-muted-foreground",
                   )}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
@@ -554,7 +578,7 @@ export function PromptInputBasic({
             size="default"
             className={cn(
               isLoading ? "w-8" : "w-14",
-              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out hover:bg-primary/90"
+              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out hover:bg-primary/90",
             )}
             onClick={handleSubmit}
           >
