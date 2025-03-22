@@ -18,6 +18,7 @@ import type { ChatRequestOptions } from "ai";
 import {
   type ChangeEvent,
   createContext,
+  useContext,
   useEffect,
   useRef,
   useState,
@@ -63,6 +64,31 @@ const MobileHeader = ({ title }: { title: string }) => {
   );
 };
 
+export type CurrentChatContext = {
+  chatId: string;
+  addToolResult: ({
+    toolCallId,
+    result,
+  }: {
+    toolCallId: string;
+    result: unknown;
+  }) => void;
+};
+
+export const CurrentChatContext = createContext<CurrentChatContext | undefined>(
+  undefined,
+);
+
+export function useCurrentChat() {
+  const context = useContext(CurrentChatContext);
+
+  if (context === undefined) {
+    throw new Error("useCurrentChat must be used within a CurrentChatProvider");
+  }
+
+  return context;
+}
+
 export function ChatUI({
   chatId,
   initialMessages,
@@ -83,7 +109,7 @@ export function ChatUI({
         if (chat === undefined) {
           router.replace("/");
         }
-        return chat;
+        return chat ?? null;
       }),
   });
 
@@ -129,53 +155,50 @@ export function ChatUI({
   }, [router, respond, chatId, reload, messages]);
 
   return (
-    <div className="flex flex-col h-svh">
-      <MobileHeader title={chat?.name ?? "Untitled"} />
-      <ChatContainer
-        autoScroll
-        className={cn(
-          "w-full flex-1 max-w-3xl mx-auto flex flex-col gap-4 pb-2",
-          "overflow-scroll py-4 scrollbar-none",
-        )}
-      >
-        {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-32 text-muted-foreground animate-fade-in">
-            <div className="p-4 rounded-lg text-center">
-              <p className="italic mb-2">No messages yet</p>
-              <p className="text-sm">Start the conversation below!</p>
+    <CurrentChatContext.Provider value={{ chatId, addToolResult }}>
+      <div className="flex flex-col h-svh">
+        <MobileHeader title={chat?.name ?? "Untitled"} />
+        <ChatContainer
+          autoScroll
+          className={cn(
+            "w-full flex-1 max-w-3xl mx-auto flex flex-col gap-4 pb-2",
+            "overflow-scroll py-4 scrollbar-none",
+          )}
+        >
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-32 text-muted-foreground animate-fade-in">
+              <div className="p-4 rounded-lg text-center">
+                <p className="italic mb-2">No messages yet</p>
+                <p className="text-sm">Start the conversation below!</p>
+              </div>
             </div>
-          </div>
-        ) : (
-          messages.map((message) => (
-            <ChatMessage
-              addToolResultAction={addToolResult}
-              key={message.id}
-              message={message}
-              chatId={chatId}
-            />
-          ))
-        )}
-      </ChatContainer>
-      <div className="w-full pb-4">
-        <PromptInputBasic
-          handleSubmitAction={(
-            event?: {
-              preventDefault?: () => void;
-            },
-            chatRequestOptions?: ChatRequestOptions,
-          ) => {
-            handleSubmit(event, chatRequestOptions);
+          ) : (
+            messages.map((message) => (
+              <ChatMessage key={message.id} message={message} chatId={chatId} />
+            ))
+          )}
+        </ChatContainer>
+        <div className="w-full pb-4">
+          <PromptInputBasic
+            handleSubmitAction={(
+              event?: {
+                preventDefault?: () => void;
+              },
+              chatRequestOptions?: ChatRequestOptions,
+            ) => {
+              handleSubmit(event, chatRequestOptions);
 
-            // Invalidate the chat list when user submits a message
-            queryClient.invalidateQueries({ queryKey: ["chats"] });
-          }}
-          input={input}
-          handleValueChangeAction={handleInputChange}
-          isLoading={status === "streaming" || status === "submitted"}
-          chatId={chatId}
-        />
+              // Invalidate the chat list when user submits a message
+              queryClient.invalidateQueries({ queryKey: ["chats"] });
+            }}
+            input={input}
+            handleValueChangeAction={handleInputChange}
+            isLoading={status === "streaming" || status === "submitted"}
+            chatId={chatId}
+          />
+        </div>
       </div>
-    </div>
+    </CurrentChatContext.Provider>
   );
 }
 

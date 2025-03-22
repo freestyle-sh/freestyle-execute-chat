@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { updateStructuredDataResponse } from "@/actions/chats/get-structured-data";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useChat } from "@ai-sdk/react";
+import { useCurrentChat } from "../chat";
 
 export type StructuredDataRequestProps = {
   request: ToolInvocation & {
@@ -33,23 +33,18 @@ export type StructuredDataRequestProps = {
   state: string;
   formData: Record<string, unknown> | null;
   className?: string;
-  chatId: string;
-  addToolResultAction: ReturnType<typeof useChat>["addToolResult"];
 };
 
 export function StructuredDataRequest({
   request,
-  chatId,
   formResponseId,
   state,
   formData,
   className,
-  addToolResultAction,
 }: StructuredDataRequestProps) {
-  // Extract request from the props, handling both custom format and ToolInvocation
-  let title = "";
-  let description = "";
-  let fields: Array<{
+  const title = request.args.title;
+  const description = request.args.description;
+  const fields: Array<{
     id: string;
     label: string;
     type: string;
@@ -57,53 +52,17 @@ export function StructuredDataRequest({
     options?: string[];
     required?: boolean;
     validation?: string;
-  }> = [];
+  }> = request.args.fields ?? [];
 
-  if ("args" in request) {
-    title = request.args.title;
-    description = request.args.description;
-    fields = request.args.fields;
-  } else if ("input" in request) {
-    // Handle tool invocation format
-    // Type assertion to make TypeScript happy
-    const reqWithInput = request as { input: Record<string, unknown> };
-    const input = reqWithInput.input;
+  const { addToolResult } = useCurrentChat();
 
-    if (input && typeof input === "object") {
-      if ("title" in input && typeof input.title === "string") {
-        title = input.title;
-      }
-      if ("description" in input && typeof input.description === "string") {
-        description = input.description;
-      }
-      if ("fields" in input && Array.isArray(input.fields)) {
-        fields = input.fields as Array<{
-          id: string;
-          label: string;
-          type: string;
-          placeholder?: string;
-          options?: string[];
-          required?: boolean;
-          validation?: string;
-        }>;
-      }
-    }
-  }
-
-  const { addToolResult } = useChat({
-    id: chatId,
-  });
-
-  // Use form data from props or initialize new form data
   const [formValues, setFormValues] = useState<Record<string, unknown>>(
     formData ?? {},
   );
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  // Setup React Query
   const queryClient = useQueryClient();
 
-  // Create mutations for form submission and cancellation
   const submitMutation = useMutation({
     mutationFn: async (data: {
       id: string;
@@ -117,13 +76,12 @@ export function StructuredDataRequest({
         formData: data.formData,
       });
 
-      addToolResultAction({
+      addToolResult({
         toolCallId,
         result: `Form submitted successfully with data: ${JSON.stringify(data.formData, null, 2)}`,
       });
     },
     onSuccess: () => {
-      // Invalidate any queries that might depend on this data
       queryClient.invalidateQueries({
         queryKey: ["formResponse"],
       });
@@ -143,13 +101,12 @@ export function StructuredDataRequest({
         state: "cancelled",
       });
 
-      addToolResultAction({
+      addToolResult({
         toolCallId,
         result: "Form request cancelled",
       });
     },
     onSuccess: () => {
-      // Invalidate any queries that might depend on this data
       queryClient.invalidateQueries({
         queryKey: ["formResponse"],
       });
