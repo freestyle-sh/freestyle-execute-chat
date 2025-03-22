@@ -24,8 +24,7 @@ export const systemPrompt = ({
   1. Specify the title, description, and fields for your form
   2. Wait for the user to submit the form
   3. Once submitted, you can access the form data to continue your task
-  4. Be patient - the user might take some time to fill out the form
-  5. If the user cancels the form request, you should acknowledge this and offer alternatives
+  4. If the user cancels the form request, you should acknowledge this and offer alternatives
 
   Prefer multiple steps to a single step.
   `;
