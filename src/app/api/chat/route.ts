@@ -43,9 +43,6 @@ export async function POST(request: Request) {
       }),
   );
 
-  console.log("NODE MODULES", nodeModules);
-  console.log("ENV VARS", envVars);
-
   if (!chatId) {
     throw new Error("chat-id header is required");
   }
@@ -71,7 +68,6 @@ export async function POST(request: Request) {
     console.error("Failed to update chat title:", error),
   );
 
-  console.log("JSON", json, "CHAT ID", chatId);
   const tools: Record<string, Tool> = {
     codeExecutor: executeTool({
       apiKey: process.env.FREESTYLE_API_KEY!,

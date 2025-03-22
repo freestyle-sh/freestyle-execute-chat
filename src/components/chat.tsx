@@ -135,8 +135,6 @@ export function ChatUI({
       });
     },
     onFinish: async (message) => {
-      console.log("onFinish", message);
-
       await insertMessage(chatId, message);
 
       // Invalidate chats list to update sidebar history order
