@@ -64,6 +64,43 @@ export async function getStructuredDataSubmission(
   };
 }
 
+export async function getOrCreateStructuredDataResponse(
+  title: string,
+  chatId: string,
+  toolCallId: string,
+) {
+  const response = await db
+    .select()
+    .from(userFormResponsesTable)
+    .where(
+      and(
+        eq(userFormResponsesTable.chatId, chatId),
+        eq(userFormResponsesTable.toolCallId, toolCallId),
+      ),
+    )
+    .limit(1);
+
+  if (response.length === 0) {
+    const res = await db
+      .insert(userFormResponsesTable)
+      .values({
+        id: crypto.randomUUID(),
+        chatId,
+        toolCallId,
+        formTitle: title,
+        state: "idle", // Initial state
+        // formData: null, // Will be filled when user submits
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    return res[0];
+  }
+
+  return response[0];
+}
+
 export async function getStructuredDataResponse(
   chatId: string,
   toolCallId: string,
@@ -99,4 +136,3 @@ export async function updateStructuredDataResponse(
     .where(eq(userFormResponsesTable.id, id))
     .returning();
 }
-

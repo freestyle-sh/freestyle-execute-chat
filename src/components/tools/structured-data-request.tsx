@@ -11,40 +11,43 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { updateStructuredDataResponse } from "@/actions/chats/get-structured-data";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useChat } from "@ai-sdk/react";
 
 export type StructuredDataRequestProps = {
-  request:
-    | ToolInvocation
-    | {
-        args: {
-          title: string;
-          description: string;
-          fields: Array<{
-            id: string;
-            label: string;
-            type: string;
-            placeholder?: string;
-            options?: string[];
-            required?: boolean;
-            validation?: string;
-          }>;
-          chatId: string;
-          toolCallId: string;
-        };
-      };
+  request: ToolInvocation & {
+    args: {
+      title: string;
+      description: string;
+      fields: Array<{
+        id: string;
+        label: string;
+        type: string;
+        placeholder?: string;
+        options?: string[];
+        required?: boolean;
+        validation?: string;
+      }>;
+    };
+  };
   formResponseId: string;
   state: string;
   formData: Record<string, unknown> | null;
   className?: string;
+  chatId: string;
 };
 
 export function StructuredDataRequest({
   request,
+  chatId,
   formResponseId,
   state,
   formData,
   className,
 }: StructuredDataRequestProps) {
+  const { addToolResult, reload } = useChat({
+    id: chatId,
+  });
+
   // Extract request from the props, handling both custom format and ToolInvocation
   let title = "";
   let description = "";
@@ -91,7 +94,7 @@ export function StructuredDataRequest({
 
   // Use form data from props or initialize new form data
   const [formValues, setFormValues] = useState<Record<string, unknown>>(
-    formData || {},
+    formData ?? {},
   );
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
@@ -100,11 +103,16 @@ export function StructuredDataRequest({
 
   // Create mutations for form submission and cancellation
   const submitMutation = useMutation({
-    mutationFn: async (data: {
+    mutationFn: (data: {
       id: string;
       state: string;
-      formData?: Record<string, unknown>;
+      formData: Record<string, unknown>;
     }) => {
+      addToolResult({
+        toolCallId: request.toolCallId,
+        result: `Form submitted successfully with data: ${JSON.stringify(data.formData, null, 2)}`,
+      });
+
       return updateStructuredDataResponse(data.id, {
         state: data.state,
         formData: data.formData,
@@ -124,7 +132,12 @@ export function StructuredDataRequest({
   });
 
   const cancelMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: (id: string) => {
+      addToolResult({
+        toolCallId: request.toolCallId,
+        result: "Form request cancelled",
+      });
+
       return updateStructuredDataResponse(id, {
         state: "cancelled",
       });

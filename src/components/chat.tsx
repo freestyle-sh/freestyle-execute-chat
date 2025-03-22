@@ -86,7 +86,7 @@ export function ChatUI({
   useEffect(() => {
     if (initialMessages.length > 0) {
       const firstUserMessage = initialMessages.find(
-        (msg) => msg.role === "user"
+        (msg) => msg.role === "user",
       );
       if (firstUserMessage?.content) {
         // Create a title from the first ~25 chars of the first message
@@ -98,6 +98,7 @@ export function ChatUI({
 
   const { messages, input, handleInputChange, handleSubmit, status, reload } =
     useChat({
+      id: chatId,
       initialMessages,
       fetch: async (req, init) => {
         return fetch(req, {
@@ -137,7 +138,7 @@ export function ChatUI({
         autoScroll
         className={cn(
           "w-full flex-1 max-w-3xl mx-auto flex flex-col gap-4 pb-2",
-          "overflow-scroll py-4 scrollbar-none"
+          "overflow-scroll py-4 scrollbar-none",
         )}
       >
         {messages.length === 0 ? (
@@ -159,7 +160,7 @@ export function ChatUI({
             event?: {
               preventDefault?: () => void;
             },
-            chatRequestOptions?: ChatRequestOptions
+            chatRequestOptions?: ChatRequestOptions,
           ) => {
             handleSubmit(event, chatRequestOptions);
 
@@ -187,13 +188,13 @@ export function PromptInputBasic({
   isLoading: boolean;
   chatId?: string; // Make chatId optional for homepage usage
   handleValueChangeAction: (
-    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>
+    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
   ) => void;
   handleSubmitAction: (
     event?: {
       preventDefault?: () => void;
     },
-    chatRequestOptions?: ChatRequestOptions
+    chatRequestOptions?: ChatRequestOptions,
   ) => void;
 }) {
   // State to track if module tray is open
@@ -248,7 +249,7 @@ export function PromptInputBasic({
             }
             return module;
           });
-        }
+        },
       );
 
       return { previousModules };
@@ -325,7 +326,7 @@ export function PromptInputBasic({
                         "inline-flex items-center px-3 py-1.5 rounded-2xl border cursor-pointer transition-all text-xs active:scale-95",
                         module.isEnabled === false
                           ? "opacity-50 bg-muted/30"
-                          : "module-bg"
+                          : "module-bg",
                       )}
                       style={
                         {
@@ -346,7 +347,7 @@ export function PromptInputBasic({
                           "w-4 h-4 mr-1.5 object-contain",
                           module.isEnabled === false
                             ? "opacity-50 dark:fill-gray-400"
-                            : "module-fill"
+                            : "module-fill",
                         )}
                         style={
                           {
@@ -383,7 +384,7 @@ export function PromptInputBasic({
                         "inline-flex items-center px-3 py-1.5 rounded-2xl border cursor-pointer transition-all text-xs active:scale-95",
                         isEnabled === false || isEnabled === undefined
                           ? "opacity-50 bg-muted/30 dark:fill-gray-300"
-                          : "module-bg"
+                          : "module-bg",
                       )}
                       style={
                         {
@@ -402,7 +403,7 @@ export function PromptInputBasic({
                           "w-4 h-4 mr-1.5 object-contain",
                           isEnabled === false || isEnabled === undefined
                             ? "opacity-50"
-                            : "module-fill"
+                            : "module-fill",
                         )}
                         style={
                           {
@@ -442,7 +443,7 @@ export function PromptInputBasic({
                     "inline-flex items-center gap-0.5 px-3 py-1.5 cursor-pointer text-xs hover:text-foreground rounded-2xl border border-border/20 hover:bg-muted/10",
                     isModuleTrayOpen
                       ? "text-foreground bg-muted/10"
-                      : "text-muted-foreground"
+                      : "text-muted-foreground",
                   )}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
@@ -554,7 +555,7 @@ export function PromptInputBasic({
             size="default"
             className={cn(
               isLoading ? "w-8" : "w-14",
-              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out hover:bg-primary/90"
+              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out hover:bg-primary/90",
             )}
             onClick={handleSubmit}
           >

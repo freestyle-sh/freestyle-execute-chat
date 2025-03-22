@@ -52,19 +52,19 @@ export function structuredDataRequestTool({ chatId }: { chatId: string }) {
         .describe("The fields to include in the form"),
     }),
 
-    execute: async ({ title }, { toolCallId }) => {
-      await db.insert(userFormResponsesTable).values({
-        id: crypto.randomUUID(),
-        chatId,
-        toolCallId,
-        formTitle: title,
-        state: "idle", // Initial state
-        // formData: null, // Will be filled when user submits
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
-      return `Waiting for user to submit the requested information: "${title}". The assistant should pause generation until the user responds.`;
-    },
+    // execute: async ({ title }, { toolCallId }) => {
+    //   await db.insert(userFormResponsesTable).values({
+    //     id: crypto.randomUUID(),
+    //     chatId,
+    //     toolCallId,
+    //     formTitle: title,
+    //     state: "idle", // Initial state
+    //     // formData: null, // Will be filled when user submits
+    //     createdAt: new Date(),
+    //     updatedAt: new Date(),
+    //   });
+    //
+    //   return `Waiting for user to submit the requested information: "${title}". The assistant should pause generation until the user responds.`;
+    // },
   });
 }

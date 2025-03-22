@@ -1,6 +1,9 @@
 "use client";
 
-import { getStructuredDataResponse } from "@/actions/chats/get-structured-data";
+import {
+  getOrCreateStructuredDataResponse,
+  getStructuredDataResponse,
+} from "@/actions/chats/get-structured-data";
 import LogoComponent from "./logo";
 import { CodeExecution } from "./tools/code-execution";
 import { SendFeedback } from "./tools/send-feedback";
@@ -118,7 +121,11 @@ function StructuredDataRequestWrapper({
       if (!toolCallId || !chatId) {
         throw new Error("Missing toolCallId or chatId");
       }
-      const response = await getStructuredDataResponse(chatId, toolCallId);
+      const response = await getOrCreateStructuredDataResponse(
+        request.args.title,
+        chatId,
+        toolCallId,
+      );
       return response || null;
     },
   });
@@ -144,6 +151,7 @@ function StructuredDataRequestWrapper({
 
   return (
     <StructuredDataRequest
+      chatId={chatId}
       request={request}
       formResponseId={formResponse.id}
       state={formResponse.state}
