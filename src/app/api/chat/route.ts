@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     }),
     sendFeedback: sendFeedbackTool(),
     // Human-in-the-loop tool
-    structuredDataRequest: structuredDataRequestTool({ chatId }),
+    structuredDataRequest: structuredDataRequestTool(),
     // General request docs tool
     requestDocs: requestDocsTool(),
   };
