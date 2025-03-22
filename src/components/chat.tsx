@@ -6,7 +6,7 @@ import {
   PromptInputAction,
   PromptInputActions,
   PromptInputTextarea,
-} from "@/components/ui/prompt-input";
+} from "@/components/prompt-input";
 import { Button } from "@/components/ui/button";
 import {
   CommandIcon,
@@ -23,7 +23,7 @@ import { insertMessage } from "@/actions/chats/insert-message";
 // import { useTransitionRouter } from "next-view-transitions";
 import ChatMessage from "./message";
 import { useRouter } from "next/navigation";
-import { ChatContainer } from "./ui/chat-container";
+import { ChatContainer } from "./chat-container";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { chatExists } from "@/actions/chats/check-chat";
 import { useSidebarStore } from "@/stores/sidebar";

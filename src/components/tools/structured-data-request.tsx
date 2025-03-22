@@ -2,7 +2,7 @@
 
 import type { ToolInvocation } from "ai";
 import { FormInput } from "lucide-react";
-import { ToolOutput, ToolOutputBadge } from "@/components/ui/tool-output";
+import { ToolOutput, ToolOutputBadge } from "@/components/tool-output";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

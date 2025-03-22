@@ -2,7 +2,7 @@
 
 import type { ToolInvocation } from "ai";
 import { Terminal } from "lucide-react";
-import { ToolOutput, ToolOutputBadge } from "@/components/ui/tool-output";
+import { ToolOutput, ToolOutputBadge } from "@/components/tool-output";
 
 type ExecutionResult = {
   _type: "success" | "error" | "pending";

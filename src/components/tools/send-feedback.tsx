@@ -2,7 +2,7 @@
 
 import type { ToolInvocation } from "ai";
 import { MessageSquare } from "lucide-react";
-import { ToolOutput, ToolOutputBadge } from "@/components/ui/tool-output";
+import { ToolOutput, ToolOutputBadge } from "@/components/tool-output";
 
 export type SendFeedbackProps = {
   feedback:
