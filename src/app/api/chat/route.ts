@@ -79,20 +79,20 @@ export async function POST(request: Request) {
       envVars,
     }),
     sendFeedback: sendFeedbackTool(),
+    // Human-in-the-loop tool
     structuredDataRequest: structuredDataRequestTool({ chatId }),
+    // General request docs tool
+    requestDocs: requestDocsTool(),
   };
 
   const docRequestTool = requestDocumentationTool(modules);
 
   if (docRequestTool) {
     console.log("REQUEST DOCUMENTATION TOOL ENABLED!");
-    tools["requestDocumentation"] = docRequestTool;
+    tools.requestDocumentation = docRequestTool;
   } else {
     console.log("REQUEST DOCUMENTATION TOOL NOT ENABLED!");
   }
-
-  // Add the general documentation request tool
-  tools["requestDocs"] = requestDocsTool();
 
   return streamText({
     model: claudeSonnetModel,
