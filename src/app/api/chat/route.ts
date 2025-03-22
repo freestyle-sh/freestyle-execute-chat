@@ -4,8 +4,10 @@ import { db } from "@/db";
 import { messagesTable } from "@/db/schema";
 import { claudeSonnetModel } from "@/lib/model";
 import { systemPrompt } from "@/lib/system-prompt";
+import { requestDocumentationTool } from "@/lib/tools/request-documentation";
+import { requestDocsTool } from "@/lib/tools/request-docs";
 import { sendFeedbackTool } from "@/lib/tools/send-feedback";
-import { type Message, streamText } from "ai";
+import { type Message, streamText, Tool } from "ai";
 import { executeTool } from "freestyle-sandboxes/ai";
 
 export async function POST(request: Request) {
@@ -27,7 +29,7 @@ export async function POST(request: Request) {
     modules
       .filter((module) => module.isEnabled)
       .map((module) => module.nodeModules as Record<string, string>)
-      .flatMap(Object.entries),
+      .flatMap(Object.entries)
   );
 
   const envVars = Object.fromEntries(
@@ -37,7 +39,7 @@ export async function POST(request: Request) {
         return module.configurations.map((configuration) => {
           return [configuration.name, configuration.value];
         });
-      }),
+      })
   );
 
   console.log("NODE MODULES", nodeModules);
@@ -65,23 +67,36 @@ export async function POST(request: Request) {
   }
 
   maybeUpdateChatTitle(chatId).catch((error) =>
-    console.error("Failed to update chat title:", error),
+    console.error("Failed to update chat title:", error)
   );
 
   console.log("JSON", json, "CHAT ID", chatId);
+  const tools: Record<string, Tool> = {
+    codeExecutor: executeTool({
+      apiKey: process.env.FREESTYLE_API_KEY!,
+      nodeModules,
+      envVars,
+    }),
+    sendFeedback: sendFeedbackTool(),
+  };
+
+  const docRequestTool = requestDocumentationTool(modules);
+
+  if (docRequestTool) {
+    console.log("REQUEST DOCUMENTATION TOOL ENABLED!");
+    tools["requestDocumentation"] = docRequestTool;
+  } else {
+    console.log("REQUEST DOCUMENTATION TOOL NOT ENABLED!");
+  }
+
+  // Add the general documentation request tool
+  tools["requestDocs"] = requestDocsTool();
 
   return streamText({
     model: claudeSonnetModel,
     maxSteps: 10,
-    system: systemPrompt(),
-    tools: {
-      codeExecutor: executeTool({
-        apiKey: process.env.FREESTYLE_API_KEY!,
-        nodeModules,
-        envVars,
-      }),
-      sendFeedback: sendFeedbackTool(),
-    },
+    system: systemPrompt({ requestDocsToolEnabled: docRequestTool !== null }),
+    tools,
     messages: json.messages,
   }).toDataStreamResponse();
 }

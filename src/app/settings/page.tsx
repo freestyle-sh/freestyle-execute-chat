@@ -28,11 +28,6 @@ export default function SettingsPage() {
             </SettingsSection>
 
             <ModulesSettings moduleToOpen={moduleToOpen} />
-
-            <SettingsSection
-              title="Account"
-              description="Manage your account settings"
-            />
           </div>
         </div>
       ) : (

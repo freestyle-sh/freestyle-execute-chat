@@ -334,14 +334,15 @@ export function ModuleConfigDrawer({
                       envVar.required ? "border-amber-500/30" : "",
                     )}
                   >
-                    <div className="w-full max-w-sm">
+                    <div className="w-full lg:w-3/4 lg:ml-auto">
                       <Input
                         {...register(envVar.id)}
                         type={envVar.public ? "text" : "password"}
                         placeholder={envVar.example ?? undefined}
-                        className={
+                        className={cn(
+                          "w-full",
                           errors[envVar.id] ? "border-destructive" : ""
-                        }
+                        )}
                       />
                       {errors[envVar.id] && (
                         <p className="text-xs text-destructive mt-1">
@@ -352,17 +353,17 @@ export function ModuleConfigDrawer({
                   </SettingsItem>
                 ))}
 
-                <DrawerFooter className="px-0">
+                <DrawerFooter className="px-4 sm:px-6">
                   <div className="flex flex-col w-full">
-                    {/* Main button row with action buttons - centered */}
-                    <div className="flex w-full items-center justify-center gap-6">
+                    {/* Main button row with action buttons */}
+                    <div className="flex flex-col sm:flex-row w-full items-center justify-center gap-3">
                       {/* Dynamic button: Cancel or Delete based on configuration state */}
                       {isConfigured ? (
                         <Button
                           type="button"
                           variant="outline"
                           size="default"
-                          className="w-full sm:w-auto text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive/90 cursor-pointer"
+                          className="w-full sm:flex-1 sm:max-w-[200px] text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive/90 cursor-pointer"
                           onClick={(e) => {
                             e.preventDefault();
                             handleRemoveConfiguration();
@@ -376,7 +377,7 @@ export function ModuleConfigDrawer({
                             type="button"
                             variant="outline"
                             size="default"
-                            className="w-full sm:w-auto cursor-pointer"
+                            className="w-full sm:flex-1 sm:max-w-[200px] cursor-pointer"
                           >
                             Cancel
                           </Button>
@@ -388,7 +389,7 @@ export function ModuleConfigDrawer({
                         type="submit"
                         disabled={isSubmitting}
                         size="default"
-                        className="w-full sm:w-auto cursor-pointer"
+                        className="w-full sm:flex-1 sm:max-w-[200px] cursor-pointer"
                       >
                         {isSubmitting ? "Saving..." : "Save Configuration"}
                       </Button>

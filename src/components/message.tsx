@@ -3,6 +3,7 @@
 import LogoComponent from "./logo";
 import { CodeExecution } from "./tools/code-execution";
 import { SendFeedback } from "./tools/send-feedback";
+import { RequestDocs } from "./tools/request-docs";
 // import type { Components } from "react-markdown";
 import { Message, MessageContent, MessageAvatar } from "./ui/message";
 import type { UIMessage } from "ai";
@@ -78,6 +79,9 @@ export function AIMessage({ message }: { message: UIMessage }) {
               )}
               {part.toolInvocation.toolName === "sendFeedback" && (
                 <SendFeedback feedback={part.toolInvocation} />
+              )}
+              {part.toolInvocation.toolName === "requestDocumentation" && (
+                <RequestDocs request={part.toolInvocation} />
               )}
             </>
           )}

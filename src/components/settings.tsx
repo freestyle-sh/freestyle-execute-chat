@@ -44,18 +44,18 @@ export function SettingsItem({
   return (
     <div
       className={cn(
-        "flex justify-between items-center p-4 bg-background/50 rounded-lg border border-border transition-all duration-200",
+        "flex flex-col sm:flex-row sm:justify-between p-4 gap-4 bg-background/50 rounded-lg border border-border transition-all duration-200",
         className,
       )}
       {...props}
     >
-      <div>
+      <div className="mb-2 sm:mb-0">
         <p className="font-medium">{title}</p>
         {description && (
           <p className="text-sm text-muted-foreground">{description}</p>
         )}
       </div>
-      <div className="transition-all hover:brightness-110">{children}</div>
+      <div className="self-end sm:self-center flex-shrink-0">{children}</div>
     </div>
   );
 }
