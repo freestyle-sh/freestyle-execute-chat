@@ -12,6 +12,7 @@ import initAWS from "./aws";
 import initGoogleCalendar from "./google-calendar";
 import initGoogleSheets from "./google-sheets";
 import initGoogleGmail from "./google-gmail";
+import initHubspot from "./hubspot";
 
 export async function POST() {
   await db.delete(freestyleModulesTable);
@@ -28,6 +29,7 @@ export async function POST() {
   await initGoogleCalendar();
   await initGoogleSheets();
   await initGoogleGmail();
+  await initHubspot();
 
   return new Response("Initialized", { status: 200 });
 }
