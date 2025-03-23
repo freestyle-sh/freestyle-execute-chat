@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { z, type ZodTypeAny } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -42,6 +42,7 @@ import {
   User,
   useUser,
 } from "@stackframe/stack";
+import { GoogleCalendarUI } from "./custom/google-calendar";
 
 type EnvVarRequirement = {
   id: string;
@@ -335,107 +336,92 @@ export function ModuleConfigDrawer({
                 </p>
               </div>
             ) : (
-              <form
-                onSubmit={handleSubmit(onSubmit)}
-                className="space-y-6 py-6"
-              >
-                {module._specialBehavior == null &&
-                  module.environmentVariableRequirements.map((envVar) => (
-                    <SettingsItem
-                      key={envVar.id}
-                      title={envVar.name}
-                      description={envVar.description ?? undefined}
-                      className={cn(
-                        "p-5",
-                        envVar.required ? "border-amber-500/30" : ""
-                      )}
-                    >
-                      <div className="w-full lg:w-3/4 lg:ml-auto">
-                        <Input
-                          {...register(envVar.id)}
-                          type={envVar.public ? "text" : "password"}
-                          placeholder={envVar.example ?? undefined}
-                          className={cn(
-                            "w-full",
-                            errors[envVar.id] ? "border-destructive" : ""
-                          )}
-                        />
-                        {errors[envVar.id] && (
-                          <p className="text-xs text-destructive mt-1">
-                            {
-                              (errors[envVar.id]?.message ??
-                                "Unknown") as string
-                            }
-                          </p>
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 ">
+                {module._specialBehavior == null && (
+                  <div className="py-6">
+                    {module.environmentVariableRequirements.map((envVar) => (
+                      <SettingsItem
+                        key={envVar.id}
+                        title={envVar.name}
+                        description={envVar.description ?? undefined}
+                        className={cn(
+                          "p-5",
+                          envVar.required ? "border-amber-500/30" : ""
                         )}
-                      </div>
-                    </SettingsItem>
-                  ))}
-                {module._specialBehavior == "google-calendar" && (
-                  <>
-                    <button
-                      onClick={async () => {
-                        const account = await user!.getConnectedAccount(
-                          "google",
-                          {
-                            or: "redirect",
-                            scopes: [
-                              "https://www.googleapis.com/auth/calendar",
-                            ],
-                          }
-                        );
-                        const token = await account.getAccessToken();
-                        console.log(token);
-                      }}
-                    >
-                      Use user{" "}
-                    </button>
-                  </>
-                )}
+                      >
+                        <div className="w-full lg:w-3/4 lg:ml-auto">
+                          <Input
+                            {...register(envVar.id)}
+                            type={envVar.public ? "text" : "password"}
+                            placeholder={envVar.example ?? undefined}
+                            className={cn(
+                              "w-full",
+                              errors[envVar.id] ? "border-destructive" : ""
+                            )}
+                          />
+                          {errors[envVar.id] && (
+                            <p className="text-xs text-destructive mt-1">
+                              {
+                                (errors[envVar.id]?.message ??
+                                  "Unknown") as string
+                              }
+                            </p>
+                          )}
+                        </div>
+                      </SettingsItem>
+                    ))}
+                    <DrawerFooter className="px-4 sm:px-6">
+                      <div className="flex flex-col w-full">
+                        {/* Main button row with action buttons */}
+                        <div className="flex flex-col sm:flex-row w-full items-center justify-center gap-3">
+                          {/* Dynamic button: Cancel or Delete based on configuration state */}
+                          {isConfigured ? (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="default"
+                              className="w-full sm:flex-1 sm:max-w-[200px] text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive/90 cursor-pointer"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleRemoveConfiguration();
+                              }}
+                            >
+                              Delete Configuration
+                            </Button>
+                          ) : (
+                            <DrawerClose asChild>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="default"
+                                className="w-full sm:flex-1 sm:max-w-[200px] cursor-pointer"
+                              >
+                                Cancel
+                              </Button>
+                            </DrawerClose>
+                          )}
 
-                <DrawerFooter className="px-4 sm:px-6">
-                  <div className="flex flex-col w-full">
-                    {/* Main button row with action buttons */}
-                    <div className="flex flex-col sm:flex-row w-full items-center justify-center gap-3">
-                      {/* Dynamic button: Cancel or Delete based on configuration state */}
-                      {isConfigured ? (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="default"
-                          className="w-full sm:flex-1 sm:max-w-[200px] text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive/90 cursor-pointer"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleRemoveConfiguration();
-                          }}
-                        >
-                          Delete Configuration
-                        </Button>
-                      ) : (
-                        <DrawerClose asChild>
+                          {/* Save button stays the same */}
                           <Button
-                            type="button"
-                            variant="outline"
+                            type="submit"
+                            disabled={isSubmitting}
                             size="default"
                             className="w-full sm:flex-1 sm:max-w-[200px] cursor-pointer"
                           >
-                            Cancel
+                            {isSubmitting ? "Saving..." : "Save Configuration"}
                           </Button>
-                        </DrawerClose>
-                      )}
-
-                      {/* Save button stays the same */}
-                      <Button
-                        type="submit"
-                        disabled={isSubmitting}
-                        size="default"
-                        className="w-full sm:flex-1 sm:max-w-[200px] cursor-pointer"
-                      >
-                        {isSubmitting ? "Saving..." : "Save Configuration"}
-                      </Button>
-                    </div>
+                        </div>
+                      </div>
+                    </DrawerFooter>
                   </div>
-                </DrawerFooter>
+                )}
+                {module._specialBehavior == "google-calendar" && (
+                  // <Suspense
+                  //   fallback={"Loading Google Calendar configuration..."}
+                  // >
+                  <GoogleCalendarUI module={module} />
+                  // </Suspense>
+                )}
               </form>
             )}
           </div>

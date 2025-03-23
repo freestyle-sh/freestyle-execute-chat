@@ -9,7 +9,6 @@ export default async function initAWS() {
     .insert(freestyleModulesTable)
     .values({
       name: "AWS",
-      id: "aws",
       svg: siAmazonwebservices.svg,
       lightModeColor: siAmazonwebservices.hex,
       darkModeColor: "FF9900",
