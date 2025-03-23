@@ -23,7 +23,7 @@ export default async function initSlack() {
 
       2. Install the app to your workspace.
 
-      3. Go to the "OAuth & Permissions" page and add all the scopes you need, most commonly "chat:write", "chat:read", "channels:history", "channels:read", and "channels:join".
+      3. Go to the "OAuth & Permissions" page and add all the scopes you need, most commonly "chat:write", "chat:read", "channels:history", "channels:read", and "channels:join", "groups:read" and "groups:write".
 
       3. On the "OAuth & Permissions" page and copy the "Bot User OAuth Access Token".
 
