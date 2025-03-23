@@ -1,7 +1,7 @@
 "use client";
 
 import type { ToolInvocation } from "ai";
-import { Terminal, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { Terminal, ChevronDown, ChevronUp, Loader2, Maximize2, Minimize2 } from "lucide-react";
 import { ToolOutput, ToolOutputBadge } from "@/components/tool-output";
 import { cn } from "@/lib/utils";
 import { CodeBlockCode } from "@/components/ui/code-block";
@@ -31,6 +31,8 @@ export type CodeExecutionProps = {
 
 export const CodeExecution = ({ execution, className }: CodeExecutionProps) => {
   const [showLogs, setShowLogs] = useState(false);
+  const [expandInput, setExpandInput] = useState(false);
+  const [expandOutput, setExpandOutput] = useState(false);
 
   // Extract script and result, handling both custom format and ToolInvocation
   let script: string | undefined;
@@ -103,8 +105,26 @@ export const CodeExecution = ({ execution, className }: CodeExecutionProps) => {
           <p className="text-sm text-muted-foreground mb-2">
             JavaScript code execution
           </p>
-          <div className="border rounded-md overflow-hidden">
-            <CodeBlockCode code={script} language="javascript" />
+          <div className="border rounded-md overflow-hidden relative">
+            <div className={cn(
+              "transition-all duration-300 ease-in-out",
+              !expandInput ? "max-h-[300px]" : "max-h-[3000px]", 
+              "overflow-y-auto"
+            )}>
+              <CodeBlockCode code={script} language="javascript" />
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setExpandInput(!expandInput)}
+              className="absolute top-2 right-2 h-6 w-6 p-0 bg-background/80 backdrop-blur-sm border-border/50 shadow-sm hover:bg-background transition-all hover:shadow-md active:scale-95 cursor-pointer"
+            >
+              {expandInput ? (
+                <Minimize2 className="h-3.5 w-3.5" />
+              ) : (
+                <Maximize2 className="h-3.5 w-3.5" />
+              )}
+            </Button>
           </div>
         </div>
 
@@ -166,17 +186,35 @@ export const CodeExecution = ({ execution, className }: CodeExecutionProps) => {
               </div>
             </div>
           ) : formattedResult ? (
-            <div className="border rounded-md overflow-hidden">
-              <CodeBlockCode
-                code={formattedResult}
-                language={
-                  isError
-                    ? "bash"
-                    : typeof result?.result === "object"
-                      ? "json"
-                      : "text"
-                }
-              />
+            <div className="border rounded-md overflow-hidden relative">
+              <div className={cn(
+                "transition-all duration-300 ease-in-out",
+                !expandOutput ? "max-h-[300px]" : "max-h-[3000px]", 
+                "overflow-y-auto"
+              )}>
+                <CodeBlockCode
+                  code={formattedResult}
+                  language={
+                    isError
+                      ? "bash"
+                      : typeof result?.result === "object"
+                        ? "json"
+                        : "text"
+                  }
+                />
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setExpandOutput(!expandOutput)}
+                className="absolute top-2 right-2 h-6 w-6 p-0 bg-background/80 backdrop-blur-sm border-border/50 shadow-sm hover:bg-background transition-all hover:shadow-md active:scale-95 cursor-pointer"
+              >
+                {expandOutput ? (
+                  <Minimize2 className="h-3.5 w-3.5" />
+                ) : (
+                  <Maximize2 className="h-3.5 w-3.5" />
+                )}
+              </Button>
             </div>
           ) : null}
         </div>
