@@ -44,6 +44,7 @@ import {
 } from "@stackframe/stack";
 import { GoogleCalendarUI } from "./custom/google-calendar";
 import { GoogleSheetsUI } from "./custom/google-sheets";
+import { GoogleGmailUI } from "./custom/google-gmail";
 
 type EnvVarRequirement = {
   id: string;
@@ -421,6 +422,9 @@ export function ModuleConfigDrawer({
                 )}
                 {module._specialBehavior == "google-sheets" && (
                   <GoogleSheetsUI module={module} />
+                )}
+                {module._specialBehavior == "google-gmail" && (
+                  <GoogleGmailUI module={module} />
                 )}
               </form>
             )}

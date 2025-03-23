@@ -11,6 +11,7 @@ import initExa from "./exa";
 import initAWS from "./aws";
 import initGoogleCalendar from "./google-calendar";
 import initGoogleSheets from "./google-sheets";
+import initGoogleGmail from "./google-gmail";
 
 export async function POST() {
   await db.delete(freestyleModulesTable);
@@ -26,6 +27,7 @@ export async function POST() {
   await initAWS();
   await initGoogleCalendar();
   await initGoogleSheets();
+  await initGoogleGmail();
 
   return new Response("Initialized", { status: 200 });
 }

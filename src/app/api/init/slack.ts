@@ -16,7 +16,20 @@ export default async function initSlack() {
       nodeModules: {
         "@slack/web-api": "7.8.0",
       },
-      example: `Interact with your Slack account`,
+      setupInstructions: `
+      ## Connecting to your Slack Workspace
+
+      1. Create an app at https://api.slack.com/apps and create an app.
+
+      2. Install the app to your workspace.
+
+      3. Go to the "OAuth & Permissions" page and add all the scopes you need, most commonly "chat:write", "chat:read", "channels:history", "channels:read", and "channels:join".
+
+      3. On the "OAuth & Permissions" page and copy the "Bot User OAuth Access Token".
+
+      4. Add the "Bot User OAuth Access Token" to your environment variables with the name "SLACK_BOT_TOKEN".
+      `,
+      example: `Interact with your Slack Workspace`,
     })
     .returning();
 
