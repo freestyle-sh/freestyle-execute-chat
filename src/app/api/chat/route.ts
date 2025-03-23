@@ -5,7 +5,6 @@ import { messagesTable } from "@/db/schema";
 import { claudeSonnetModel } from "@/lib/model";
 import { systemPrompt } from "@/lib/system-prompt";
 import { requestDocumentationTool } from "@/lib/tools/request-documentation";
-import { requestDocsTool } from "@/lib/tools/request-docs";
 import { sendFeedbackTool } from "@/lib/tools/send-feedback";
 import { structuredDataRequestTool } from "@/lib/tools/structured-data-request";
 import { type Message, streamText, type Tool } from "ai";
@@ -30,7 +29,7 @@ export async function POST(request: Request) {
     modules
       .filter((module) => module.isEnabled)
       .map((module) => module.nodeModules as Record<string, string>)
-      .flatMap(Object.entries),
+      .flatMap(Object.entries)
   );
 
   const envVars = Object.fromEntries(
@@ -40,7 +39,7 @@ export async function POST(request: Request) {
         return module.configurations.map((configuration) => {
           return [configuration.name, configuration.value];
         });
-      }),
+      })
   );
 
   if (!chatId) {
@@ -65,7 +64,7 @@ export async function POST(request: Request) {
   }
 
   maybeUpdateChatTitle(chatId).catch((error) =>
-    console.error("Failed to update chat title:", error),
+    console.error("Failed to update chat title:", error)
   );
 
   const tools: Record<string, Tool> = {
@@ -77,17 +76,12 @@ export async function POST(request: Request) {
     sendFeedback: sendFeedbackTool(),
     // Human-in-the-loop tool
     structuredDataRequest: structuredDataRequestTool(),
-    // General request docs tool
-    requestDocs: requestDocsTool(),
   };
 
   const docRequestTool = requestDocumentationTool(modules);
 
   if (docRequestTool) {
-    console.log("REQUEST DOCUMENTATION TOOL ENABLED!");
     tools.requestDocumentation = docRequestTool;
-  } else {
-    console.log("REQUEST DOCUMENTATION TOOL NOT ENABLED!");
   }
 
   return streamText({

@@ -43,6 +43,7 @@ import {
   useUser,
 } from "@stackframe/stack";
 import { GoogleCalendarUI } from "./custom/google-calendar";
+import { GoogleSheetsUI } from "./custom/google-sheets";
 
 type EnvVarRequirement = {
   id: string;
@@ -416,11 +417,10 @@ export function ModuleConfigDrawer({
                   </div>
                 )}
                 {module._specialBehavior == "google-calendar" && (
-                  // <Suspense
-                  //   fallback={"Loading Google Calendar configuration..."}
-                  // >
                   <GoogleCalendarUI module={module} />
-                  // </Suspense>
+                )}
+                {module._specialBehavior == "google-sheets" && (
+                  <GoogleSheetsUI module={module} />
                 )}
               </form>
             )}
