@@ -17,7 +17,7 @@ export function SettingsSection({
 }: SettingsSectionProps) {
   return (
     <div
-      className={cn("rounded-xl py-6 transition-all duration-200", className)}
+      className={cn("rounded-xl py-6 transition-all duration-100", className)}
       {...props}
     >
       <h2 className="text-xl font-medium mb-2 text-primary">{title}</h2>
@@ -44,7 +44,7 @@ export function SettingsItem({
   return (
     <div
       className={cn(
-        "flex flex-col sm:flex-row sm:justify-between p-4 gap-4 bg-background/50 rounded-lg border border-border transition-all duration-200",
+        "flex flex-col sm:flex-row sm:justify-between p-4 gap-4 bg-background/50 rounded-lg border border-border transition-all duration-100",
         className,
       )}
       {...props}
@@ -55,7 +55,7 @@ export function SettingsItem({
           <p className="text-sm text-muted-foreground">{description}</p>
         )}
       </div>
-      <div className="self-end sm:self-center flex-shrink-0">{children}</div>
+      <div className="sm:w-1/2 self-end sm:self-center">{children}</div>
     </div>
   );
 }
