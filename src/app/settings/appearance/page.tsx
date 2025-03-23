@@ -1,7 +1,8 @@
 "use client";
 
-import { SettingsSection, SettingsItem } from "@/components/settings";
+import { SettingsSection } from "@/components/settings";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Card } from "@/components/ui/card";
 
 export default function AppearancePage() {
   return (
@@ -9,12 +10,17 @@ export default function AppearancePage() {
       title="Appearance"
       description="Customize the look and feel of Freestyle Chat"
     >
-      <SettingsItem
-        title="Theme"
-        description="Choose your preferred theme mode"
-      >
-        <ThemeToggle />
-      </SettingsItem>
+      <Card className="p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="font-medium">Theme</p>
+            <p className="text-sm text-muted-foreground">
+              Choose your preferred theme mode
+            </p>
+          </div>
+          <ThemeToggle />
+        </div>
+      </Card>
     </SettingsSection>
   );
 }

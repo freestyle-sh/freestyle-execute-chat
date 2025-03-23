@@ -350,7 +350,7 @@ export function ModuleConfigDrawer({
                         envVar.required ? "border-amber-500/30" : ""
                       )}
                     >
-                      <div className="w-full lg:w-3/4 lg:ml-auto">
+                      <div className="w-full">
                         <Input
                           {...register(envVar.id)}
                           type={envVar.public ? "text" : "password"}

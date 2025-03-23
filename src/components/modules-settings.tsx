@@ -7,6 +7,7 @@ import { ModuleConfigDrawer } from "@/components/module-config";
 import { ModuleIcon } from "@/components/module-icon";
 import { listModules } from "@/actions/modules/list-modules";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card } from "@/components/ui/card";
 import { saveModuleConfiguration } from "@/actions/modules/set-config";
 import { useUser } from "@stackframe/stack";
 
@@ -53,9 +54,11 @@ export function ModulesSettings({ moduleToOpen }: ModulesSettingsProps = {}) {
   if (error) {
     return (
       <SettingsSection title="Module Configurations">
-        <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg text-sm">
-          Failed to load modules. Please try again later.
-        </div>
+        <Card className="p-6">
+          <div className="bg-destructive/10 border border-destructive/30 rounded-lg text-sm p-4">
+            Failed to load modules. Please try again later.
+          </div>
+        </Card>
       </SettingsSection>
     );
   }
@@ -63,9 +66,11 @@ export function ModulesSettings({ moduleToOpen }: ModulesSettingsProps = {}) {
   if (!isLoading && (!modules || modules.length === 0)) {
     return (
       <SettingsSection title="Module Configurations">
-        <div className="p-4 rounded-lg text-sm text-muted-foreground">
-          No modules available for configuration.
-        </div>
+        <Card className="p-6">
+          <div className="text-sm text-muted-foreground">
+            No modules available for configuration.
+          </div>
+        </Card>
       </SettingsSection>
     );
   }
@@ -84,57 +89,56 @@ export function ModulesSettings({ moduleToOpen }: ModulesSettingsProps = {}) {
           </div>
         ) : null}
         {modules?.map((module) => (
-          <div
-            key={module.id}
-            className="p-4 bg-background/50 rounded-lg border border-border flex items-start justify-between gap-4"
-          >
-            <div className="flex gap-3">
-              <ModuleIcon
-                svg={module.svg}
-                lightModeColor={module.lightModeColor}
-                darkModeColor={module.darkModeColor}
-                size="lg"
-              />
-              <div>
-                <h3 className="font-medium">{`${module.name
-                  .slice(0, 1)
-                  .toUpperCase()}${module.name.slice(1)}`}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {module.example}
-                </p>
-                {module.environmentVariableRequirements.length > 0 && (
-                  <div className="mt-1 flex gap-1.5 flex-wrap">
-                    {module.environmentVariableRequirements.map((req) => (
-                      <span
-                        key={req.id}
-                        className={`text-xs px-1.5 py-0.5 rounded-sm ${
-                          req.required
-                            ? "bg-amber-500/10 text-amber-700 dark:text-amber-400"
-                            : "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        {req.name}
-                      </span>
-                    ))}
+          <Card key={module.id} className="p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex gap-3">
+                <ModuleIcon
+                  svg={module.svg}
+                  lightModeColor={module.lightModeColor}
+                  darkModeColor={module.darkModeColor}
+                  size="lg"
+                />
+                <div>
+                  <h3 className="font-medium">{`${module.name
+                    .slice(0, 1)
+                    .toUpperCase()}${module.name.slice(1)}`}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {module.example}
+                  </p>
+                  {module.environmentVariableRequirements.length > 0 && (
+                    <div className="mt-1 flex gap-1.5 flex-wrap">
+                      {module.environmentVariableRequirements.map((req) => (
+                        <span
+                          key={req.id}
+                          className={`text-xs px-1.5 py-0.5 rounded-sm ${
+                            req.required
+                              ? "bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                              : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          {req.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="w-28 shrink-0">
+                {module.environmentVariableRequirements.length > 0 ? (
+                  <ModuleConfigDrawer
+                    module={module}
+                    onConfigSaveAction={handleConfigSave}
+                    _user={user}
+                    defaultOpen={moduleToOpen === module.id}
+                  />
+                ) : (
+                  <div className="text-xs text-muted-foreground italic">
+                    No configuration needed
                   </div>
                 )}
               </div>
             </div>
-            <div className="w-28 shrink-0">
-              {module.environmentVariableRequirements.length > 0 ? (
-                <ModuleConfigDrawer
-                  module={module}
-                  onConfigSaveAction={handleConfigSave}
-                  _user={user}
-                  defaultOpen={moduleToOpen === module.id}
-                />
-              ) : (
-                <div className="text-xs text-muted-foreground italic">
-                  No configuration needed
-                </div>
-              )}
-            </div>
-          </div>
+          </Card>
         ))}
       </div>
     </SettingsSection>

@@ -52,7 +52,7 @@ export default function SettingsLayout({
   if (prevTab && currentTab.index !== prevTab.index) {
     // If we're moving right (increasing index), slide from right
     // If we're moving left (decreasing index), slide from left
-    xOffset = currentTab.index > prevTab.index ? 80 : -80;
+    xOffset = currentTab.index > prevTab.index ? 50 : -50;
   }
 
   // Update the ref after figuring out direction
@@ -99,8 +99,9 @@ export default function SettingsLayout({
               animate={{ x: 0 }}
               transition={{
                 type: "spring",
-                stiffness: 300,
-                damping: 30,
+                stiffness: 400,
+                damping: 35,
+                duration: 0.15
               }}
               className="w-full"
             >
