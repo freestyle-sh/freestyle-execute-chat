@@ -16,16 +16,11 @@ import Logo from "../logo";
 import { SidebarHistory } from "./history";
 import { SidebarCreateChat } from "./create-chat-button";
 import { useSidebarStore, useSidebarInit } from "@/stores/sidebar";
-// import { siGithub } from "simple-icons";
 import { UserButton, useUser } from "@stackframe/stack";
-import { Router } from "next/router";
-import { useRouter } from "next/navigation";
 
 export function ChatSidebar() {
   const { openMobile, setOpenMobile } = useSidebarStore();
   const user = useUser();
-  const router = useRouter();
-  // Initialize sidebar with mobile closed on mount
   useSidebarInit();
 
   return (
