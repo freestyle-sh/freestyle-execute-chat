@@ -17,9 +17,8 @@ interface ModulesSettingsProps {
 export function ModulesSettings({ moduleToOpen }: ModulesSettingsProps = {}) {
   const queryClient = useQueryClient();
 
-  const user = useUser()!;
-  // We only need basic module info and their requirements
-  // Configurations will be loaded lazily when needed
+  const user = useUser();
+
   const {
     data: modules,
     isLoading,
@@ -38,7 +37,6 @@ export function ModulesSettings({ moduleToOpen }: ModulesSettingsProps = {}) {
       configs: Record<string, string>;
     }) => saveModuleConfiguration(moduleId, configs),
     onSuccess: (_, variables) => {
-      // Invalidate the specific module config that was updated
       queryClient.invalidateQueries({
         queryKey: ["moduleConfig", variables.moduleId],
       });
@@ -47,31 +45,10 @@ export function ModulesSettings({ moduleToOpen }: ModulesSettingsProps = {}) {
 
   const handleConfigSave = async (
     moduleId: string,
-    configs: Record<string, string>
+    configs: Record<string, string>,
   ) => {
     await mutation.mutateAsync({ moduleId, configs });
   };
-
-  if (isLoading) {
-    return (
-      <SettingsSection title="Module Configurations">
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="flex items-center justify-between p-4 bg-background/50 rounded-lg border border-border"
-            >
-              <div className="space-y-1">
-                <Skeleton className="h-5 w-32" />
-                <Skeleton className="h-4 w-64" />
-              </div>
-              <Skeleton className="h-9 w-24" />
-            </div>
-          ))}
-        </div>
-      </SettingsSection>
-    );
-  }
 
   if (error) {
     return (
@@ -83,10 +60,10 @@ export function ModulesSettings({ moduleToOpen }: ModulesSettingsProps = {}) {
     );
   }
 
-  if (!modules || modules.length === 0) {
+  if (!isLoading && (!modules || modules.length === 0)) {
     return (
       <SettingsSection title="Module Configurations">
-        <div className="p-4 bg-muted rounded-lg text-sm text-muted-foreground">
+        <div className="p-4 rounded-lg text-sm text-muted-foreground">
           No modules available for configuration.
         </div>
       </SettingsSection>
@@ -99,7 +76,14 @@ export function ModulesSettings({ moduleToOpen }: ModulesSettingsProps = {}) {
       description="Configure your modules to use external services and APIs"
     >
       <div className="space-y-4">
-        {modules.map((module) => (
+        {isLoading ? (
+          <div className="space-y-4">
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+          </div>
+        ) : null}
+        {modules?.map((module) => (
           <div
             key={module.id}
             className="p-4 bg-background/50 rounded-lg border border-border flex items-start justify-between gap-4"
