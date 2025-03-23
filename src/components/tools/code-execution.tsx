@@ -1,7 +1,7 @@
 "use client";
 
 import type { ToolInvocation } from "ai";
-import { Terminal, ChevronDown, ChevronUp } from "lucide-react";
+import { Terminal, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { ToolOutput, ToolOutputBadge } from "@/components/tool-output";
 import { cn } from "@/lib/utils";
 import { CodeBlockCode } from "@/components/ui/code-block";
@@ -75,7 +75,7 @@ export const CodeExecution = ({ execution, className }: CodeExecutionProps) => {
     
     const isSuccess = result?._type === "success";
     const isError = result?._type === "error";
-    const isPending = result?._type === "pending";
+    const isPending = result?._type === "pending" || !result;
     const logs = result?.logs || [];
     const hasLogs = logs.length > 0;
 
@@ -100,52 +100,49 @@ export const CodeExecution = ({ execution, className }: CodeExecutionProps) => {
         </div>
         
         {/* Section for the result */}
-        {result && (
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-sm font-medium">
-                {isSuccess 
-                  ? <span className="text-green-600 dark:text-green-400">Execution completed successfully</span>
-                  : isError 
-                    ? <span className="text-red-600 dark:text-red-400">Execution failed</span>
-                    : isPending
-                      ? <span className="text-yellow-600 dark:text-yellow-400">Execution in progress...</span>
-                      : <span>Result</span>}
-              </div>
-              
-              {hasLogs && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowLogs(!showLogs)}
-                  className="h-6 px-2 text-xs font-medium ring-offset-background transition-all hover:bg-muted active:scale-95 cursor-pointer"
-                >
-                  {showLogs ? (
-                    <ChevronUp className="mr-1 h-3 w-3" />
-                  ) : (
-                    <ChevronDown className="mr-1 h-3 w-3" />
-                  )}
-                  {`Logs (${logs.length})`}
-                </Button>
-              )}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-sm font-medium">
+              {isSuccess 
+                ? <span className="text-green-600 dark:text-green-400">Execution completed successfully</span>
+                : isError 
+                  ? <span className="text-red-600 dark:text-red-400">Execution failed</span>
+                  : <span className="text-yellow-600 dark:text-yellow-400">Execution in progress...</span>}
             </div>
             
-            {formattedResult && (
-              <div className="border rounded-md overflow-hidden">
-                <CodeBlockCode 
-                  code={formattedResult} 
-                  language={isError ? "bash" : (typeof result.result === "object" ? "json" : "text")} 
-                />
-              </div>
-            )}
-            
-            {isPending && (
-              <div className="border rounded-md p-4 bg-muted/20 animate-pulse">
-                <div className="h-4 bg-muted rounded"></div>
-              </div>
+            {hasLogs && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowLogs(!showLogs)}
+                className="h-6 px-2 text-xs font-medium ring-offset-background transition-all hover:bg-muted active:scale-95 cursor-pointer"
+              >
+                {showLogs ? (
+                  <ChevronUp className="mr-1 h-3 w-3" />
+                ) : (
+                  <ChevronDown className="mr-1 h-3 w-3" />
+                )}
+                {`Logs (${logs.length})`}
+              </Button>
             )}
           </div>
-        )}
+          
+          {isPending ? (
+            <div className="border rounded-md p-10 bg-muted/10 flex justify-center">
+              <div className="flex flex-col items-center gap-3">
+                <Loader2 className="h-6 w-6 text-yellow-600 dark:text-yellow-400 animate-spin" />
+                <span className="text-sm text-muted-foreground">Running code...</span>
+              </div>
+            </div>
+          ) : formattedResult ? (
+            <div className="border rounded-md overflow-hidden">
+              <CodeBlockCode 
+                code={formattedResult} 
+                language={isError ? "bash" : (typeof result?.result === "object" ? "json" : "text")} 
+              />
+            </div>
+          ) : null}
+        </div>
         
         {/* Section for logs - only show when showLogs is true */}
         {hasLogs && showLogs && (
