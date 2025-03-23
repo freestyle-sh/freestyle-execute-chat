@@ -9,6 +9,7 @@ import initSlack from "./slack";
 import initGithub from "./github";
 import initExa from "./exa";
 import initAWS from "./aws";
+import initGoogleCalendar from "./google-calendar";
 
 export async function POST() {
   await db.delete(freestyleModulesTable);
@@ -22,6 +23,7 @@ export async function POST() {
   await initGithub();
   await initExa();
   await initAWS();
+  await initGoogleCalendar();
 
   return new Response("Initialized", { status: 200 });
 }

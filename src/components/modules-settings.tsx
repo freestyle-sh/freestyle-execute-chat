@@ -8,6 +8,7 @@ import { ModuleIcon } from "@/components/module-icon";
 import { listModules } from "@/actions/modules/list-modules";
 import { Skeleton } from "@/components/ui/skeleton";
 import { saveModuleConfiguration } from "@/actions/modules/set-config";
+import { useUser } from "@stackframe/stack";
 
 interface ModulesSettingsProps {
   moduleToOpen?: string | null;
@@ -16,6 +17,7 @@ interface ModulesSettingsProps {
 export function ModulesSettings({ moduleToOpen }: ModulesSettingsProps = {}) {
   const queryClient = useQueryClient();
 
+  const user = useUser()!;
   // We only need basic module info and their requirements
   // Configurations will be loaded lazily when needed
   const {
@@ -45,7 +47,7 @@ export function ModulesSettings({ moduleToOpen }: ModulesSettingsProps = {}) {
 
   const handleConfigSave = async (
     moduleId: string,
-    configs: Record<string, string>,
+    configs: Record<string, string>
   ) => {
     await mutation.mutateAsync({ moduleId, configs });
   };
@@ -110,7 +112,9 @@ export function ModulesSettings({ moduleToOpen }: ModulesSettingsProps = {}) {
                 size="lg"
               />
               <div>
-                <h3 className="font-medium">{`${module.name.slice(0, 1).toUpperCase()}${module.name.slice(1)}`}</h3>
+                <h3 className="font-medium">{`${module.name
+                  .slice(0, 1)
+                  .toUpperCase()}${module.name.slice(1)}`}</h3>
                 <p className="text-sm text-muted-foreground">
                   {module.example}
                 </p>
@@ -137,6 +141,7 @@ export function ModulesSettings({ moduleToOpen }: ModulesSettingsProps = {}) {
                 <ModuleConfigDrawer
                   module={module}
                   onConfigSaveAction={handleConfigSave}
+                  _user={user}
                   defaultOpen={moduleToOpen === module.id}
                 />
               ) : (

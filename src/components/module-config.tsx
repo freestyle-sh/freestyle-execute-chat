@@ -36,6 +36,12 @@ import { cn } from "@/lib/utils";
 import { capitalize } from "@/lib/typography";
 import { getModuleConfiguration } from "@/actions/modules/get-config";
 import { deleteModuleConfiguration } from "@/actions/modules/delete-config";
+import {
+  CurrentInternalUser,
+  CurrentUser,
+  User,
+  useUser,
+} from "@stackframe/stack";
 
 type EnvVarRequirement = {
   id: string;
@@ -74,7 +80,7 @@ interface ModuleConfigDrawerProps {
   module: ModuleWithRequirements;
   onConfigSaveAction: (
     moduleId: string,
-    configs: Record<string, string>,
+    configs: Record<string, string>
   ) => Promise<void>;
   defaultOpen?: boolean;
 }
@@ -83,7 +89,10 @@ export function ModuleConfigDrawer({
   module,
   onConfigSaveAction,
   defaultOpen = false,
-}: ModuleConfigDrawerProps) {
+  _user: user,
+}: ModuleConfigDrawerProps & {
+  _user: CurrentUser | CurrentInternalUser | null;
+}) {
   const [open, setOpen] = useState(defaultOpen);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -143,7 +152,7 @@ export function ModuleConfigDrawer({
 
     for (const envVar of module.environmentVariableRequirements) {
       const existingConfig = configData?.find(
-        (config) => config.environmentVariableRequirementId === envVar.id,
+        (config) => config.environmentVariableRequirementId === envVar.id
       );
 
       defaultValues[envVar.id] = existingConfig?.value || "";
@@ -200,8 +209,10 @@ export function ModuleConfigDrawer({
         loading: `Saving ${capitalize(module.name)} configuration...`,
         success: `${capitalize(module.name)} configuration saved successfully`,
         error: (error) =>
-          `Failed to save configuration: ${error instanceof Error ? error.message : "Unknown error"}`,
-      },
+          `Failed to save configuration: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`,
+      }
     );
   };
 
@@ -233,10 +244,14 @@ export function ModuleConfigDrawer({
         }),
       {
         loading: `Removing ${capitalize(module.name)} configuration...`,
-        success: `${capitalize(module.name)} configuration removed successfully`,
+        success: `${capitalize(
+          module.name
+        )} configuration removed successfully`,
         error: (error) =>
-          `Failed to remove configuration: ${error instanceof Error ? error.message : "Unknown error"}`,
-      },
+          `Failed to remove configuration: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`,
+      }
     );
   };
 
@@ -245,7 +260,7 @@ export function ModuleConfigDrawer({
     if (!configData) return false;
 
     const hasRequiredConfigs = module.environmentVariableRequirements.some(
-      (req) => req.required,
+      (req) => req.required
     );
 
     if (hasRequiredConfigs) {
@@ -254,7 +269,7 @@ export function ModuleConfigDrawer({
         .filter((req) => req.required)
         .every((req) => {
           const config = configData.find(
-            (c) => c.environmentVariableRequirementId === req.id,
+            (c) => c.environmentVariableRequirementId === req.id
           );
           return config && config.value.trim() !== "";
         });
@@ -279,7 +294,7 @@ export function ModuleConfigDrawer({
               "w-full cursor-pointer",
               isConfigured
                 ? "bg-green-500/10 hover:bg-green-500/20"
-                : "bg-amber-500/10 hover:bg-amber-500/20",
+                : "bg-amber-500/10 hover:bg-amber-500/20"
             )}
           >
             {isConfigured ? "Configured" : "Configure"}
@@ -324,34 +339,59 @@ export function ModuleConfigDrawer({
                 onSubmit={handleSubmit(onSubmit)}
                 className="space-y-6 py-6"
               >
-                {module.environmentVariableRequirements.map((envVar) => (
-                  <SettingsItem
-                    key={envVar.id}
-                    title={envVar.name}
-                    description={envVar.description ?? undefined}
-                    className={cn(
-                      "p-5",
-                      envVar.required ? "border-amber-500/30" : "",
-                    )}
-                  >
-                    <div className="w-full lg:w-3/4 lg:ml-auto">
-                      <Input
-                        {...register(envVar.id)}
-                        type={envVar.public ? "text" : "password"}
-                        placeholder={envVar.example ?? undefined}
-                        className={cn(
-                          "w-full",
-                          errors[envVar.id] ? "border-destructive" : ""
-                        )}
-                      />
-                      {errors[envVar.id] && (
-                        <p className="text-xs text-destructive mt-1">
-                          {(errors[envVar.id]?.message ?? "Unknown") as string}
-                        </p>
+                {module._specialBehavior == null &&
+                  module.environmentVariableRequirements.map((envVar) => (
+                    <SettingsItem
+                      key={envVar.id}
+                      title={envVar.name}
+                      description={envVar.description ?? undefined}
+                      className={cn(
+                        "p-5",
+                        envVar.required ? "border-amber-500/30" : ""
                       )}
-                    </div>
-                  </SettingsItem>
-                ))}
+                    >
+                      <div className="w-full lg:w-3/4 lg:ml-auto">
+                        <Input
+                          {...register(envVar.id)}
+                          type={envVar.public ? "text" : "password"}
+                          placeholder={envVar.example ?? undefined}
+                          className={cn(
+                            "w-full",
+                            errors[envVar.id] ? "border-destructive" : ""
+                          )}
+                        />
+                        {errors[envVar.id] && (
+                          <p className="text-xs text-destructive mt-1">
+                            {
+                              (errors[envVar.id]?.message ??
+                                "Unknown") as string
+                            }
+                          </p>
+                        )}
+                      </div>
+                    </SettingsItem>
+                  ))}
+                {module._specialBehavior == "google-calendar" && (
+                  <>
+                    <button
+                      onClick={async () => {
+                        const account = await user!.getConnectedAccount(
+                          "google",
+                          {
+                            or: "redirect",
+                            scopes: [
+                              "https://www.googleapis.com/auth/calendar",
+                            ],
+                          }
+                        );
+                        const token = await account.getAccessToken();
+                        console.log(token);
+                      }}
+                    >
+                      Use user{" "}
+                    </button>
+                  </>
+                )}
 
                 <DrawerFooter className="px-4 sm:px-6">
                   <div className="flex flex-col w-full">
@@ -408,7 +448,9 @@ export function ModuleConfigDrawer({
           <DialogHeader>
             <DialogTitle>Confirm Removal</DialogTitle>
             <DialogDescription>
-              {`Are you sure you want to remove all configuration for ${capitalize(module.name)}? This action cannot be undone.`}
+              {`Are you sure you want to remove all configuration for ${capitalize(
+                module.name
+              )}? This action cannot be undone.`}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4 gap-2 sm:justify-center">
