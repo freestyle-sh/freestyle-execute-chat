@@ -291,6 +291,15 @@ export function PromptInputBasic({
   });
 
   const handleToggleModule = (moduleId: string, currentEnabled?: boolean) => {
+    // Find the module to check if it's configured
+    const foundModule = modules.find((m) => m.id === moduleId);
+
+    if (foundModule && !foundModule.isConfigured) {
+      // If module isn't configured, navigate to settings page
+      router.push(`/settings/modules?module=${moduleId}`);
+      return;
+    }
+
     // Toggle the current state (default to false if undefined)
     const newEnabledState = !(currentEnabled ?? false);
 
@@ -537,7 +546,7 @@ export function PromptInputBasic({
                       transition={{ duration: 0.2, delay: 0.1 + index * 0.02 }}
                       className="bg-sidebar inline-flex items-center px-3 py-1.5 rounded-2xl border border-border/20 cursor-pointer hover:bg-muted/20 transition-all text-xs"
                       onClick={() => {
-                        router.push(`/settings?module=${module.id}`);
+                        router.push(`/settings/modules?module=${module.id}`);
                       }}
                     >
                       <div

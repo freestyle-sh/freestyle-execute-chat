@@ -10,13 +10,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import type React from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 type PromptInputContextType = {
   isLoading: boolean;
@@ -85,7 +80,7 @@ function PromptInput({
           <div
             className={cn(
               "border-input bg-background rounded-3xl border focus-within:shadow-lg transition-all duration-200 focus-within:border-primary/30",
-              className
+              className,
             )}
           >
             <div className="p-2">{children}</div>
@@ -149,7 +144,7 @@ function PromptInputTextarea({
       onKeyDown={handleKeyDown}
       className={cn(
         "text-primary min-h-[44px] w-full resize-none border-none bg-transparent/80 backdrop-blur-sm shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/70",
-        className
+        className,
       )}
       rows={1}
       disabled={disabled}
