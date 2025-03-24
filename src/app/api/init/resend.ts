@@ -31,9 +31,7 @@ export default async function initResend() {
    - Follow the DNS verification instructions
    - This allows you to send emails from your domain`,
       documentation: `
-    ## Setup
 
-First, you need to get an API key, which is available in the [Resend Dashboard](https://resend.com).
 
 \`\`\`js
 import { Resend } from 'resend';

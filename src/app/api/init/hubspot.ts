@@ -26,16 +26,16 @@ export default async function initHubspot() {
       });
       `,
       setupInstructions: `
-      ## Connecting to your HubSpot Account
+## Connecting to your HubSpot Account
 
-      1. Go to your HubSpot account and navigate to Settings > Account Setup > Integrations > API Key.
-      
-      2. Create a new Private App with the necessary scopes for your integration.
-      
-      3. Copy the Access Token.
-      
-      4. Add the Access Token to your environment variables with the name "HUBSPOT_API_KEY".
-      `,
+1. Go to your HubSpot account and navigate to Settings > Account Setup > Integrations > API Key.
+
+2. Create a new Private App with the necessary scopes for your integration.
+
+3. Copy the Access Token.
+
+4. Add the Access Token to your environment variables with the name "HUBSPOT_API_KEY".
+`,
       example: `Interact with your HubSpot CRM, marketing tools, and more`,
     })
     .returning();
