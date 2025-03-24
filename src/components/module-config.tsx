@@ -45,6 +45,7 @@ import {
 import { GoogleCalendarUI } from "./custom/google-calendar";
 import { GoogleSheetsUI } from "./custom/google-sheets";
 import { GoogleGmailUI } from "./custom/google-gmail";
+import { useTheme } from "next-themes";
 
 type EnvVarRequirement = {
   id: string;
@@ -83,7 +84,7 @@ interface ModuleConfigDrawerProps {
   module: ModuleWithRequirements;
   onConfigSaveAction: (
     moduleId: string,
-    configs: Record<string, string>
+    configs: Record<string, string>,
   ) => Promise<void>;
   defaultOpen?: boolean;
 }
@@ -98,6 +99,7 @@ export function ModuleConfigDrawer({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { resolvedTheme } = useTheme();
 
   // Create a schema based on module env var requirements
   const createFormSchema = () => {
@@ -155,7 +157,7 @@ export function ModuleConfigDrawer({
 
     for (const envVar of module.environmentVariableRequirements) {
       const existingConfig = configData?.find(
-        (config) => config.environmentVariableRequirementId === envVar.id
+        (config) => config.environmentVariableRequirementId === envVar.id,
       );
 
       defaultValues[envVar.id] = existingConfig?.value || "";
@@ -215,7 +217,7 @@ export function ModuleConfigDrawer({
           `Failed to save configuration: ${
             error instanceof Error ? error.message : "Unknown error"
           }`,
-      }
+      },
     );
   };
 
@@ -248,22 +250,24 @@ export function ModuleConfigDrawer({
       {
         loading: `Removing ${capitalize(module.name)} configuration...`,
         success: `${capitalize(
-          module.name
+          module.name,
         )} configuration removed successfully`,
         error: (error) =>
           `Failed to remove configuration: ${
             error instanceof Error ? error.message : "Unknown error"
           }`,
-      }
+      },
     );
   };
 
   // Determine if module is configured based on the configuration data
   const isConfigured = React.useMemo(() => {
-    if (!configData) return false;
+    if (!configData) {
+      return false;
+    }
 
     const hasRequiredConfigs = module.environmentVariableRequirements.some(
-      (req) => req.required
+      (req) => req.required,
     );
 
     if (hasRequiredConfigs) {
@@ -272,7 +276,7 @@ export function ModuleConfigDrawer({
         .filter((req) => req.required)
         .every((req) => {
           const config = configData.find(
-            (c) => c.environmentVariableRequirementId === req.id
+            (c) => c.environmentVariableRequirementId === req.id,
           );
           return config && config.value.trim() !== "";
         });
@@ -297,7 +301,9 @@ export function ModuleConfigDrawer({
               "w-full cursor-pointer",
               isConfigured
                 ? "bg-green-500/10 hover:bg-green-500/20"
-                : "bg-amber-500/10 hover:bg-amber-500/20"
+                : resolvedTheme === "dark"
+                  ? "bg-amber-500/10 hover:bg-amber-500/20"
+                  : "",
             )}
           >
             {isConfigured ? "Configured" : "Configure"}
@@ -340,7 +346,7 @@ export function ModuleConfigDrawer({
             ) : (
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 ">
                 {module._specialBehavior == null && (
-                  <div className="py-6">
+                  <div className="flex flex-col gap-4 py-6">
                     {module.environmentVariableRequirements.map((envVar) => (
                       <SettingsItem
                         key={envVar.id}
@@ -348,7 +354,7 @@ export function ModuleConfigDrawer({
                         description={envVar.description ?? undefined}
                         className={cn(
                           "p-5",
-                          envVar.required ? "border-amber-500/30" : ""
+                          envVar.required ? "border-amber-500/30" : "",
                         )}
                       >
                         <div className="w-full lg:w-3/4 lg:ml-auto">
@@ -358,7 +364,7 @@ export function ModuleConfigDrawer({
                             placeholder={envVar.example ?? undefined}
                             className={cn(
                               "w-full",
-                              errors[envVar.id] ? "border-destructive" : ""
+                              errors[envVar.id] ? "border-destructive" : "",
                             )}
                           />
                           {errors[envVar.id] && (
@@ -417,13 +423,13 @@ export function ModuleConfigDrawer({
                     </DrawerFooter>
                   </div>
                 )}
-                {module._specialBehavior == "google-calendar" && (
+                {module._specialBehavior === "google-calendar" && (
                   <GoogleCalendarUI module={module} />
                 )}
-                {module._specialBehavior == "google-sheets" && (
+                {module._specialBehavior === "google-sheets" && (
                   <GoogleSheetsUI module={module} />
                 )}
-                {module._specialBehavior == "google-gmail" && (
+                {module._specialBehavior === "google-gmail" && (
                   <GoogleGmailUI module={module} />
                 )}
               </form>
@@ -439,7 +445,7 @@ export function ModuleConfigDrawer({
             <DialogTitle>Confirm Removal</DialogTitle>
             <DialogDescription>
               {`Are you sure you want to remove all configuration for ${capitalize(
-                module.name
+                module.name,
               )}? This action cannot be undone.`}
             </DialogDescription>
           </DialogHeader>
