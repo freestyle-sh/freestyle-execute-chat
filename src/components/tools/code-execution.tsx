@@ -1,12 +1,13 @@
 "use client";
 
 import type { ToolInvocation } from "ai";
-import { Terminal, ChevronDown, ChevronUp, Loader2, Maximize2, Minimize2 } from "lucide-react";
+import { Terminal, ChevronDown, ChevronUp, Loader2, Maximize2, Minimize2, Copy, Check } from "lucide-react";
 import { ToolOutput, ToolOutputBadge } from "@/components/tool-output";
 import { cn } from "@/lib/utils";
 import { CodeBlockCode } from "@/components/ui/code-block";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { toast } from "sonner";
 
 type ExecutionResult = {
   _type: "success" | "error" | "pending";
@@ -33,6 +34,26 @@ export const CodeExecution = ({ execution, className }: CodeExecutionProps) => {
   const [showLogs, setShowLogs] = useState(false);
   const [expandInput, setExpandInput] = useState(false);
   const [expandOutput, setExpandOutput] = useState(false);
+  const [copyingInput, setCopyingInput] = useState(false);
+  const [copyingOutput, setCopyingOutput] = useState(false);
+  
+  const copyToClipboard = async (text: string, type: 'input' | 'output') => {
+    try {
+      await navigator.clipboard.writeText(text);
+      if (type === 'input') {
+        setCopyingInput(true);
+        setTimeout(() => setCopyingInput(false), 1500);
+        toast.success("Code copied to clipboard");
+      } else {
+        setCopyingOutput(true);
+        setTimeout(() => setCopyingOutput(false), 1500);
+        toast.success("Output copied to clipboard");
+      }
+    } catch (err) {
+      toast.error("Failed to copy to clipboard");
+      console.error(err);
+    }
+  };
 
   // Extract script and result, handling both custom format and ToolInvocation
   let script: string | undefined;
@@ -113,18 +134,34 @@ export const CodeExecution = ({ execution, className }: CodeExecutionProps) => {
             )}>
               <CodeBlockCode code={script} language="javascript" />
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setExpandInput(!expandInput)}
-              className="absolute top-2 right-2 h-6 w-6 p-0 bg-background/80 backdrop-blur-sm border-border/50 shadow-sm hover:bg-background transition-all hover:shadow-md active:scale-95 cursor-pointer"
-            >
-              {expandInput ? (
-                <Minimize2 className="h-3.5 w-3.5" />
-              ) : (
-                <Maximize2 className="h-3.5 w-3.5" />
-              )}
-            </Button>
+            <div className="absolute top-2 right-2 flex gap-2">
+              <Button
+                variant="secondary"
+                size="icon"
+                onClick={() => script && copyToClipboard(script, 'input')}
+                className="h-8 w-8 rounded-full bg-background/90 backdrop-blur-sm border shadow-sm hover:bg-background/80 transition-all hover:shadow-md active:scale-95 cursor-pointer"
+                title="Copy code"
+              >
+                {copyingInput ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
+              <Button
+                variant="secondary"
+                size="icon"
+                onClick={() => setExpandInput(!expandInput)}
+                className="h-8 w-8 rounded-full bg-background/90 backdrop-blur-sm border shadow-sm hover:bg-background/80 transition-all hover:shadow-md active:scale-95 cursor-pointer"
+                title={expandInput ? "Collapse code" : "Expand code"}
+              >
+                {expandInput ? (
+                  <Minimize2 className="h-4 w-4" />
+                ) : (
+                  <Maximize2 className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -203,18 +240,34 @@ export const CodeExecution = ({ execution, className }: CodeExecutionProps) => {
                   }
                 />
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setExpandOutput(!expandOutput)}
-                className="absolute top-2 right-2 h-6 w-6 p-0 bg-background/80 backdrop-blur-sm border-border/50 shadow-sm hover:bg-background transition-all hover:shadow-md active:scale-95 cursor-pointer"
-              >
-                {expandOutput ? (
-                  <Minimize2 className="h-3.5 w-3.5" />
-                ) : (
-                  <Maximize2 className="h-3.5 w-3.5" />
-                )}
-              </Button>
+              <div className="absolute top-2 right-2 flex gap-2">
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  onClick={() => formattedResult && copyToClipboard(formattedResult, 'output')}
+                  className="h-8 w-8 rounded-full bg-background/90 backdrop-blur-sm border shadow-sm hover:bg-background/80 transition-all hover:shadow-md active:scale-95 cursor-pointer"
+                  title="Copy output"
+                >
+                  {copyingOutput ? (
+                    <Check className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  onClick={() => setExpandOutput(!expandOutput)}
+                  className="h-8 w-8 rounded-full bg-background/90 backdrop-blur-sm border shadow-sm hover:bg-background/80 transition-all hover:shadow-md active:scale-95 cursor-pointer"
+                  title={expandOutput ? "Collapse output" : "Expand output"}
+                >
+                  {expandOutput ? (
+                    <Minimize2 className="h-4 w-4" />
+                  ) : (
+                    <Maximize2 className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
             </div>
           ) : null}
         </div>
