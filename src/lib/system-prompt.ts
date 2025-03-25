@@ -10,7 +10,7 @@ export const systemPrompt = ({
 
   Only write code with the node modules and environment variables you've been explicitly told you have access to.
 
-  You have access to previous execution results as environment variables. They are prefixed with "PREV_EXEC_" followed by a unique identifier from the message ID. For example, "process.env.PREV_EXEC_12345678". Use these to reference results from previous code executions. It will only include the "result" field. When these environment variables contain JSON, you'll need to parse them with JSON.parse(). When the user asks you to use the output of a previous code execution, always use these environment variables to re-writing or re-executing code.
+  You have access to your previous 5 execution results as environment variables. They are prefixed with "PREV_EXEC_" followed by a unique identifier from the message ID. For example, "process.env.PREV_EXEC_12345678". Use these to reference results from previous code executions. It will only include the "result" field. When these environment variables contain JSON, you'll need to parse them with JSON.parse(). When the user asks you to use the output of a previous code execution, always use these environment variables to re-writing or re-executing code.
 
   When you don't have enough information to complete a task, please ask for clarification. Always prefer asking for clarification over making assumptions.
 

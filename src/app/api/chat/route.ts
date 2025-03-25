@@ -44,22 +44,27 @@ export async function POST(request: Request) {
 
   // Extract execution results from previous messages and add to environment variables
   console.log("previousMessages", previousMessages);
-  const executionResults = previousMessages.reduce<Record<string, string>>(
-    (acc, msg) => {
-      for (const part of msg.parts ?? []) {
-        if (part.type == "tool-invocation") {
-          const toolCall = part.toolInvocation as ToolInvocation & {
-            result?: {
-              result?: unknown;
-            };
-          };
-          console.log("toolCall", toolCall);
-          if (toolCall?.result?.result) {
-            acc[`PREV_EXEC_${toolCall.toolCallId}`] = JSON.stringify(
-              toolCall?.result?.result
-            );
+  const allToolCalls = previousMessages.flatMap((msg) =>
+    (msg.parts ?? [])
+      .filter((part) => part.type === "tool-invocation")
+      .map(
+        (part) =>
+          part.toolInvocation as ToolInvocation & {
+            result?: { result?: unknown };
           }
-        }
+      )
+  );
+
+  // Only take the last 5:
+  const lastFiveToolCalls = allToolCalls.slice(-5);
+
+  // Reduce them to build `executionResults`:
+  const executionResults = lastFiveToolCalls.reduce<Record<string, string>>(
+    (acc, toolCall) => {
+      if (toolCall?.result?.result) {
+        acc[`PREV_EXEC_${toolCall.toolCallId}`] = JSON.stringify(
+          toolCall.result.result
+        );
       }
       return acc;
     },
@@ -153,6 +158,6 @@ export async function POST(request: Request) {
     maxSteps: 10,
     system: systemPrompt({ requestDocsToolEnabled: docRequestTool !== null }),
     tools,
-    messages: json.messages,
+    messages: messages,
   }).toDataStreamResponse();
 }
