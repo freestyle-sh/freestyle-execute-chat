@@ -206,15 +206,17 @@ export function ChatUI({
           />
         </div>
 
-        {/* Auth popup for message limit */}
+        {/* Auth popup for message limit - non-closable */}
         <AuthPopup
           isOpen={isAuthPopupOpen}
           onClose={() => setIsAuthPopupOpen(false)}
-          message="To send more messages please sign in"
-          ctaText="Sign In"
+          message="Please sign in to send more messages"
+          ctaText="Create Account"
+          title="Sign In to Continue"
+          allowClose={false} // Make it non-closable for message limit
           onAction={() => {
             // Navigate to sign in page or trigger sign in flow
-            router.push("/api/auth/signin");
+            router.push("/handler/signup");
           }}
         />
       </div>
