@@ -1,3 +1,4 @@
+// Existing imports...
 "use client";
 
 import { useChat } from "@ai-sdk/react";
@@ -43,6 +44,7 @@ import { capitalize } from "@/lib/typography";
 import { Skeleton } from "./ui/skeleton";
 import { toggleChatModule } from "@/actions/modules/toggle-chat-module";
 import { AuthPopup } from "@/components/ui/auth-popup";
+import { useUser } from "@stackframe/stack";
 
 const MobileHeader = ({ title }: { title: string }) => {
   const { toggleMobile } = useSidebarStore();
@@ -103,6 +105,8 @@ export function ChatUI({
   const queryClient = useQueryClient();
   const hasRunRef = useRef(false);
 
+  const user = useUser({ or: "return-null" });
+
   const { data: chat } = useQuery({
     queryKey: ["chats", chatId],
     queryFn: () =>
@@ -115,6 +119,7 @@ export function ChatUI({
   });
 
   const [isAuthPopupOpen, setIsAuthPopupOpen] = useState(false);
+  const [isModuleAuthPopup, setIsModuleAuthPopup] = useState(false);
 
   const {
     messages,
@@ -132,6 +137,7 @@ export function ChatUI({
       if (errorJson?.error?.kind == "AnonymousUserMessageLimit") {
         // Show our custom auth popup
         setIsAuthPopupOpen(true);
+        setIsModuleAuthPopup(false);
       }
     },
     fetch: async (req, init) => {
@@ -161,6 +167,11 @@ export function ChatUI({
       reload();
     }
   }, [router, respond, chatId, reload, messages]);
+
+  const showModuleAuthPopup = () => {
+    setIsAuthPopupOpen(true);
+    setIsModuleAuthPopup(true);
+  };
 
   return (
     <CurrentChatContext.Provider value={{ chatId, addToolResult }}>
@@ -203,17 +214,21 @@ export function ChatUI({
             handleValueChangeAction={handleInputChange}
             isLoading={status === "streaming" || status === "submitted"}
             chatId={chatId}
+            user={user}
+            showModuleAuthPopup={showModuleAuthPopup}
           />
         </div>
 
-        {/* Auth popup for message limit - non-closable */}
+        {/* Auth popup - could be for either message limit or module configuration */}
         <AuthPopup
           isOpen={isAuthPopupOpen}
           onClose={() => setIsAuthPopupOpen(false)}
-          message="Please sign in to send more messages"
+          message={isModuleAuthPopup 
+            ? "In order to configure modules, you need to sign in" 
+            : "Please sign in to send more messages"}
           ctaText="Create Account"
           title="Sign In to Continue"
-          allowClose={false} // Make it non-closable for message limit
+          allowClose={true} // Always allow close for both types
           onAction={() => {
             // Navigate to sign in page or trigger sign in flow
             router.push("/handler/signup");
@@ -230,6 +245,8 @@ export function PromptInputBasic({
   chatId,
   handleSubmitAction: handleSubmit,
   handleValueChangeAction: handleValueChange,
+  user,
+  showModuleAuthPopup,
 }: {
   input: string;
   isLoading: boolean;
@@ -243,6 +260,8 @@ export function PromptInputBasic({
     },
     chatRequestOptions?: ChatRequestOptions
   ) => void;
+  user: unknown;
+  showModuleAuthPopup: () => void;
 }) {
   // State to track if module tray is open
   const [isModuleTrayOpen, setIsModuleTrayOpen] = useState(false);
@@ -320,7 +339,11 @@ export function PromptInputBasic({
 
     if (foundModule && !foundModule.isConfigured) {
       // If module isn't configured, navigate to settings page
-      router.push(`/settings/modules?module=${moduleId}`);
+      if (user) {
+        router.push(`/settings/modules?module=${moduleId}`);
+      } else {
+        showModuleAuthPopup();
+      }
       return;
     }
 
@@ -569,9 +592,7 @@ export function PromptInputBasic({
                       animate={{ opacity: 0.6 }}
                       transition={{ duration: 0.2, delay: 0.1 + index * 0.02 }}
                       className="bg-sidebar inline-flex items-center px-3 py-1.5 rounded-2xl border border-border/20 cursor-pointer hover:bg-muted/20 transition-all text-xs"
-                      onClick={() => {
-                        router.push(`/settings/modules?module=${module.id}`);
-                      }}
+                      onClick={() => handleToggleModule(module.id, false)}
                     >
                       <div
                         // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>

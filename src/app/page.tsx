@@ -93,6 +93,10 @@ export default function Home() {
           input={prompt}
           isLoading={submitting || isLoading}
           handleValueChangeAction={(e) => setPrompt(e.target.value)}
+          user={user}
+          showModuleAuthPopup={() => {
+            router.push("/handler/signup");
+          }}
         />
 
         <div className="text-muted-foreground text-center text-sm mt-6 flex items-center gap-2 before:content-[''] before:h-[1px] before:w-12 before:bg-border after:content-[''] after:h-[1px] after:w-12 after:bg-border">
