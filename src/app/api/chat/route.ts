@@ -36,23 +36,26 @@ export async function POST(request: Request) {
   const stackUser = await stackServerApp.getUser({ or: "return-null" });
 
   let customerId = stackUser?.serverMetadata?.customerId;
-  if (customerId === null && stackUser) {
-    const newCustomerId = await stripe.customers.create({
+  if (customerId == null && stackUser) {
+    console.log("Creating new customer ID");
+    const newCustomer = await stripe.customers.create({
       email: stackUser.primaryEmail ?? undefined,
       name: stackUser.displayName ?? undefined,
     });
+    const newCustomerId = newCustomer.id;
     await stackUser.setServerMetadata({
       ...(stackUser.serverMetadata ?? {}),
       customerId: newCustomerId,
     });
     customerId = newCustomerId;
+    console.log("Created new customer ID", customerId);
+  } else {
+    console.log("Customer ID already exists", customerId);
   }
 
   const json: {
     messages: UIMessage[];
   } = await request.json();
-
-  console.log(json);
 
   if (
     json.messages.filter((message) => message.role == "user").length > 5 &&
@@ -75,14 +78,10 @@ export async function POST(request: Request) {
     throw new Error("chat-id header is required");
   }
 
-  console.log("chatId", chatId);
-
   const allowFirstMessage =
     request.headers.get("allow-first-message") === "true";
 
   const modules = await listModules(chatId);
-
-  console.log("modules", modules);
 
   const nodeModules = Object.fromEntries(
     modules
@@ -97,7 +96,6 @@ export async function POST(request: Request) {
   );
 
   // Extract execution results from previous messages and add to environment variables
-  console.log("previousMessages", previousMessages);
   const allToolCalls = previousMessages.flatMap((msg) =>
     (msg.parts ?? [])
       .filter((part) => part.type === "tool-invocation")
@@ -124,8 +122,6 @@ export async function POST(request: Request) {
     },
     {}
   );
-
-  console.log("Execution results", executionResults);
 
   // Combine module env vars with execution results
   const envVars = {
@@ -165,8 +161,6 @@ export async function POST(request: Request) {
   maybeUpdateChatTitle(chatId).catch((error) =>
     console.error("Failed to update chat title:", error)
   );
-
-  console.log("Chat title maybe updated");
 
   const tools: Record<string, Tool> = {
     codeExecutor: executeTool({
@@ -216,8 +210,8 @@ export async function POST(request: Request) {
               billing: {
                 customer: customerId,
                 meters: {
-                  input: "input_tokens",
-                  output: "output_tokens",
+                  input: "INPUT_TOKENS",
+                  output: "OUTPUT_TOKENS",
                 },
               },
             }),
