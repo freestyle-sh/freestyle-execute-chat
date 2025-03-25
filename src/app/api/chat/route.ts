@@ -7,12 +7,12 @@ import { systemPrompt } from "@/lib/system-prompt";
 import { requestDocumentationTool } from "@/lib/tools/request-documentation";
 import { sendFeedbackTool } from "@/lib/tools/send-feedback";
 import { structuredDataRequestTool } from "@/lib/tools/structured-data-request";
-import { type Message, streamText, type Tool, ToolInvocation } from "ai";
+import { streamText, type Tool, ToolInvocation, type UIMessage } from "ai";
 import { executeTool } from "freestyle-sandboxes/ai";
 
 export async function POST(request: Request) {
   const json: {
-    messages: Message[];
+    messages: UIMessage[];
   } = await request.json();
 
   console.log(json);
@@ -126,7 +126,27 @@ export async function POST(request: Request) {
     tools.requestDocumentation = docRequestTool;
   }
 
-  console.log("pre streamText");
+  const messages = json.messages.map((msg) => {
+    if (msg.role === "assistant") {
+      for (const part of msg.parts ?? []) {
+        if (part.type === "tool-invocation") {
+          if (
+            part.toolInvocation.toolName === "codeExecutor" &&
+            part.toolInvocation.state === "result"
+          ) {
+            if (
+              part.toolInvocation.result?.result &&
+              part.toolInvocation.result?.result.length > 5003
+            ) {
+              part.toolInvocation.result.result =
+                part.toolInvocation.result.result.slice(0, 5000) + "...";
+            }
+          }
+        }
+      }
+    }
+    return msg;
+  });
 
   return streamText({
     model: claudeSonnetModel,
