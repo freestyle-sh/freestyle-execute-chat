@@ -116,6 +116,9 @@ export const CodeExecution = ({ execution, className }: CodeExecutionProps) => {
     const isPending = result?._type === "pending" || !result;
     const logs = result?.logs || [];
     const hasLogs = logs.length > 0;
+    
+    // Check if script includes environment variables that are previous execution results
+    const hasPrevExecVars = script.includes("process.env.PREV_EXEC_");
 
     // Format the result for display
     let formattedResult = "";
@@ -134,6 +137,11 @@ export const CodeExecution = ({ execution, className }: CodeExecutionProps) => {
         <div>
           <p className="text-sm text-muted-foreground mb-2">
             JavaScript code execution
+            {hasPrevExecVars && (
+              <span className="ml-2 text-xs px-2 py-0.5 bg-blue-500/10 text-blue-500 dark:bg-blue-500/20 dark:text-blue-400 rounded-full">
+                Using previous execution results
+              </span>
+            )}
           </p>
           <div className="border rounded-md overflow-hidden relative">
             <div

@@ -7,7 +7,7 @@ import { systemPrompt } from "@/lib/system-prompt";
 import { requestDocumentationTool } from "@/lib/tools/request-documentation";
 import { sendFeedbackTool } from "@/lib/tools/send-feedback";
 import { structuredDataRequestTool } from "@/lib/tools/structured-data-request";
-import { type Message, streamText, type Tool } from "ai";
+import { type Message, streamText, tool, type Tool, ToolInvocation } from "ai";
 import { executeTool } from "freestyle-sandboxes/ai";
 
 export async function POST(request: Request) {
@@ -37,15 +37,50 @@ export async function POST(request: Request) {
       .flatMap(Object.entries)
   );
 
-  const envVars = Object.fromEntries(
-    modules
-      .filter((module) => module.isConfigured)
-      .flatMap((module) => {
-        return module.configurations.map((configuration) => {
-          return [configuration.name, configuration.value];
-        });
-      })
+  // Get all previous messages with tool outputs from code execution
+  const previousMessages = json.messages.filter(
+    (msg) => msg.role === "assistant"
   );
+
+  // Extract execution results from previous messages and add to environment variables
+  console.log("previousMessages", previousMessages);
+  const executionResults = previousMessages.reduce<Record<string, string>>(
+    (acc, msg) => {
+      for (const part of msg.parts ?? []) {
+        if (part.type == "tool-invocation") {
+          const toolCall = part.toolInvocation as ToolInvocation & {
+            result?: {
+              result?: unknown;
+            };
+          };
+          console.log("toolCall", toolCall);
+          if (toolCall?.result?.result) {
+            acc[`PREV_EXEC_${toolCall.toolCallId}`] = JSON.stringify(
+              toolCall?.result?.result
+            );
+          }
+        }
+      }
+      return acc;
+    },
+    {}
+  );
+
+  console.log("Execution results", executionResults);
+
+  // Combine module env vars with execution results
+  const envVars = {
+    ...Object.fromEntries(
+      modules
+        .filter((module) => module.isConfigured)
+        .flatMap((module) => {
+          return module.configurations.map((configuration) => {
+            return [configuration.name, configuration.value];
+          });
+        })
+    ),
+    ...executionResults,
+  };
 
   if (!chatId) {
     throw new Error("chat-id header is required");
