@@ -3,19 +3,73 @@ import { listModules } from "@/actions/modules/list-modules";
 import { db } from "@/db";
 import { messagesTable } from "@/db/schema";
 import { claudeSonnetModel } from "@/lib/model";
+import stripe from "@/lib/stripe";
 import { systemPrompt } from "@/lib/system-prompt";
 import { requestDocumentationTool } from "@/lib/tools/request-documentation";
 import { sendFeedbackTool } from "@/lib/tools/send-feedback";
 import { structuredDataRequestTool } from "@/lib/tools/structured-data-request";
-import { streamText, type Tool, ToolInvocation, type UIMessage } from "ai";
+import { stackServerApp } from "@/stack";
+import { StripeAgentToolkit } from "@stripe/agent-toolkit/ai-sdk";
+
+import {
+  streamText,
+  type Tool,
+  ToolInvocation,
+  type UIMessage,
+  wrapLanguageModel,
+} from "ai";
 import { executeTool } from "freestyle-sandboxes/ai";
+// import { custom } from "zod";
+
+const stripeAgentToolkit = new StripeAgentToolkit({
+  secretKey: process.env.STRIPE_KEY!,
+  configuration: {
+    actions: {
+      paymentLinks: {
+        create: true,
+      },
+    },
+  },
+});
 
 export async function POST(request: Request) {
+  const stackUser = await stackServerApp.getUser({ or: "return-null" });
+
+  let customerId = stackUser?.serverMetadata?.customerId;
+  if (customerId === null && stackUser) {
+    const newCustomerId = await stripe.customers.create({
+      email: stackUser.primaryEmail ?? undefined,
+      name: stackUser.displayName ?? undefined,
+    });
+    await stackUser.setServerMetadata({
+      ...(stackUser.serverMetadata ?? {}),
+      customerId: newCustomerId,
+    });
+    customerId = newCustomerId;
+  }
+
   const json: {
     messages: UIMessage[];
   } = await request.json();
 
   console.log(json);
+
+  if (
+    json.messages.filter((message) => message.role == "user").length > 5 &&
+    !stackUser
+  ) {
+    return new Response(
+      JSON.stringify({
+        error: {
+          kind: "AnonymousUserMessageLimit",
+        },
+      }),
+      {
+        status: 403,
+      }
+    );
+  }
+
   const chatId = request.headers.get("chat-id");
   if (!chatId) {
     throw new Error("chat-id header is required");
@@ -154,7 +208,22 @@ export async function POST(request: Request) {
   });
 
   return streamText({
-    model: claudeSonnetModel,
+    model: customerId
+      ? wrapLanguageModel({
+          model: claudeSonnetModel,
+          middleware: [
+            stripeAgentToolkit.middleware({
+              billing: {
+                customer: customerId,
+                meters: {
+                  input: "input_tokens",
+                  output: "output_tokens",
+                },
+              },
+            }),
+          ],
+        })
+      : claudeSonnetModel,
     maxSteps: 10,
     system: systemPrompt({ requestDocsToolEnabled: docRequestTool !== null }),
     tools,

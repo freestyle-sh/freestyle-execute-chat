@@ -42,6 +42,7 @@ import {
 import { capitalize } from "@/lib/typography";
 import { Skeleton } from "./ui/skeleton";
 import { toggleChatModule } from "@/actions/modules/toggle-chat-module";
+import { AuthPopup } from "@/components/ui/auth-popup";
 
 const MobileHeader = ({ title }: { title: string }) => {
   const { toggleMobile } = useSidebarStore();
@@ -76,7 +77,7 @@ export type CurrentChatContext = {
 };
 
 export const CurrentChatContext = createContext<CurrentChatContext | undefined>(
-  undefined,
+  undefined
 );
 
 export function useCurrentChat() {
@@ -113,6 +114,8 @@ export function ChatUI({
       }),
   });
 
+  const [isAuthPopupOpen, setIsAuthPopupOpen] = useState(false);
+
   const {
     messages,
     input,
@@ -124,6 +127,13 @@ export function ChatUI({
   } = useChat({
     id: chatId,
     initialMessages,
+    onError: (error) => {
+      const errorJson = JSON.parse(error.message as unknown as string);
+      if (errorJson?.error?.kind == "AnonymousUserMessageLimit") {
+        // Show our custom auth popup
+        setIsAuthPopupOpen(true);
+      }
+    },
     fetch: async (req, init) => {
       return fetch(req, {
         ...init,
@@ -160,7 +170,7 @@ export function ChatUI({
           autoScroll
           className={cn(
             "w-full flex-1 max-w-3xl mx-auto flex flex-col gap-4 pb-2",
-            "overflow-scroll py-4 scrollbar-none",
+            "overflow-scroll py-4 scrollbar-none"
           )}
         >
           {messages.length === 0 ? (
@@ -182,7 +192,7 @@ export function ChatUI({
               event?: {
                 preventDefault?: () => void;
               },
-              chatRequestOptions?: ChatRequestOptions,
+              chatRequestOptions?: ChatRequestOptions
             ) => {
               handleSubmit(event, chatRequestOptions);
 
@@ -195,6 +205,18 @@ export function ChatUI({
             chatId={chatId}
           />
         </div>
+
+        {/* Auth popup for message limit */}
+        <AuthPopup
+          isOpen={isAuthPopupOpen}
+          onClose={() => setIsAuthPopupOpen(false)}
+          message="To send more messages please sign in"
+          ctaText="Sign In"
+          onAction={() => {
+            // Navigate to sign in page or trigger sign in flow
+            router.push("/api/auth/signin");
+          }}
+        />
       </div>
     </CurrentChatContext.Provider>
   );
@@ -211,13 +233,13 @@ export function PromptInputBasic({
   isLoading: boolean;
   chatId?: string; // Make chatId optional for homepage usage
   handleValueChangeAction: (
-    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
+    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>
   ) => void;
   handleSubmitAction: (
     event?: {
       preventDefault?: () => void;
     },
-    chatRequestOptions?: ChatRequestOptions,
+    chatRequestOptions?: ChatRequestOptions
   ) => void;
 }) {
   // State to track if module tray is open
@@ -272,7 +294,7 @@ export function PromptInputBasic({
             }
             return module;
           });
-        },
+        }
       );
 
       return { previousModules };
@@ -358,7 +380,7 @@ export function PromptInputBasic({
                         "inline-flex items-center px-3 py-1.5 rounded-2xl border cursor-pointer transition-all text-xs active:scale-95",
                         module.isEnabled === false
                           ? "opacity-50 bg-muted/30"
-                          : "module-bg",
+                          : "module-bg"
                       )}
                       style={
                         {
@@ -379,7 +401,7 @@ export function PromptInputBasic({
                           "w-4 h-4 mr-1.5 object-contain",
                           module.isEnabled === false
                             ? "opacity-50 dark:fill-gray-400"
-                            : "module-fill",
+                            : "module-fill"
                         )}
                         style={
                           {
@@ -416,7 +438,7 @@ export function PromptInputBasic({
                         "inline-flex items-center px-3 py-1.5 rounded-2xl border cursor-pointer transition-all text-xs active:scale-95",
                         isEnabled === false || isEnabled === undefined
                           ? "opacity-50 bg-muted/30 dark:fill-gray-300"
-                          : "module-bg",
+                          : "module-bg"
                       )}
                       style={
                         {
@@ -435,7 +457,7 @@ export function PromptInputBasic({
                           "w-4 h-4 mr-1.5 object-contain",
                           isEnabled === false || isEnabled === undefined
                             ? "opacity-50"
-                            : "module-fill",
+                            : "module-fill"
                         )}
                         style={
                           {
@@ -475,7 +497,7 @@ export function PromptInputBasic({
                     "inline-flex items-center gap-0.5 px-3 py-1.5 cursor-pointer text-xs hover:text-foreground rounded-2xl border border-border/20 hover:bg-muted/10",
                     isModuleTrayOpen
                       ? "text-foreground bg-muted/10"
-                      : "text-muted-foreground",
+                      : "text-muted-foreground"
                   )}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
@@ -587,7 +609,7 @@ export function PromptInputBasic({
             size="default"
             className={cn(
               isLoading ? "w-8" : "w-14",
-              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out hover:bg-primary/90",
+              "h-8 px-3 rounded-full cursor-pointer transition-all duration-300 ease-out hover:bg-primary/90"
             )}
             onClick={handleSubmit}
           >
