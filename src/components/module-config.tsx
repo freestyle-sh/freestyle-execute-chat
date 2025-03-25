@@ -297,8 +297,10 @@ export function ModuleConfigDrawer({
           <Button
             variant="outline"
             size="sm"
+            disabled={isLoading}
             className={cn(
-              "w-full cursor-pointer",
+              "w-full",
+              isLoading ? "cursor-wait" : "cursor-pointer",
               isConfigured
                 ? "bg-green-500/10 hover:bg-green-500/20"
                 : resolvedTheme === "dark"
@@ -306,7 +308,14 @@ export function ModuleConfigDrawer({
                   : "",
             )}
           >
-            {isConfigured ? "Configured" : "Configure"}
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <div className="h-3 w-3 animate-spin rounded-full border-b-2 border-current" />
+                Loading...
+              </span>
+            ) : (
+              isConfigured ? "Configured" : "Configure"
+            )}
           </Button>
         </DrawerTrigger>
         <DrawerContent className="px-6">
