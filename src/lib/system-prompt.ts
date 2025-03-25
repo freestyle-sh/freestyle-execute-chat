@@ -16,7 +16,7 @@ export const systemPrompt = ({
 
   ${
     requestDocsToolEnabled
-      ? "When you don't know how to use a tool, use the 'requestDocumentation' tool."
+      ? "When using a tool, if you don't have its docs in context, use the 'requestDocumentation' tool to get its docs if docs for it are available."
       : ""
   }
 

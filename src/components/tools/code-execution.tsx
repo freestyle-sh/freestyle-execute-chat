@@ -1,7 +1,16 @@
 "use client";
 
 import type { ToolInvocation } from "ai";
-import { Terminal, ChevronDown, ChevronUp, Loader2, Maximize2, Minimize2, Copy, Check } from "lucide-react";
+import {
+  Terminal,
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+  Maximize2,
+  Minimize2,
+  Copy,
+  Check,
+} from "lucide-react";
 import { ToolOutput, ToolOutputBadge } from "@/components/tool-output";
 import { cn } from "@/lib/utils";
 import { CodeBlockCode } from "@/components/ui/code-block";
@@ -36,11 +45,11 @@ export const CodeExecution = ({ execution, className }: CodeExecutionProps) => {
   const [expandOutput, setExpandOutput] = useState(false);
   const [copyingInput, setCopyingInput] = useState(false);
   const [copyingOutput, setCopyingOutput] = useState(false);
-  
-  const copyToClipboard = async (text: string, type: 'input' | 'output') => {
+
+  const copyToClipboard = async (text: string, type: "input" | "output") => {
     try {
       await navigator.clipboard.writeText(text);
-      if (type === 'input') {
+      if (type === "input") {
         setCopyingInput(true);
         setTimeout(() => setCopyingInput(false), 1500);
         toast.success("Code copied to clipboard");
@@ -80,7 +89,7 @@ export const CodeExecution = ({ execution, className }: CodeExecutionProps) => {
   }
 
   // Determine badge text and variant based on result
-  const badgeText = "JavaScript";
+  const badgeText = "TypeScript";
   const badgeVariant:
     | "default"
     | "success"
@@ -91,10 +100,10 @@ export const CodeExecution = ({ execution, className }: CodeExecutionProps) => {
     result?._type === "success"
       ? "success"
       : result?._type === "error"
-        ? "error"
-        : result?._type === "pending"
-          ? "pending"
-          : "info";
+      ? "error"
+      : result?._type === "pending"
+      ? "pending"
+      : "info";
 
   // Adding CSS for pulse animation (this will use Tailwind's built-in pulse);
 
@@ -127,18 +136,20 @@ export const CodeExecution = ({ execution, className }: CodeExecutionProps) => {
             JavaScript code execution
           </p>
           <div className="border rounded-md overflow-hidden relative">
-            <div className={cn(
-              "transition-all duration-300 ease-in-out",
-              !expandInput ? "max-h-[300px]" : "max-h-[3000px]", 
-              "overflow-y-auto"
-            )}>
+            <div
+              className={cn(
+                "transition-all duration-300 ease-in-out",
+                !expandInput ? "max-h-[300px]" : "max-h-[3000px]",
+                "overflow-y-auto"
+              )}
+            >
               <CodeBlockCode code={script} language="javascript" />
             </div>
             <div className="absolute top-2 right-2 flex gap-2">
               <Button
                 variant="secondary"
                 size="icon"
-                onClick={() => script && copyToClipboard(script, 'input')}
+                onClick={() => script && copyToClipboard(script, "input")}
                 className="h-8 w-8 rounded-full bg-background/90 backdrop-blur-sm border shadow-sm hover:bg-background/80 transition-all hover:shadow-md active:scale-95 cursor-pointer"
                 title="Copy code"
               >
@@ -224,19 +235,21 @@ export const CodeExecution = ({ execution, className }: CodeExecutionProps) => {
             </div>
           ) : formattedResult ? (
             <div className="border rounded-md overflow-hidden relative">
-              <div className={cn(
-                "transition-all duration-300 ease-in-out",
-                !expandOutput ? "max-h-[300px]" : "max-h-[3000px]", 
-                "overflow-y-auto"
-              )}>
+              <div
+                className={cn(
+                  "transition-all duration-300 ease-in-out",
+                  !expandOutput ? "max-h-[300px]" : "max-h-[3000px]",
+                  "overflow-y-auto"
+                )}
+              >
                 <CodeBlockCode
                   code={formattedResult}
                   language={
                     isError
                       ? "bash"
                       : typeof result?.result === "object"
-                        ? "json"
-                        : "text"
+                      ? "json"
+                      : "text"
                   }
                 />
               </div>
@@ -244,7 +257,10 @@ export const CodeExecution = ({ execution, className }: CodeExecutionProps) => {
                 <Button
                   variant="secondary"
                   size="icon"
-                  onClick={() => formattedResult && copyToClipboard(formattedResult, 'output')}
+                  onClick={() =>
+                    formattedResult &&
+                    copyToClipboard(formattedResult, "output")
+                  }
                   className="h-8 w-8 rounded-full bg-background/90 backdrop-blur-sm border shadow-sm hover:bg-background/80 transition-all hover:shadow-md active:scale-95 cursor-pointer"
                   title="Copy output"
                 >
@@ -287,7 +303,7 @@ export const CodeExecution = ({ execution, className }: CodeExecutionProps) => {
                     key={i}
                     className={cn(
                       "py-1 px-3 font-mono text-xs",
-                      i % 2 === 0 ? "bg-muted/10" : "bg-transparent",
+                      i % 2 === 0 ? "bg-muted/10" : "bg-transparent"
                     )}
                   >
                     <span className="text-muted-foreground/60 mr-2">
@@ -316,4 +332,3 @@ export const CodeExecution = ({ execution, className }: CodeExecutionProps) => {
     />
   );
 };
-

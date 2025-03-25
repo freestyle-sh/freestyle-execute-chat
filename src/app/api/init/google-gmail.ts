@@ -22,7 +22,7 @@ export default async function initGoogleGmail() {
       // Set up authentication with the provided token
       const oauth2Client = new auth.OAuth2();
       oauth2Client.setCredentials({
-        access_token: process.env.GOOGLE_GMAIL_TOKEN
+        access_token: process.env.GOOGLE_GMAIL_ACCESS_TOKEN
       });
 
       // Create a gmail client

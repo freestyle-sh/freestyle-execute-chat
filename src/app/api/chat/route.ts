@@ -15,15 +15,20 @@ export async function POST(request: Request) {
     messages: Message[];
   } = await request.json();
 
+  console.log(json);
   const chatId = request.headers.get("chat-id");
   if (!chatId) {
     throw new Error("chat-id header is required");
   }
 
+  console.log("chatId", chatId);
+
   const allowFirstMessage =
     request.headers.get("allow-first-message") === "true";
 
   const modules = await listModules(chatId);
+
+  console.log("modules", modules);
 
   const nodeModules = Object.fromEntries(
     modules
@@ -67,6 +72,8 @@ export async function POST(request: Request) {
     console.error("Failed to update chat title:", error)
   );
 
+  console.log("Chat title maybe updated");
+
   const tools: Record<string, Tool> = {
     codeExecutor: executeTool({
       apiKey: process.env.FREESTYLE_API_KEY!,
@@ -83,6 +90,8 @@ export async function POST(request: Request) {
   if (docRequestTool) {
     tools.requestDocumentation = docRequestTool;
   }
+
+  console.log("pre streamText");
 
   return streamText({
     model: claudeSonnetModel,

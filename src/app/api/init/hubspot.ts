@@ -25,6 +25,7 @@ export default async function initHubspot() {
         accessToken: process.env.HUBSPOT_API_KEY
       });
       `,
+
       setupInstructions: `
 ## Connecting to your HubSpot Account
 

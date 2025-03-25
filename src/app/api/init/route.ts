@@ -13,8 +13,12 @@ import initGoogleCalendar from "./google-calendar";
 import initGoogleSheets from "./google-sheets";
 import initGoogleGmail from "./google-gmail";
 import initHubspot from "./hubspot";
+import initTerminalShop from "./terminal";
 
-export async function POST() {
+export async function POST(request: Request) {
+  if (request.headers.get("Authorization") !== "SuperSecretPassword") {
+    return new Response("Nope.", { status: 401 });
+  }
   await db.delete(freestyleModulesTable);
 
   await initResend();
@@ -30,6 +34,7 @@ export async function POST() {
   await initGoogleSheets();
   await initGoogleGmail();
   await initHubspot();
+  await initTerminalShop();
 
   return new Response("Initialized", { status: 200 });
 }
