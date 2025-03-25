@@ -7,7 +7,7 @@ import { systemPrompt } from "@/lib/system-prompt";
 import { requestDocumentationTool } from "@/lib/tools/request-documentation";
 import { sendFeedbackTool } from "@/lib/tools/send-feedback";
 import { structuredDataRequestTool } from "@/lib/tools/structured-data-request";
-import { type Message, streamText, tool, type Tool, ToolInvocation } from "ai";
+import { type Message, streamText, type Tool, ToolInvocation } from "ai";
 import { executeTool } from "freestyle-sandboxes/ai";
 
 export async function POST(request: Request) {
