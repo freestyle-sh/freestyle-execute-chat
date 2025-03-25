@@ -3,6 +3,7 @@
 import type React from "react";
 import { create } from "zustand";
 import type { DialogType, DialogQueueItem } from "./types";
+import type { ModuleWithRequirements } from "@/actions/modules/list-modules";
 
 interface DialogState {
   queue: DialogQueueItem<unknown>[];
@@ -14,6 +15,7 @@ interface DialogState {
     title: React.ReactNode,
     message: React.ReactNode,
     defaultValue?: string,
+    modules?: ModuleWithRequirements[],
   ) => Promise<T>;
 
   resolveDialog: <T>(result: T) => void;
@@ -30,6 +32,7 @@ export const useDialogStore = create<DialogState>((set, get) => ({
     title: React.ReactNode,
     message: React.ReactNode,
     defaultValue?: string,
+    modules?: ModuleWithRequirements[],
   ) {
     return new Promise<T>((resolve) => {
       const dialogId = Math.random().toString(36).substring(2, 9);
@@ -43,6 +46,7 @@ export const useDialogStore = create<DialogState>((set, get) => ({
             title,
             message,
             defaultValue,
+            modules,
             resolve: resolve as (value: unknown) => void,
           },
         ],
@@ -117,3 +121,16 @@ export function prompt(
   >;
 }
 
+export function configureModules(
+  modules: ModuleWithRequirements[]
+): Promise<boolean> {
+  return useDialogStore
+    .getState()
+    .enqueueDialog(
+      "moduleConfig",
+      "Module Configuration",
+      "Configure modules required for this action",
+      undefined,
+      modules
+    ) as Promise<boolean>;
+}
