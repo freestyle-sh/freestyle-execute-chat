@@ -31,7 +31,8 @@ export function GoogleOAuthUI({
   useEffect(() => {
     if (accessToken?.accessToken) {
       saveModuleConfiguration(module.id, {
-        [module.environmentVariableRequirements[0].id]: accessToken?.accessToken,
+        [module.environmentVariableRequirements[0].id]:
+          accessToken?.accessToken,
       });
     }
   });
@@ -62,13 +63,24 @@ export function GoogleOAuthUI({
           <p className="text-xs text-gray-500 mt-2 text-center">
             Google {serviceName} connected successfully
           </p>
-          <div className="text-center m-4">
+          <div className="flex justify-center items-center gap-3 text-center m-4">
             <Button
-              type="submit"
+              type="button"
+              variant="outline"
+              size="default"
+              className="w-full sm:flex-1 sm:max-w-[200px] text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive/90 cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
+              }}
+            >
+              Disconnect
+            </Button>
+
+            <Button
               size="default"
               className="w-full sm:flex-1 sm:max-w-[200px] cursor-pointer"
             >
-              Ok
+              Close
             </Button>
           </div>
         </div>
@@ -82,10 +94,10 @@ export function GoogleOAuthUI({
             onClick={(e) => {
               // Find closest drawer or dialog close button and trigger it
               const drawerClose = document.querySelector(
-                '[data-drawer-close="true"]'
+                '[data-drawer-close="true"]',
               );
               const dialogClose = document.querySelector(
-                '[data-dialog-close="true"]'
+                '[data-dialog-close="true"]',
               );
 
               if (drawerClose) {
@@ -124,3 +136,4 @@ export function GoogleOAuthUI({
     </div>
   );
 }
+
