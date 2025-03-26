@@ -7,25 +7,26 @@ import { toast } from "sonner";
 import { saveModuleConfiguration } from "@/actions/modules/set-config";
 import { useEffect } from "react";
 import { DrawerClose } from "../ui/drawer";
+import { CopyIcon } from "lucide-react";
 
 export function GoogleGmailUI(props: {
   module: ModuleWithRequirements;
 }): React.ReactNode {
   const user = useUser();
   const connectedAcc = user?.useConnectedAccount("google", {
-    scopes: ["https://www.googleapis.com/auth/gmail.readonly", "https://www.googleapis.com/auth/gmail.compose"],
+    scopes: [
+      "https://www.googleapis.com/auth/gmail.readonly",
+      "https://www.googleapis.com/auth/gmail.compose",
+    ],
   });
   const accessToken = connectedAcc?.useAccessToken();
 
   useEffect(() => {
     if (accessToken?.accessToken) {
-      saveModuleConfiguration(
-        props.module.id,
-        {
-          [props.module.environmentVariableRequirements[0].id]:
-            accessToken?.accessToken,
-        }
-      );
+      saveModuleConfiguration(props.module.id, {
+        [props.module.environmentVariableRequirements[0].id]:
+          accessToken?.accessToken,
+      });
     }
   });
 
@@ -45,20 +46,7 @@ export function GoogleGmailUI(props: {
                 toast.success("Access token copied to clipboard");
               }}
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="mr-1"
-              >
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-              </svg>
+              <CopyIcon />
               Copy
             </Button>
           </div>
@@ -88,9 +76,13 @@ export function GoogleGmailUI(props: {
             className="w-full sm:max-w-[300px] cursor-pointer"
             onClick={(e) => {
               // Find closest drawer or dialog close button and trigger it
-              const drawerClose = document.querySelector('[data-drawer-close="true"]');
-              const dialogClose = document.querySelector('[data-dialog-close="true"]');
-              
+              const drawerClose = document.querySelector(
+                '[data-drawer-close="true"]',
+              );
+              const dialogClose = document.querySelector(
+                '[data-dialog-close="true"]',
+              );
+
               if (drawerClose) {
                 (drawerClose as HTMLButtonElement).click();
               } else if (dialogClose) {
@@ -107,7 +99,10 @@ export function GoogleGmailUI(props: {
               try {
                 await user?.getConnectedAccount("google", {
                   or: "redirect",
-                  scopes: ["https://www.googleapis.com/auth/gmail.readonly", "https://www.googleapis.com/auth/gmail.compose"],
+                  scopes: [
+                    "https://www.googleapis.com/auth/gmail.readonly",
+                    "https://www.googleapis.com/auth/gmail.compose",
+                  ],
                 });
               } catch (error) {
                 toast.error("Failed to connect to Google Gmail");
@@ -127,3 +122,4 @@ export function GoogleGmailUI(props: {
     </div>
   );
 }
+
