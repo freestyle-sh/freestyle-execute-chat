@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { saveModuleConfiguration } from "@/actions/modules/set-config";
 import { useUser } from "@stackframe/stack";
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 
 interface ModulesSettingsProps {
   moduleToOpen?: string | null;
@@ -97,74 +97,68 @@ export function ModulesSettings({ moduleToOpen }: ModulesSettingsProps = {}) {
   }
 
   return (
-    <SettingsSection
-      title="Module Configurations"
-      description="Configure your modules to use external services and APIs"
-    >
-      <div className="space-y-4">
-        {isLoading ? (
-          <div className="space-y-4">
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-24 w-full" />
-          </div>
-        ) : (
-          modules?.map((module) => (
-            <Card key={module.id} className="p-6">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex gap-3">
-                  <ModuleIcon
-                    svg={module.svg}
-                    lightModeColor={module.lightModeColor}
-                    darkModeColor={module.darkModeColor}
-                    size="lg"
-                  />
-                  <div>
-                    <h3 className="font-medium">{`${module.name
-                      .slice(0, 1)
-                      .toUpperCase()}${module.name.slice(1)}`}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {module.example}
-                    </p>
-                    {module.environmentVariableRequirements.length > 0 && (
-                      <div className="mt-1 flex gap-1.5 flex-wrap">
-                        {module.environmentVariableRequirements.map((req) => (
-                          <span
-                            key={req.id}
-                            className={`text-xs px-1.5 py-0.5 rounded-sm ${
-                              req.required
-                                ? "bg-amber-500/10 text-amber-700 dark:text-amber-400"
-                                : "bg-muted text-muted-foreground"
-                            }`}
-                          >
-                            {req.name}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="w-28 shrink-0">
-                  {module.environmentVariableRequirements.length > 0 ? (
-                    <ModuleConfigDrawer
-                      module={module}
-                      onConfigSaveAction={handleConfigSave}
-                      defaultOpen={moduleToOpen === module.id}
-                      // Pass loading state from parallel queries
-                      isConfigLoading={isLoading}
-                      configData={moduleMap?.[module.id]?.configurations ?? []}
-                    />
-                  ) : (
-                    <div className="text-xs text-muted-foreground italic">
-                      No configuration needed
+    <div className="space-y-4">
+      {isLoading ? (
+        <div className="space-y-4">
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+        </div>
+      ) : (
+        modules?.map((module) => (
+          <Card key={module.id} className="p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex gap-3">
+                <ModuleIcon
+                  svg={module.svg}
+                  lightModeColor={module.lightModeColor}
+                  darkModeColor={module.darkModeColor}
+                  size="lg"
+                />
+                <div>
+                  <h3 className="font-medium">{`${module.name
+                    .slice(0, 1)
+                    .toUpperCase()}${module.name.slice(1)}`}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {module.example}
+                  </p>
+                  {module.environmentVariableRequirements.length > 0 && (
+                    <div className="mt-1 flex gap-1.5 flex-wrap">
+                      {module.environmentVariableRequirements.map((req) => (
+                        <span
+                          key={req.id}
+                          className={`text-xs px-1.5 py-0.5 rounded-sm ${
+                            req.required
+                              ? "bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                              : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          {req.name}
+                        </span>
+                      ))}
                     </div>
                   )}
                 </div>
               </div>
-            </Card>
-          ))
-        )}
-      </div>
-    </SettingsSection>
+              <div className="w-28 shrink-0">
+                {module.environmentVariableRequirements.length > 0 ? (
+                  <ModuleConfigDrawer
+                    module={module}
+                    onConfigSaveAction={handleConfigSave}
+                    defaultOpen={moduleToOpen === module.id}
+                    isConfigLoading={isLoading}
+                    configData={moduleMap?.[module.id]?.configurations ?? []}
+                  />
+                ) : (
+                  <div className="text-xs text-muted-foreground italic">
+                    No configuration needed
+                  </div>
+                )}
+              </div>
+            </div>
+          </Card>
+        ))
+      )}
+    </div>
   );
 }

@@ -80,7 +80,7 @@ export default function SettingsLayout({
   }
 
   return (
-    <div className="p-6 animate-fade-in">
+    <div className="p-6">
       <h1 className="text-2xl font-bold mb-6 gradient-text">Settings</h1>
       <div className="max-w-3xl animate-slide-up">
         <div className="w-full">

@@ -54,7 +54,8 @@ import {
   useUser,
 } from "@stackframe/stack";
 import { useTheme } from "next-themes";
-import { CopyIcon } from "lucide-react";
+import { CopyIcon, Loader2 } from "lucide-react";
+import { Skeleton } from "./ui/skeleton";
 
 interface ModuleConfigDrawerProps {
   module: ModuleWithRequirements;
@@ -82,24 +83,74 @@ function createFormSchema(requirements: EnvVarRequirement[]) {
   return z.object(schemaFields);
 }
 
-export function ModuleConfigDrawer({
+function ModuleConfigTrigger({
   module,
-  onConfigSaveAction,
-  defaultOpen = false,
-  isConfigLoading = false,
-  configData,
-}: ModuleConfigDrawerProps) {
-  const [open, setOpen] = useState(defaultOpen);
-  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  isConfigLoading,
+}: {
+  module: ModuleWithRequirements;
+  isConfigLoading: boolean;
+}) {
   const { resolvedTheme } = useTheme();
-  const queryClient = useQueryClient();
 
+  return (
+    <DrawerTrigger asChild>
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={isConfigLoading}
+        className={cn(
+          "w-full",
+          isConfigLoading ? "cursor-wait" : "cursor-pointer",
+          module.isConfigured
+            ? "bg-green-500/10 hover:bg-green-500/20"
+            : resolvedTheme === "dark"
+              ? "bg-amber-500/10 hover:bg-amber-500/20"
+              : "",
+        )}
+      >
+        {isConfigLoading ? (
+          <span className="flex items-center gap-2">
+            <div className="h-3 w-3 animate-spin rounded-full border-b-2 border-current" />
+            Loading...
+          </span>
+        ) : module.isConfigured ? (
+          "Configured"
+        ) : (
+          "Configure"
+        )}
+      </Button>
+    </DrawerTrigger>
+  );
+}
+
+function ModuleConfigDrawerView({
+  module,
+  isConfigLoading,
+  configData,
+  isSubmitting,
+  setIsSubmitting,
+  setOpen,
+  onConfigSaveAction,
+}: {
+  module: ModuleWithRequirements;
+  isConfigLoading: boolean;
+  configData: ModuleConfigVar[];
+  isSubmitting: boolean;
+  setIsSubmitting: (isSubmitting: boolean) => void;
+  setOpen: (isOpen: boolean) => void;
+  onConfigSaveAction: (
+    moduleId: string,
+    configs: Record<string, string>,
+  ) => Promise<void>;
+}) {
   const formSchema = useMemo(
     () => createFormSchema(module.environmentVariableRequirements),
     [module.environmentVariableRequirements],
   );
   type FormValues = z.infer<typeof formSchema>;
+
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   // Get Google service details (for OAuth modules)
   const getGoogleServiceDetails = () => {
@@ -339,162 +390,109 @@ export function ModuleConfigDrawer({
 
   return (
     <>
-      <Drawer
-        open={open}
-        onOpenChange={setOpen}
-        direction="bottom"
-        snapPoints={["content"]}
-      >
-        <DrawerTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={isConfigLoading}
-            className={cn(
-              "w-full",
-              isConfigLoading ? "cursor-wait" : "cursor-pointer",
-              module.isConfigured
-                ? "bg-green-500/10 hover:bg-green-500/20"
-                : resolvedTheme === "dark"
-                  ? "bg-amber-500/10 hover:bg-amber-500/20"
-                  : "",
-            )}
-          >
-            {isConfigLoading ? (
-              <span className="flex items-center gap-2">
-                <div className="h-3 w-3 animate-spin rounded-full border-b-2 border-current" />
-                Loading...
-              </span>
-            ) : module.isConfigured ? (
-              "Configured"
-            ) : (
-              "Configure"
-            )}
-          </Button>
-        </DrawerTrigger>
-        <DrawerContent className="px-6">
-          <DrawerHeader className="pb-6 pt-4">
-            <DrawerTitle className="flex items-center justify-center gap-3 text-lg">
-              <ModuleIcon
-                svg={module.svg}
-                lightModeColor={module.lightModeColor}
-                darkModeColor={module.darkModeColor}
-                size="md"
-              />
-              {capitalize(module.name)} Configuration
-            </DrawerTitle>
-            <DrawerDescription className="text-center mt-2 text-sm">
-              Configure the environment variables required for {module.name}.
-            </DrawerDescription>
-          </DrawerHeader>
-          <div className="overflow-auto">
-            {module.setupInstructions && (
-              <div className="mt-4 p-5 bg-muted/40 rounded-lg border border-border/30 mx-auto max-w-2xl">
-                <div className="font-medium text-sm mb-3 text-center uppercase tracking-wide text-muted-foreground">
-                  Setup Instructions
-                </div>
-                <Markdown className="prose prose-sm dark:prose-invert max-w-none [&>p]:text-sm [&>ul]:text-sm [&>ol]:text-sm">
-                  {module.setupInstructions}
-                </Markdown>
-              </div>
-            )}
+      <div className="overflow-auto">
+        {module.setupInstructions && (
+          <div className="mt-4 p-5 bg-muted/40 rounded-lg border border-border/30 mx-auto max-w-2xl">
+            <div className="font-medium text-sm mb-3 text-center uppercase tracking-wide text-muted-foreground">
+              Setup Instructions
+            </div>
+            <Markdown className="prose prose-sm dark:prose-invert max-w-none [&>p]:text-sm [&>ul]:text-sm [&>ol]:text-sm">
+              {module.setupInstructions}
+            </Markdown>
+          </div>
+        )}
 
-            {isConfigLoading ? (
-              <div className="py-8 flex flex-col items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4" />
-                <p className="text-sm text-muted-foreground">
-                  Loading configuration...
-                </p>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 ">
-                {module._specialBehavior == null && (
-                  <div className="flex flex-col gap-4 py-6">
-                    {module.environmentVariableRequirements.map((envVar) => (
-                      <SettingsItem
-                        key={envVar.id}
-                        title={envVar.name}
-                        description={envVar.description ?? undefined}
+        {isConfigLoading ? (
+          <div className="py-8 flex flex-col items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4" />
+            <p className="text-sm text-muted-foreground">
+              Loading configuration...
+            </p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 ">
+            {module._specialBehavior == null && (
+              <div className="flex flex-col gap-4 py-6">
+                {module.environmentVariableRequirements.map((envVar) => (
+                  <SettingsItem
+                    key={envVar.id}
+                    title={envVar.name}
+                    description={envVar.description ?? undefined}
+                    className={cn(
+                      "p-5",
+                      envVar.required ? "border-amber-500/30" : "",
+                    )}
+                  >
+                    <div className="w-full lg:w-3/4 lg:ml-auto">
+                      <Input
+                        {...register(envVar.id)}
+                        type={envVar.public ? "text" : "password"}
+                        placeholder={envVar.example ?? undefined}
                         className={cn(
-                          "p-5",
-                          envVar.required ? "border-amber-500/30" : "",
+                          "w-full",
+                          errors[envVar.id] ? "border-destructive" : "",
                         )}
-                      >
-                        <div className="w-full lg:w-3/4 lg:ml-auto">
-                          <Input
-                            {...register(envVar.id)}
-                            type={envVar.public ? "text" : "password"}
-                            placeholder={envVar.example ?? undefined}
-                            className={cn(
-                              "w-full",
-                              errors[envVar.id] ? "border-destructive" : "",
-                            )}
-                          />
-                          {errors[envVar.id] && (
-                            <p className="text-xs text-destructive mt-1">
-                              {
-                                (errors[envVar.id]?.message ??
-                                  "Unknown") as string
-                              }
-                            </p>
-                          )}
-                        </div>
-                      </SettingsItem>
-                    ))}
-                    <DrawerFooter className="px-4 sm:px-6">
-                      <div className="flex flex-col w-full">
-                        {/* Main button row with action buttons */}
-                        <div className="flex flex-col sm:flex-row w-full items-center justify-center gap-3">
-                          {/* Dynamic button: Cancel or Delete based on configuration state */}
-                          {module.isConfigured ? (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="default"
-                              className="w-full sm:flex-1 sm:max-w-[200px] text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive/90 cursor-pointer"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handleRemoveConfiguration();
-                              }}
-                            >
-                              Delete Configuration
-                            </Button>
-                          ) : (
-                            <DrawerClose asChild>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="default"
-                                className="w-full sm:flex-1 sm:max-w-[200px] cursor-pointer"
-                              >
-                                Cancel
-                              </Button>
-                            </DrawerClose>
-                          )}
-
-                          {/* Save button stays the same */}
+                      />
+                      {errors[envVar.id] && (
+                        <p className="text-xs text-destructive mt-1">
+                          {(errors[envVar.id]?.message ?? "Unknown") as string}
+                        </p>
+                      )}
+                    </div>
+                  </SettingsItem>
+                ))}
+                <DrawerFooter className="px-4 sm:px-6">
+                  <div className="flex flex-col w-full">
+                    {/* Main button row with action buttons */}
+                    <div className="flex flex-col sm:flex-row w-full items-center justify-center gap-3">
+                      {/* Dynamic button: Cancel or Delete based on configuration state */}
+                      {module.isConfigured ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="default"
+                          className="w-full sm:flex-1 sm:max-w-[200px] text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive/90 cursor-pointer"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleRemoveConfiguration();
+                          }}
+                        >
+                          Delete Configuration
+                        </Button>
+                      ) : (
+                        <DrawerClose asChild>
                           <Button
-                            type="submit"
-                            disabled={isSubmitting}
+                            type="button"
+                            variant="outline"
                             size="default"
                             className="w-full sm:flex-1 sm:max-w-[200px] cursor-pointer"
                           >
-                            {isSubmitting ? "Saving..." : "Save Configuration"}
+                            Cancel
                           </Button>
-                        </div>
-                      </div>
-                    </DrawerFooter>
+                        </DrawerClose>
+                      )}
+
+                      {/* Save button stays the same */}
+                      <Button
+                        type="submit"
+                        disabled={isSubmitting}
+                        size="default"
+                        className="w-full sm:flex-1 sm:max-w-[200px] cursor-pointer"
+                      >
+                        {isSubmitting ? "Saving..." : "Save Configuration"}
+                      </Button>
+                    </div>
                   </div>
-                )}
-                {/* Render OAuth UI directly */}
-                {typeof module._specialBehavior === "string" &&
-                  module._specialBehavior.startsWith("google-") &&
-                  renderGoogleOAuthUI()}
-              </form>
+                </DrawerFooter>
+              </div>
             )}
-          </div>
-        </DrawerContent>
-      </Drawer>
+            {/* Render OAuth UI directly */}
+            {typeof module._specialBehavior === "string" &&
+              module._specialBehavior.startsWith("google-") &&
+              renderGoogleOAuthUI()}
+          </form>
+        )}
+      </div>
 
       {/* Confirmation Dialog */}
       <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
@@ -531,6 +529,66 @@ export function ModuleConfigDrawer({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </>
+  );
+}
+
+export function ModuleConfigDrawer({
+  module,
+  onConfigSaveAction,
+  defaultOpen = false,
+  isConfigLoading = false,
+  configData,
+}: ModuleConfigDrawerProps) {
+  const [open, setOpen] = useState(defaultOpen);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  return (
+    <>
+      <Drawer
+        open={open}
+        onOpenChange={setOpen}
+        direction="bottom"
+        snapPoints={["content"]}
+      >
+        <ModuleConfigTrigger
+          module={module}
+          isConfigLoading={isConfigLoading}
+        />
+        <DrawerContent className="px-6">
+          <DrawerHeader className="pb-6 pt-4">
+            <DrawerTitle className="flex items-center justify-center gap-3 text-lg">
+              <ModuleIcon
+                svg={module.svg}
+                lightModeColor={module.lightModeColor}
+                darkModeColor={module.darkModeColor}
+                size="md"
+              />
+              {capitalize(module.name)} Configuration
+            </DrawerTitle>
+            <DrawerDescription className="text-center mt-2 text-sm">
+              Configure the environment variables required for {module.name}.
+            </DrawerDescription>
+          </DrawerHeader>
+          <Suspense
+            fallback={
+              <div className="h-16 w-full flex flex-row justify-center items-center">
+                <Loader2 className="animate-spin" />
+              </div>
+            }
+          >
+            <ModuleConfigDrawerView
+              module={module}
+              isConfigLoading={isConfigLoading}
+              configData={configData}
+              isSubmitting={isSubmitting}
+              setIsSubmitting={setIsSubmitting}
+              setOpen={setOpen}
+              onConfigSaveAction={onConfigSaveAction}
+            />
+          </Suspense>
+        </DrawerContent>
+      </Drawer>
     </>
   );
 }
