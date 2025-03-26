@@ -52,10 +52,10 @@ export default function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6 w-full max-w-3xl">
           <ExamplePrompt
-            title="GitHub API component"
-            description="Build a React component that interacts with GitHub"
-            promptText="Create a React component that fetches data from the GitHub API"
-            moduleNames={["github"]}
+            title="GitHub Activity Summary"
+            description="Create a Google Sheet with a Summary of your GitHub activity"
+            promptText="Get my recent commits, pull requests, and issues from GitHub and create a Google Sheet with a table with all of them, and charts about what repos they are in, and what languages they are written in."
+            moduleNames={["github", "Google Sheets"]}
             modules={modules}
             onSelectAction={setPrompt}
           />
@@ -70,10 +70,10 @@ export default function Home() {
           />
 
           <ExamplePrompt
-            title="GitHub repos to Google Sheet"
-            description="Export your GitHub repositories to a Google Sheet"
+            title="Cancel my meetings today"
+            description="Cancel all my Google Calendar events for today and email all of the attendees to let them know"
             promptText="Get a list of my GitHub repositories and create a Google Sheet with their names, descriptions, stars, and last updated dates"
-            moduleNames={["github", "Google Sheets"]}
+            moduleNames={["Google Calendar", "Gmail"]}
             modules={modules}
             onSelectAction={setPrompt}
           />

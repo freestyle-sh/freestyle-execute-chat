@@ -5,8 +5,10 @@ const sandboxes = new FreestyleSandboxes({
   apiKey: process.env.FREESTYLE_API_KEY!,
 });
 
-const dir = prepareDirForDeploymentSync(".next/standalone");
-console.log("Deploying to", dir);
+const dir = prepareDirForDeploymentSync(".next/standalone/");
+
+const domains = ["chat.freestyle.sh"];
+
 sandboxes.deployWeb(dir, {
   entrypoint: "entry.js",
   envVars: {
@@ -17,6 +19,9 @@ sandboxes.deployWeb(dir, {
     NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY:
       process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY!,
     STACK_SECRET_SERVER_KEY: process.env.STACK_SECRET_SERVER_KEY!,
+    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY!,
   },
-  domains: ["benchat.style.dev"],
+  domains: domains,
 });
+
+console.log("Deployed to", domains);

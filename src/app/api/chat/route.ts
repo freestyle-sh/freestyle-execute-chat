@@ -147,6 +147,7 @@ export async function POST(request: Request) {
     json.messages.length >= 2 ||
     (allowFirstMessage && lastMessage.role === "user")
   ) {
+    console.log("Inserting message into database");
     await db.insert(messagesTable).values({
       ...lastMessage,
       id: crypto.randomUUID(),
@@ -156,11 +157,16 @@ export async function POST(request: Request) {
       role: lastMessage.role,
       chatId,
     });
+    console.log("Inserted message into database");
   }
+
+  console.log("Updating chat title");
 
   maybeUpdateChatTitle(chatId).catch((error) =>
     console.error("Failed to update chat title:", error)
   );
+
+  console.log("Chat title updated");
 
   const tools: Record<string, Tool> = {
     codeExecutor: executeTool({
@@ -200,6 +206,8 @@ export async function POST(request: Request) {
     }
     return msg;
   });
+
+  console.log("Sending response");
 
   return streamText({
     // model: customerId

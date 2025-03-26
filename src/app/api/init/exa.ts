@@ -4,6 +4,7 @@ import {
   freestyleModulesEnvironmentVariableRequirementsTable,
   freestyleModulesTable,
 } from "@/db/schema";
+import { exaDocs } from "./exa-docs";
 
 export default async function initExa() {
   const exa = await db
@@ -16,6 +17,7 @@ export default async function initExa() {
       nodeModules: {
         "exa-js": "1.5.12",
       },
+      documentation: exaDocs,
       setupInstructions: `
 1. Visit [https://exa.ai](https://exa.ai) and sign up for an account if you don't already have one
 2. After signing in, navigate to your dashboard
