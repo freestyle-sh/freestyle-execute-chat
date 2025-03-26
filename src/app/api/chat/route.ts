@@ -69,7 +69,7 @@ export async function POST(request: Request) {
       }),
       {
         status: 403,
-      }
+      },
     );
   }
 
@@ -87,12 +87,12 @@ export async function POST(request: Request) {
     modules
       .filter((module) => module.isEnabled)
       .map((module) => module.nodeModules as Record<string, string>)
-      .flatMap(Object.entries)
+      .flatMap(Object.entries),
   );
 
   // Get all previous messages with tool outputs from code execution
   const previousMessages = json.messages.filter(
-    (msg) => msg.role === "assistant"
+    (msg) => msg.role === "assistant",
   );
 
   // Extract execution results from previous messages and add to environment variables
@@ -103,8 +103,8 @@ export async function POST(request: Request) {
         (part) =>
           part.toolInvocation as ToolInvocation & {
             result?: { result?: unknown };
-          }
-      )
+          },
+      ),
   );
 
   // Only take the last 5:
@@ -115,12 +115,12 @@ export async function POST(request: Request) {
     (acc, toolCall) => {
       if (toolCall?.result?.result) {
         acc[`PREV_EXEC_${toolCall.toolCallId}`] = JSON.stringify(
-          toolCall.result.result
+          toolCall.result.result,
         );
       }
       return acc;
     },
-    {}
+    {},
   );
 
   // Combine module env vars with execution results
@@ -132,7 +132,7 @@ export async function POST(request: Request) {
           return module.configurations.map((configuration) => {
             return [configuration.name, configuration.value];
           });
-        })
+        }),
     ),
     ...executionResults,
   };
@@ -163,7 +163,7 @@ export async function POST(request: Request) {
   console.log("Updating chat title");
 
   maybeUpdateChatTitle(chatId).catch((error) =>
-    console.error("Failed to update chat title:", error)
+    console.error("Failed to update chat title:", error),
   );
 
   console.log("Chat title updated");
