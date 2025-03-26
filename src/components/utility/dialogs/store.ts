@@ -19,7 +19,7 @@ interface DialogState {
     options?: {
       okButton?: DialogButtonOptions;
       cancelButton?: DialogButtonOptions;
-    }
+    },
   ) => Promise<T>;
 
   resolveDialog: <T>(result: T) => void;
@@ -40,7 +40,7 @@ export const useDialogStore = create<DialogState>((set, get) => ({
     options?: {
       okButton?: DialogButtonOptions;
       cancelButton?: DialogButtonOptions;
-    }
+    },
   ) {
     return new Promise<T>((resolve) => {
       const dialogId = Math.random().toString(36).substring(2, 9);
@@ -77,7 +77,7 @@ export const useDialogStore = create<DialogState>((set, get) => ({
 
       // Clear the active dialog and process the next one
       set({ activeDialog: null });
-      setTimeout(() => get().processQueue(), 10);
+      get().processQueue();
     }
   },
 
@@ -101,7 +101,6 @@ export const useDialogStore = create<DialogState>((set, get) => ({
   },
 }));
 
-
 interface AlertOptions {
   okButton?: DialogButtonOptions;
 }
@@ -109,18 +108,13 @@ interface AlertOptions {
 export function alert(
   title: React.ReactNode,
   message: React.ReactNode,
-  options?: AlertOptions
+  options?: AlertOptions,
 ): Promise<boolean> {
   return useDialogStore
     .getState()
-    .enqueueDialog(
-      "alert", 
-      title, 
-      message, 
-      undefined, 
-      undefined, 
-      { okButton: options?.okButton }
-    ) as Promise<boolean>;
+    .enqueueDialog("alert", title, message, undefined, undefined, {
+      okButton: options?.okButton,
+    }) as Promise<boolean>;
 }
 
 interface ConfirmOptions {
@@ -131,21 +125,14 @@ interface ConfirmOptions {
 export function confirm(
   title: React.ReactNode,
   message: React.ReactNode,
-  options?: ConfirmOptions
+  options?: ConfirmOptions,
 ): Promise<boolean> {
   return useDialogStore
     .getState()
-    .enqueueDialog(
-      "confirm", 
-      title, 
-      message, 
-      undefined, 
-      undefined, 
-      { 
-        okButton: options?.okButton,
-        cancelButton: options?.cancelButton 
-      }
-    ) as Promise<boolean>;
+    .enqueueDialog("confirm", title, message, undefined, undefined, {
+      okButton: options?.okButton,
+      cancelButton: options?.cancelButton,
+    }) as Promise<boolean>;
 }
 
 interface PromptOptions {
@@ -157,29 +144,23 @@ interface PromptOptions {
 export function prompt(
   title: React.ReactNode,
   message: React.ReactNode,
-  options?: string | PromptOptions
+  options?: string | PromptOptions,
 ): Promise<string | null> {
   // Handle the case where options is a string (for backward compatibility)
-  const defaultValue = typeof options === 'string' ? options : options?.defaultValue ?? "";
-  const dialogOptions = typeof options === 'string' ? {} : options;
-  
+  const defaultValue =
+    typeof options === "string" ? options : (options?.defaultValue ?? "");
+  const dialogOptions = typeof options === "string" ? {} : options;
+
   return useDialogStore
     .getState()
-    .enqueueDialog(
-      "prompt", 
-      title, 
-      message, 
-      defaultValue, 
-      undefined, 
-      { 
-        okButton: dialogOptions?.okButton,
-        cancelButton: dialogOptions?.cancelButton 
-      }
-    ) as Promise<string | null>;
+    .enqueueDialog("prompt", title, message, defaultValue, undefined, {
+      okButton: dialogOptions?.okButton,
+      cancelButton: dialogOptions?.cancelButton,
+    }) as Promise<string | null>;
 }
 
 export function configureModules(
-  modules: ModuleWithRequirements[]
+  modules: ModuleWithRequirements[],
 ): Promise<boolean> {
   return useDialogStore
     .getState()
@@ -188,6 +169,7 @@ export function configureModules(
       "Module Configuration",
       "Configure modules required for this action",
       undefined,
-      modules
+      modules,
     ) as Promise<boolean>;
 }
+
