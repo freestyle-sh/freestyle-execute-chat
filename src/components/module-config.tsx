@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, Suspense } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  Suspense,
+  useMemo,
+} from "react";
 import { z, type ZodTypeAny } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,7 +14,11 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ModuleIcon } from "@/components/module-icon";
 import { Markdown } from "@/components/ui/markdown";
-import type { ModuleWithRequirements } from "@/actions/modules/list-modules";
+import type {
+  EnvVarRequirement,
+  ModuleConfigVar,
+  ModuleWithRequirements,
+} from "@/actions/modules/list-modules";
 
 import {
   Drawer,
@@ -47,39 +57,6 @@ import { GoogleSheetsUI } from "./custom/google-sheets";
 import { GoogleGmailUI } from "./custom/google-gmail";
 import { useTheme } from "next-themes";
 
-type EnvVarRequirement = {
-  id: string;
-  moduleId: string;
-  name: string;
-  description: string;
-  example: string;
-  required: boolean;
-  public: boolean;
-};
-
-type ModuleConfig = {
-  id: string;
-  userId: string;
-  moduleId: string;
-  environmentVariableRequirementId: string;
-  value: string;
-};
-
-type Module = {
-  id: string;
-  name: string;
-  example: string;
-  svg: string;
-  lightModeColor: string;
-  darkModeColor: string;
-  priority: number;
-  nodeModules: Record<string, string>;
-  documentation: string;
-  setupInstructions: string;
-  environmentVariableRequirements: EnvVarRequirement[];
-  configurations?: ModuleConfig[];
-};
-
 interface ModuleConfigDrawerProps {
   module: ModuleWithRequirements;
   onConfigSaveAction: (
@@ -87,87 +64,51 @@ interface ModuleConfigDrawerProps {
     configs: Record<string, string>,
   ) => Promise<void>;
   defaultOpen?: boolean;
+  isConfigLoading?: boolean;
+  configData: ModuleConfigVar[];
+}
+
+// Create a schema based on module env var requirements
+function createFormSchema(requirements: EnvVarRequirement[]) {
+  const schemaFields: Record<string, ZodTypeAny> = {};
+
+  for (const envVar of requirements) {
+    if (envVar.required) {
+      schemaFields[envVar.id] = z.string().min(1, `${envVar.name} is required`);
+    } else {
+      schemaFields[envVar.id] = z.string().optional();
+    }
+  }
+
+  return z.object(schemaFields);
 }
 
 export function ModuleConfigDrawer({
   module,
   onConfigSaveAction,
   defaultOpen = false,
-  _user: user,
-}: ModuleConfigDrawerProps & {
-  _user: CurrentUser | CurrentInternalUser | null;
-}) {
+  isConfigLoading = false,
+  configData,
+}: ModuleConfigDrawerProps) {
   const [open, setOpen] = useState(defaultOpen);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { resolvedTheme } = useTheme();
+  const queryClient = useQueryClient();
 
-  // Create a schema based on module env var requirements
-  const createFormSchema = () => {
-    const schemaFields: Record<string, ZodTypeAny> = {};
-
-    for (const envVar of module.environmentVariableRequirements) {
-      if (envVar.required) {
-        schemaFields[envVar.id] = z
-          .string()
-          .min(1, `${envVar.name} is required`);
-      } else {
-        schemaFields[envVar.id] = z.string().optional();
-      }
-    }
-
-    return z.object(schemaFields);
-  };
-
-  const formSchema = createFormSchema();
+  const formSchema = useMemo(
+    () => createFormSchema(module.environmentVariableRequirements),
+    [module.environmentVariableRequirements],
+  );
   type FormValues = z.infer<typeof formSchema>;
 
-  // Use React Query to fetch module configurations
-  const {
-    data: configData,
-    isLoading,
-    error: configError,
-    refetch,
-  } = useQuery({
-    queryKey: ["moduleConfig", module.id],
-    queryFn: async () => {
-      try {
-        const data = await getModuleConfiguration(module.id);
-        return data.configurations || [];
-      } catch (error) {
-        throw new Error("Failed to fetch configurations");
-      }
-    },
-    // Only refetch when dialog opens or module ID changes
-    enabled: true,
-    // Smaller staleTime for configuration data as it might change
-    staleTime: 60 * 1000, // 1 minute
-  });
-
-  // Show error toast if fetch fails
-  useEffect(() => {
-    if (configError) {
-      toast.error("Failed to load module configuration");
-      console.error(configError);
-    }
-  }, [configError]);
-
-  // Initialize form with fetched configurations
   const getDefaultValues = useCallback(() => {
-    const defaultValues: Record<string, string> = {};
+    return configData.reduce((acc: Record<string, string>, existingConfig) => {
+      acc[existingConfig.environmentVariableId] = existingConfig?.value;
 
-    for (const envVar of module.environmentVariableRequirements) {
-      const existingConfig = configData?.find(
-        (config) => config.environmentVariableRequirementId === envVar.id,
-      );
-
-      defaultValues[envVar.id] = existingConfig?.value || "";
-    }
-
-    return defaultValues;
-  }, [module.environmentVariableRequirements, configData]);
-
-  // Setup form with React Hook Form
-  const queryClient = useQueryClient();
+      return acc;
+    }, {});
+  }, [configData]);
 
   const {
     register,
@@ -179,21 +120,13 @@ export function ModuleConfigDrawer({
     defaultValues: getDefaultValues(),
   });
 
-  // Reset form when configurations load
+  // Reset form when external data changes
   useEffect(() => {
     if (configData) {
       reset(getDefaultValues());
     }
   }, [configData, reset, getDefaultValues]);
 
-  // Refetch data when dialog opens
-  useEffect(() => {
-    if (open) {
-      refetch();
-    }
-  }, [open, refetch]);
-
-  // Handle form submission with toast.promise
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
 
@@ -201,7 +134,7 @@ export function ModuleConfigDrawer({
       onConfigSaveAction(module.id, data)
         .then(() => {
           setOpen(false);
-          // Invalidate both the module config and modules queries
+
           queryClient.invalidateQueries({
             queryKey: ["moduleConfig", module.id],
           });
@@ -221,15 +154,10 @@ export function ModuleConfigDrawer({
     );
   };
 
-  // State for confirmation dialog
-  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-
-  // Helper function to handle removing configuration
   const handleRemoveConfiguration = () => {
     setConfirmDialogOpen(true);
   };
 
-  // Function to execute the actual deletion using toast.promise
   const executeConfigurationRemoval = async () => {
     setIsSubmitting(true);
 
@@ -260,31 +188,6 @@ export function ModuleConfigDrawer({
     );
   };
 
-  // Determine if module is configured based on the configuration data
-  const isConfigured = React.useMemo(() => {
-    if (!configData) {
-      return false;
-    }
-
-    const hasRequiredConfigs = module.environmentVariableRequirements.some(
-      (req) => req.required,
-    );
-
-    if (hasRequiredConfigs) {
-      // If the module has required configs, check that all required ones are filled
-      return module.environmentVariableRequirements
-        .filter((req) => req.required)
-        .every((req) => {
-          const config = configData.find(
-            (c) => c.environmentVariableRequirementId === req.id,
-          );
-          return config && config.value.trim() !== "";
-        });
-    }
-    // If no required configs, then it's configured if any config exists
-    return configData.length > 0;
-  }, [configData, module.environmentVariableRequirements]);
-
   return (
     <>
       <Drawer
@@ -297,24 +200,26 @@ export function ModuleConfigDrawer({
           <Button
             variant="outline"
             size="sm"
-            disabled={isLoading}
+            disabled={isConfigLoading}
             className={cn(
               "w-full",
-              isLoading ? "cursor-wait" : "cursor-pointer",
-              isConfigured
+              isConfigLoading ? "cursor-wait" : "cursor-pointer",
+              module.isConfigured
                 ? "bg-green-500/10 hover:bg-green-500/20"
                 : resolvedTheme === "dark"
                   ? "bg-amber-500/10 hover:bg-amber-500/20"
                   : "",
             )}
           >
-            {isLoading ? (
+            {isConfigLoading ? (
               <span className="flex items-center gap-2">
                 <div className="h-3 w-3 animate-spin rounded-full border-b-2 border-current" />
                 Loading...
               </span>
+            ) : module.isConfigured ? (
+              "Configured"
             ) : (
-              isConfigured ? "Configured" : "Configure"
+              "Configure"
             )}
           </Button>
         </DrawerTrigger>
@@ -345,7 +250,7 @@ export function ModuleConfigDrawer({
               </div>
             )}
 
-            {isLoading ? (
+            {isConfigLoading ? (
               <div className="py-8 flex flex-col items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4" />
                 <p className="text-sm text-muted-foreground">
@@ -392,7 +297,7 @@ export function ModuleConfigDrawer({
                         {/* Main button row with action buttons */}
                         <div className="flex flex-col sm:flex-row w-full items-center justify-center gap-3">
                           {/* Dynamic button: Cancel or Delete based on configuration state */}
-                          {isConfigured ? (
+                          {module.isConfigured ? (
                             <Button
                               type="button"
                               variant="outline"

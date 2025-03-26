@@ -46,7 +46,7 @@ export const messagesTable = pgTable(
   (table) => [
     // speed up lookups by chatId
     index().on(table.chatId),
-  ]
+  ],
 );
 
 export type Message = InferSelectModel<typeof messagesTable> & SdkMessage;
@@ -108,7 +108,8 @@ export const freestyleModulesEnvironmentVariableRequirementsTable = pgTable(
   (table) => [
     // speed up lookups by moduleId
     index().on(table.moduleId),
-  ]
+    index().on(table.id),
+  ],
 );
 
 export const freestyleModulesConfigurationsTable = pgTable(
@@ -125,14 +126,14 @@ export const freestyleModulesConfigurationsTable = pgTable(
         () => freestyleModulesEnvironmentVariableRequirementsTable.id,
         {
           onDelete: "cascade",
-        }
+        },
       ),
     value: text("value").notNull(),
   },
   (table) => [
     primaryKey({ columns: [table.userId, table.environmentVariableId] }),
     index().on(table.userId),
-  ]
+  ],
 );
 
 export const chatModulesEnabledTable = pgTable(
@@ -153,5 +154,5 @@ export const chatModulesEnabledTable = pgTable(
   (table) => [
     primaryKey({ columns: [table.chatId, table.moduleId] }),
     index().on(table.chatId),
-  ]
+  ],
 );

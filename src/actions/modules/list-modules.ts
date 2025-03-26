@@ -19,7 +19,7 @@ function determineIfModuleIsConfigured(
   configurations: {
     environmentVariableRequirementId: string;
     value: string;
-  }[]
+  }[],
 ): boolean {
   const hasRequiredConfigs = requirements.some((req) => req.required);
 
@@ -29,7 +29,7 @@ function determineIfModuleIsConfigured(
       .filter((req) => req.required)
       .every((req) => {
         const config = configurations.find(
-          (c) => c.environmentVariableRequirementId === req.id
+          (c) => c.environmentVariableRequirementId === req.id,
         );
         return config && config.value.trim() !== "";
       });
@@ -39,34 +39,38 @@ function determineIfModuleIsConfigured(
   return configurations.length > 0;
 }
 
+export type EnvVarRequirement = {
+  id: string;
+  moduleId: string;
+  name: string;
+  description: string | null;
+  example: string | null;
+  required: boolean;
+  public: boolean;
+};
+
+export type ModuleConfigVar = {
+  id: string;
+  userId: string;
+  moduleId: string;
+  environmentVariableId: string;
+  name: string;
+  value: string;
+  description: string | null;
+  example: string | null;
+  required: boolean;
+  public: boolean;
+};
+
 export type ModuleWithRequirements = FreestyleModule & {
-  environmentVariableRequirements: {
-    id: string;
-    moduleId: string;
-    name: string;
-    description: string | null;
-    example: string | null;
-    required: boolean;
-    public: boolean;
-  }[];
+  environmentVariableRequirements: EnvVarRequirement[];
   isConfigured: boolean;
   isEnabled?: boolean;
-  configurations: {
-    userId: string;
-    environmentVariableId: string;
-    value: string;
-    id: string;
-    moduleId: string;
-    name: string;
-    description: string | null;
-    example: string | null;
-    required: boolean;
-    public: boolean;
-  }[];
+  configurations: ModuleConfigVar[];
 };
 
 export async function listModules(
-  chatId?: string
+  chatId?: string,
 ): Promise<ModuleWithRequirements[]> {
   "use server";
 
@@ -82,14 +86,14 @@ export async function listModules(
   // For each module, get its environment variable requirements and check if it's configured, and get the environment variables
   const modulesWithRequirements = await Promise.all(
     modules.map(async (module) => {
-      const environmentVariableRequirements = await db
+      const environmentVariableRequirements: EnvVarRequirement[] = await db
         .select()
         .from(freestyleModulesEnvironmentVariableRequirementsTable)
         .where(
           eq(
             freestyleModulesEnvironmentVariableRequirementsTable.moduleId,
-            module.id
-          )
+            module.id,
+          ),
         );
 
       // Get existing configurations for this module and user
@@ -100,17 +104,17 @@ export async function listModules(
           freestyleModulesEnvironmentVariableRequirementsTable,
           eq(
             freestyleModulesConfigurationsTable.environmentVariableId,
-            freestyleModulesEnvironmentVariableRequirementsTable.id
-          )
+            freestyleModulesEnvironmentVariableRequirementsTable.id,
+          ),
         )
         .where(
           and(
             eq(
               freestyleModulesEnvironmentVariableRequirementsTable.moduleId,
-              module.id
+              module.id,
             ),
-            eq(freestyleModulesConfigurationsTable.userId, userId)
-          )
+            eq(freestyleModulesConfigurationsTable.userId, userId),
+          ),
         );
 
       // Determine if module is configured
@@ -120,7 +124,7 @@ export async function listModules(
           environmentVariableRequirementId:
             config.FreestyleModulesEnvironmentVariableRequirements.id,
           value: config.FreestyleModulesConfigurations.value,
-        }))
+        })),
       );
 
       // If chatId is provided, check if the module is enabled for this chat
@@ -132,8 +136,8 @@ export async function listModules(
           .where(
             and(
               eq(chatModulesEnabledTable.chatId, chatId),
-              eq(chatModulesEnabledTable.moduleId, module.id)
-            )
+              eq(chatModulesEnabledTable.moduleId, module.id),
+            ),
           )
           .then((rows) => rows[0]);
 
@@ -147,12 +151,25 @@ export async function listModules(
         environmentVariableRequirements,
         isConfigured,
         configurations: configurations.map((config) => ({
-          ...config.FreestyleModulesEnvironmentVariableRequirements,
-          ...config.FreestyleModulesConfigurations,
+          id: config.FreestyleModulesEnvironmentVariableRequirements.id,
+          userId: config.FreestyleModulesConfigurations.userId,
+          moduleId:
+            config.FreestyleModulesEnvironmentVariableRequirements.moduleId,
+          environmentVariableId:
+            config.FreestyleModulesConfigurations.environmentVariableId,
+          name: config.FreestyleModulesEnvironmentVariableRequirements.name,
+          value: config.FreestyleModulesConfigurations.value,
+          description:
+            config.FreestyleModulesEnvironmentVariableRequirements.description,
+          example:
+            config.FreestyleModulesEnvironmentVariableRequirements.example,
+          required:
+            config.FreestyleModulesEnvironmentVariableRequirements.required,
+          public: config.FreestyleModulesEnvironmentVariableRequirements.public,
         })),
         isEnabled,
-      };
-    })
+      } satisfies ModuleWithRequirements;
+    }),
   );
 
   return modulesWithRequirements;
