@@ -10,7 +10,7 @@ import type { DialogQueueItem } from "./types";
 import { useDialogStore } from "./store";
 
 export function AlertDialog({
-  dialog: { title, message },
+  dialog: { title, message, okButton },
 }: {
   dialog: DialogQueueItem<void>;
 }) {
@@ -47,8 +47,12 @@ export function AlertDialog({
       </DialogHeader>
 
       <DialogFooter>
-        <Button onClick={() => resolve(undefined)} className="ml-auto">
-          OK
+        <Button 
+          onClick={() => resolve(undefined)} 
+          className="ml-auto"
+          variant={okButton?.variant ?? "default"}
+        >
+          {okButton?.text ?? "OK"}
         </Button>
       </DialogFooter>
     </>

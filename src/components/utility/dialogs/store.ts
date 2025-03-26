@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { create } from "zustand";
-import type { DialogType, DialogQueueItem } from "./types";
+import type { DialogType, DialogQueueItem, DialogButtonOptions } from "./types";
 import type { ModuleWithRequirements } from "@/actions/modules/list-modules";
 
 interface DialogState {
@@ -16,6 +16,10 @@ interface DialogState {
     message: React.ReactNode,
     defaultValue?: string,
     modules?: ModuleWithRequirements[],
+    options?: {
+      okButton?: DialogButtonOptions;
+      cancelButton?: DialogButtonOptions;
+    }
   ) => Promise<T>;
 
   resolveDialog: <T>(result: T) => void;
@@ -33,6 +37,10 @@ export const useDialogStore = create<DialogState>((set, get) => ({
     message: React.ReactNode,
     defaultValue?: string,
     modules?: ModuleWithRequirements[],
+    options?: {
+      okButton?: DialogButtonOptions;
+      cancelButton?: DialogButtonOptions;
+    }
   ) {
     return new Promise<T>((resolve) => {
       const dialogId = Math.random().toString(36).substring(2, 9);
@@ -47,6 +55,8 @@ export const useDialogStore = create<DialogState>((set, get) => ({
             message,
             defaultValue,
             modules,
+            okButton: options?.okButton,
+            cancelButton: options?.cancelButton,
             resolve: resolve as (value: unknown) => void,
           },
         ],
@@ -91,34 +101,81 @@ export const useDialogStore = create<DialogState>((set, get) => ({
   },
 }));
 
+
+interface AlertOptions {
+  okButton?: DialogButtonOptions;
+}
+
 export function alert(
   title: React.ReactNode,
   message: React.ReactNode,
+  options?: AlertOptions
 ): Promise<boolean> {
   return useDialogStore
     .getState()
-    .enqueueDialog("alert", title, message) as Promise<boolean>;
+    .enqueueDialog(
+      "alert", 
+      title, 
+      message, 
+      undefined, 
+      undefined, 
+      { okButton: options?.okButton }
+    ) as Promise<boolean>;
+}
+
+interface ConfirmOptions {
+  okButton?: DialogButtonOptions;
+  cancelButton?: DialogButtonOptions;
 }
 
 export function confirm(
   title: React.ReactNode,
   message: React.ReactNode,
+  options?: ConfirmOptions
 ): Promise<boolean> {
   return useDialogStore
     .getState()
-    .enqueueDialog("confirm", title, message) as Promise<boolean>;
+    .enqueueDialog(
+      "confirm", 
+      title, 
+      message, 
+      undefined, 
+      undefined, 
+      { 
+        okButton: options?.okButton,
+        cancelButton: options?.cancelButton 
+      }
+    ) as Promise<boolean>;
+}
+
+interface PromptOptions {
+  okButton?: DialogButtonOptions;
+  cancelButton?: DialogButtonOptions;
+  defaultValue?: string;
 }
 
 export function prompt(
   title: React.ReactNode,
   message: React.ReactNode,
-  defaultValue?: string,
+  options?: string | PromptOptions
 ): Promise<string | null> {
+  // Handle the case where options is a string (for backward compatibility)
+  const defaultValue = typeof options === 'string' ? options : options?.defaultValue ?? "";
+  const dialogOptions = typeof options === 'string' ? {} : options;
+  
   return useDialogStore
     .getState()
-    .enqueueDialog("prompt", title, message, defaultValue ?? "") as Promise<
-    string | null
-  >;
+    .enqueueDialog(
+      "prompt", 
+      title, 
+      message, 
+      defaultValue, 
+      undefined, 
+      { 
+        okButton: dialogOptions?.okButton,
+        cancelButton: dialogOptions?.cancelButton 
+      }
+    ) as Promise<string | null>;
 }
 
 export function configureModules(

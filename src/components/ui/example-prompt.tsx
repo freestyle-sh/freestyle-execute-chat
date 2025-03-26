@@ -83,16 +83,21 @@ export function ExamplePrompt({
           const confirmation = await confirm(
             "Module Configuration Required",
             <ModuleInfoContent modules={unconfiguredModules} />,
+            {
+              okButton: {
+                text: "Configure",
+              },
+            },
           );
 
           if (confirmation) {
             // Show module configuration dialog for each unconfigured module
             const success = await configureModules(unconfiguredModules);
-            
+
             if (!success) {
               return; // User canceled configuration
             }
-            
+
             // Refresh modules to get updated configuration status
             // This is handled by queryClient invalidation in the dialog
           } else {
@@ -103,7 +108,7 @@ export function ExamplePrompt({
         try {
           // Enable all required modules
           for (const moduleName of moduleNames) {
-            const module = modules.find(m => m.name === moduleName);
+            const module = modules.find((m) => m.name === moduleName);
             if (module) {
               toggleModule(module.id, true);
             }
