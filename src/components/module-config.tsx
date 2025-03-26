@@ -100,30 +100,34 @@ export function ModuleConfigDrawer({
     [module.environmentVariableRequirements],
   );
   type FormValues = z.infer<typeof formSchema>;
-  
+
   // Get Google service details (for OAuth modules)
   const getGoogleServiceDetails = () => {
-    if (typeof module._specialBehavior !== 'string' || !module._specialBehavior.startsWith('google-')) return null;
-    
-    const service = module._specialBehavior.replace('google-', '');
-    
+    if (
+      typeof module._specialBehavior !== "string" ||
+      !module._specialBehavior.startsWith("google-")
+    )
+      return null;
+
+    const service = module._specialBehavior.replace("google-", "");
+
     switch (service) {
-      case 'calendar':
+      case "calendar":
         return {
-          name: 'Calendar',
-          scopes: ['https://www.googleapis.com/auth/calendar'],
+          name: "Calendar",
+          scopes: ["https://www.googleapis.com/auth/calendar"],
         };
-      case 'sheets':
+      case "sheets":
         return {
-          name: 'Sheets',
-          scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+          name: "Sheets",
+          scopes: ["https://www.googleapis.com/auth/spreadsheets"],
         };
-      case 'gmail':
+      case "gmail":
         return {
-          name: 'Gmail',
+          name: "Gmail",
           scopes: [
-            'https://www.googleapis.com/auth/gmail.readonly',
-            'https://www.googleapis.com/auth/gmail.compose',
+            "https://www.googleapis.com/auth/gmail.readonly",
+            "https://www.googleapis.com/auth/gmail.compose",
           ],
         };
       default:
@@ -220,7 +224,9 @@ export function ModuleConfigDrawer({
   // Render Google OAuth UI directly
   const renderGoogleOAuthUI = () => {
     const serviceDetails = getGoogleServiceDetails();
-    if (!serviceDetails) return null;
+    if (!serviceDetails) {
+      return null;
+    }
 
     const user = useUser();
     const connectedAcc = user?.useConnectedAccount("google", {
@@ -228,20 +234,21 @@ export function ModuleConfigDrawer({
     });
     const accessToken = connectedAcc?.useAccessToken();
 
-    // Save token to module configuration when available
-    useEffect(() => {
-      if (accessToken?.accessToken) {
-        saveModuleConfiguration(module.id, {
-          [module.environmentVariableRequirements[0].id]: accessToken.accessToken,
-        });
-      }
-    }, [accessToken?.accessToken]);
+    // // Save token to module configuration when available
+    // useEffect(() => {
+    //   if (accessToken?.accessToken) {
+    //     saveModuleConfiguration(module.id, {
+    //       [module.environmentVariableRequirements[0].id]:
+    //         accessToken.accessToken,
+    //     });
+    //   }
+    // }, [accessToken?.accessToken]);
 
     return (
       <div className="flex justify-center p-4 w-full mb-4">
         {accessToken?.accessToken ? (
-          <div className="w-full max-w-xl">
-            <div className="flex justify-between items-center mb-2">
+          <div className="w-full max-w-xl flex flex-col gap-2">
+            <div className="flex justify-between items-center">
               <p className="font-medium text-sm text-gray-500">Access Token</p>
               <Button
                 type="button"
@@ -257,10 +264,10 @@ export function ModuleConfigDrawer({
                 Copy
               </Button>
             </div>
-            <div className="w-full break-all overflow-hidden bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 p-3 rounded-md border border-gray-200 dark:border-gray-700">
+            <div className="w-full break-all overflow-hidden bg-muted text-muted-foreground p-3 rounded-md border border-gray-200 dark:border-gray-700">
               <code className="text-xs">{accessToken.accessToken}</code>
             </div>
-            <p className="text-xs text-gray-500 mt-2 text-center">
+            <p className="text-xs text-gray-500 text-center">
               Google {serviceDetails.name} connected successfully
             </p>
             <div className="flex justify-center items-center gap-3 text-center m-4">
@@ -310,7 +317,9 @@ export function ModuleConfigDrawer({
                     scopes: serviceDetails.scopes,
                   });
                 } catch (error) {
-                  toast.error(`Failed to connect to Google ${serviceDetails.name}`);
+                  toast.error(
+                    `Failed to connect to Google ${serviceDetails.name}`,
+                  );
                   console.error(error);
                 }
               }}
@@ -478,7 +487,9 @@ export function ModuleConfigDrawer({
                   </div>
                 )}
                 {/* Render OAuth UI directly */}
-                {typeof module._specialBehavior === 'string' && module._specialBehavior.startsWith('google-') && renderGoogleOAuthUI()}
+                {typeof module._specialBehavior === "string" &&
+                  module._specialBehavior.startsWith("google-") &&
+                  renderGoogleOAuthUI()}
               </form>
             )}
           </div>
