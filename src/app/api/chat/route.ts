@@ -202,22 +202,23 @@ export async function POST(request: Request) {
   });
 
   return streamText({
-    model: customerId
-      ? wrapLanguageModel({
-          model: claudeSonnetModel,
-          middleware: [
-            stripeAgentToolkit.middleware({
-              billing: {
-                customer: customerId,
-                meters: {
-                  input: "INPUT_TOKENS",
-                  output: "OUTPUT_TOKENS",
-                },
-              },
-            }),
-          ],
-        })
-      : claudeSonnetModel,
+    // model: customerId
+    //   ? wrapLanguageModel({
+    //       model: claudeSonnetModel,
+    //       middleware: [
+    //         stripeAgentToolkit.middleware({
+    //           billing: {
+    //             customer: customerId,
+    //             meters: {
+    //               input: "INPUT_TOKENS",
+    //               output: "OUTPUT_TOKENS",
+    //             },
+    //           },
+    //         }),
+    //       ],
+    //     })
+    //   : claudeSonnetModel,
+    model: claudeSonnetModel,
     maxSteps: 10,
     system: systemPrompt({ requestDocsToolEnabled: docRequestTool !== null }),
     tools,
