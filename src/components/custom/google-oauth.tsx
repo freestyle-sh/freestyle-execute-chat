@@ -77,8 +77,12 @@ export function GoogleOAuthUI({
             </Button>
 
             <Button
+              type="button"
               size="default"
               className="w-full sm:flex-1 sm:max-w-[200px] cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
+              }}
             >
               Close
             </Button>
