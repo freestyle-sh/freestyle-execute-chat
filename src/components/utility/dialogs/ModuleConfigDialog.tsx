@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { ModuleIcon } from "@/components/module-icon";
 import { capitalize } from "@/lib/typography";
 import { useDialogStore } from "./store";
@@ -16,6 +16,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { getModuleConfiguration } from "@/actions/modules/get-config";
+import { deleteModuleConfiguration } from "@/actions/modules/delete-config";
 import { useUser } from "@stackframe/stack";
 import { GoogleCalendarUI } from "@/components/custom/google-calendar";
 import { GoogleSheetsUI } from "@/components/custom/google-sheets";
@@ -33,6 +34,7 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
   const [currentModuleIndex, setCurrentModuleIndex] = useState(0);
   const [configuredModules, setConfiguredModules] = useState<string[]>([]);
   const [isConfiguring, setIsConfiguring] = useState(false);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const { resolveDialog } = useDialogStore();
   const queryClient = useQueryClient();
   const user = useUser();
@@ -164,6 +166,45 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
       resolveDialog(true);
     }
   };
+  
+  const handleRemoveConfiguration = () => {
+    setConfirmDialogOpen(true);
+  };
+
+  const executeConfigurationRemoval = async () => {
+    if (!currentModule) return;
+    
+    setIsConfiguring(true);
+    
+    toast.promise(
+      deleteModuleConfiguration(currentModule.id)
+        .then(() => {
+          // Invalidate queries
+          queryClient.invalidateQueries({
+            queryKey: ["moduleConfig", currentModule.id],
+          });
+          queryClient.invalidateQueries({ queryKey: ["modules"] });
+          
+          // If there are more modules, proceed to the next one
+          // otherwise complete the dialog
+          if (currentModuleIndex < modules.length - 1) {
+            setCurrentModuleIndex(currentModuleIndex + 1);
+            initialized.current = false;
+          } else {
+            resolveDialog(true);
+          }
+        })
+        .finally(() => {
+          setIsConfiguring(false);
+          setConfirmDialogOpen(false);
+        }),
+      {
+        loading: `Removing ${capitalize(currentModule.name)} configuration...`,
+        success: `${capitalize(currentModule.name)} configuration removed successfully`,
+        error: (error) => `Failed to remove configuration: ${error instanceof Error ? error.message : "Unknown error"}`,
+      }
+    );
+  };
 
   // If no modules or all modules configured
   if (!modules.length) {
@@ -258,17 +299,35 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
         {/* Render special OAuth UI components */}
         {currentModule._specialBehavior === "google-calendar" && (
           <div className="py-4">
-            <GoogleCalendarUI module={currentModule} />
+            <GoogleCalendarUI 
+              module={currentModule} 
+              isInDialog={true}
+              onCancel={() => resolveDialog(false)}
+              onDelete={handleRemoveConfiguration}
+              onComplete={handleNextModule}
+            />
           </div>
         )}
         {currentModule._specialBehavior === "google-sheets" && (
           <div className="py-4">
-            <GoogleSheetsUI module={currentModule} />
+            <GoogleSheetsUI 
+              module={currentModule} 
+              isInDialog={true}
+              onCancel={() => resolveDialog(false)}
+              onDelete={handleRemoveConfiguration}
+              onComplete={handleNextModule}
+            />
           </div>
         )}
         {currentModule._specialBehavior === "google-gmail" && (
           <div className="py-4">
-            <GoogleGmailUI module={currentModule} />
+            <GoogleGmailUI 
+              module={currentModule} 
+              isInDialog={true}
+              onCancel={() => resolveDialog(false)}
+              onDelete={handleRemoveConfiguration}
+              onComplete={handleNextModule}
+            />
           </div>
         )}
 
@@ -284,13 +343,27 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
             </Button>
             
             {hasSpecialOAuthBehavior ? (
-              <Button
-                type="button"
-                disabled={isConfiguring}
-                onClick={handleNextModule}
-              >
-                {currentModuleIndex < modules.length - 1 ? "Next" : "Finish"}
-              </Button>
+              <div className="flex gap-2">
+                {currentModule.isConfigured && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="default"
+                    className="text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive/90 cursor-pointer"
+                    onClick={handleRemoveConfiguration}
+                    disabled={isConfiguring}
+                  >
+                    Disconnect
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  disabled={isConfiguring}
+                  onClick={handleNextModule}
+                >
+                  {currentModuleIndex < modules.length - 1 ? "Next" : "Finish"}
+                </Button>
+              </div>
             ) : (
               <Button
                 type="submit"
@@ -307,6 +380,40 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
           </div>
         </DialogFooter>
       </form>
+
+      {/* Confirmation Dialog for deleting configuration */}
+      <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirm Configuration Removal</DialogTitle>
+            <DialogDescription>
+              {`Are you sure you want to remove the configuration for ${currentModule ? capitalize(currentModule.name) : 'this module'}? This action cannot be undone.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 gap-2 sm:justify-center">
+            <DialogClose asChild>
+              <Button
+                className="cursor-pointer"
+                type="button"
+                variant="outline"
+                size="sm"
+              >
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              disabled={isConfiguring}
+              onClick={executeConfigurationRemoval}
+              className="cursor-pointer"
+            >
+              {isConfiguring ? "Removing..." : "Remove Configuration"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

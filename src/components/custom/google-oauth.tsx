@@ -13,6 +13,10 @@ export interface GoogleOAuthUIProps {
   svg: string;
   color: string;
   scopes: string[];
+  onCancel?: () => void;
+  onDelete?: () => void;
+  onComplete?: () => void;
+  isInDialog?: boolean; // Whether the component is rendered in a dialog or drawer
 }
 
 export function GoogleOAuthUI({
@@ -21,6 +25,10 @@ export function GoogleOAuthUI({
   svg,
   color,
   scopes,
+  onCancel,
+  onDelete,
+  onComplete,
+  isInDialog = false
 }: GoogleOAuthUIProps): React.ReactNode {
   const user = useUser();
   const connectedAcc = user?.useConnectedAccount("google", {
@@ -63,30 +71,44 @@ export function GoogleOAuthUI({
           <p className="text-xs text-gray-500 mt-2 text-center">
             Google {serviceName} connected successfully
           </p>
-          <div className="flex justify-center items-center gap-3 text-center m-4">
-            <Button
-              type="button"
-              variant="outline"
-              size="default"
-              className="w-full sm:flex-1 sm:max-w-[200px] text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive/90 cursor-pointer"
-              onClick={(e) => {
-                e.preventDefault();
-              }}
-            >
-              Disconnect
-            </Button>
+          {!isInDialog && (
+            <div className="flex justify-center items-center gap-3 text-center m-4">
+              <Button
+                type="button"
+                variant="outline"
+                size="default"
+                className="w-full sm:flex-1 sm:max-w-[200px] text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive/90 cursor-pointer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (onDelete) {
+                    onDelete();
+                  }
+                }}
+              >
+                Disconnect
+              </Button>
 
-            <Button
-              type="button"
-              size="default"
-              className="w-full sm:flex-1 sm:max-w-[200px] cursor-pointer"
-              onClick={(e) => {
-                e.preventDefault();
-              }}
-            >
-              Close
-            </Button>
-          </div>
+              <Button
+                type="button"
+                size="default"
+                className="w-full sm:flex-1 sm:max-w-[200px] cursor-pointer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (onComplete) {
+                    onComplete();
+                  } else {
+                    // Find closest drawer close button and trigger it
+                    const drawerClose = document.querySelector('[data-drawer-close="true"]');
+                    if (drawerClose) {
+                      (drawerClose as HTMLButtonElement).click();
+                    }
+                  }
+                }}
+              >
+                Close
+              </Button>
+            </div>
+          )}
         </div>
       ) : (
         <div className="space-y-4 sm:space-y-0 sm:space-x-4 w-full text-center flex items-center justify-center h-full flex-col sm:flex-row ">
@@ -96,7 +118,12 @@ export function GoogleOAuthUI({
             size="default"
             className="w-full sm:max-w-[300px] cursor-pointer"
             onClick={(e) => {
-              // Find closest drawer or dialog close button and trigger it
+              if (onCancel) {
+                onCancel();
+                return;
+              }
+              
+              // Fallback: find closest drawer or dialog close button and trigger it
               const drawerClose = document.querySelector(
                 '[data-drawer-close="true"]',
               );

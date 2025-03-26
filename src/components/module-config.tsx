@@ -46,16 +46,15 @@ import { cn } from "@/lib/utils";
 import { capitalize } from "@/lib/typography";
 import { getModuleConfiguration } from "@/actions/modules/get-config";
 import { deleteModuleConfiguration } from "@/actions/modules/delete-config";
+import { saveModuleConfiguration } from "@/actions/modules/set-config";
 import {
   CurrentInternalUser,
   CurrentUser,
   User,
   useUser,
 } from "@stackframe/stack";
-import { GoogleCalendarUI } from "./custom/google-calendar";
-import { GoogleSheetsUI } from "./custom/google-sheets";
-import { GoogleGmailUI } from "./custom/google-gmail";
 import { useTheme } from "next-themes";
+import { CopyIcon } from "lucide-react";
 
 interface ModuleConfigDrawerProps {
   module: ModuleWithRequirements;
@@ -101,6 +100,36 @@ export function ModuleConfigDrawer({
     [module.environmentVariableRequirements],
   );
   type FormValues = z.infer<typeof formSchema>;
+  
+  // Get Google service details (for OAuth modules)
+  const getGoogleServiceDetails = () => {
+    if (typeof module._specialBehavior !== 'string' || !module._specialBehavior.startsWith('google-')) return null;
+    
+    const service = module._specialBehavior.replace('google-', '');
+    
+    switch (service) {
+      case 'calendar':
+        return {
+          name: 'Calendar',
+          scopes: ['https://www.googleapis.com/auth/calendar'],
+        };
+      case 'sheets':
+        return {
+          name: 'Sheets',
+          scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+        };
+      case 'gmail':
+        return {
+          name: 'Gmail',
+          scopes: [
+            'https://www.googleapis.com/auth/gmail.readonly',
+            'https://www.googleapis.com/auth/gmail.compose',
+          ],
+        };
+      default:
+        return null;
+    }
+  };
 
   const getDefaultValues = useCallback(() => {
     return configData.reduce((acc: Record<string, string>, existingConfig) => {
@@ -185,6 +214,117 @@ export function ModuleConfigDrawer({
             error instanceof Error ? error.message : "Unknown error"
           }`,
       },
+    );
+  };
+
+  // Render Google OAuth UI directly
+  const renderGoogleOAuthUI = () => {
+    const serviceDetails = getGoogleServiceDetails();
+    if (!serviceDetails) return null;
+
+    const user = useUser();
+    const connectedAcc = user?.useConnectedAccount("google", {
+      scopes: serviceDetails.scopes,
+    });
+    const accessToken = connectedAcc?.useAccessToken();
+
+    // Save token to module configuration when available
+    useEffect(() => {
+      if (accessToken?.accessToken) {
+        saveModuleConfiguration(module.id, {
+          [module.environmentVariableRequirements[0].id]: accessToken.accessToken,
+        });
+      }
+    }, [accessToken?.accessToken]);
+
+    return (
+      <div className="flex justify-center p-4 w-full mb-4">
+        {accessToken?.accessToken ? (
+          <div className="w-full max-w-xl">
+            <div className="flex justify-between items-center mb-2">
+              <p className="font-medium text-sm text-gray-500">Access Token</p>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2"
+                onClick={() => {
+                  navigator.clipboard.writeText(accessToken.accessToken);
+                  toast.success("Access token copied to clipboard");
+                }}
+              >
+                <CopyIcon className="mr-1" />
+                Copy
+              </Button>
+            </div>
+            <div className="w-full break-all overflow-hidden bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 p-3 rounded-md border border-gray-200 dark:border-gray-700">
+              <code className="text-xs">{accessToken.accessToken}</code>
+            </div>
+            <p className="text-xs text-gray-500 mt-2 text-center">
+              Google {serviceDetails.name} connected successfully
+            </p>
+            <div className="flex justify-center items-center gap-3 text-center m-4">
+              <Button
+                type="button"
+                variant="outline"
+                size="default"
+                className="w-full sm:flex-1 sm:max-w-[200px] text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive/90 cursor-pointer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleRemoveConfiguration();
+                }}
+              >
+                Disconnect
+              </Button>
+
+              <DrawerClose asChild>
+                <Button
+                  type="button"
+                  size="default"
+                  className="w-full sm:flex-1 sm:max-w-[200px] cursor-pointer"
+                >
+                  Close
+                </Button>
+              </DrawerClose>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4 sm:space-y-0 sm:space-x-4 w-full text-center flex items-center justify-center h-full flex-col sm:flex-row ">
+            <DrawerClose asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="default"
+                className="w-full sm:max-w-[300px] cursor-pointer"
+              >
+                Cancel
+              </Button>
+            </DrawerClose>
+            <Button
+              type="button"
+              className="flex items-center bg-white hover:bg-gray-100 text-gray-800 border border-gray-300 shadow-sm w-full sm:max-w-[300px]"
+              onClick={async () => {
+                try {
+                  await user?.getConnectedAccount("google", {
+                    or: "redirect",
+                    scopes: serviceDetails.scopes,
+                  });
+                } catch (error) {
+                  toast.error(`Failed to connect to Google ${serviceDetails.name}`);
+                  console.error(error);
+                }
+              }}
+            >
+              <ModuleIcon
+                svg={module.svg}
+                darkModeColor={module.darkModeColor}
+                lightModeColor={module.lightModeColor}
+              />
+              <span>Connect Google {serviceDetails.name}</span>
+            </Button>
+          </div>
+        )}
+      </div>
     );
   };
 
@@ -337,15 +477,8 @@ export function ModuleConfigDrawer({
                     </DrawerFooter>
                   </div>
                 )}
-                {module._specialBehavior === "google-calendar" && (
-                  <GoogleCalendarUI module={module} />
-                )}
-                {module._specialBehavior === "google-sheets" && (
-                  <GoogleSheetsUI module={module} />
-                )}
-                {module._specialBehavior === "google-gmail" && (
-                  <GoogleGmailUI module={module} />
-                )}
+                {/* Render OAuth UI directly */}
+                {typeof module._specialBehavior === 'string' && module._specialBehavior.startsWith('google-') && renderGoogleOAuthUI()}
               </form>
             )}
           </div>

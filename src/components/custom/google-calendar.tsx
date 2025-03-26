@@ -1,17 +1,23 @@
 import { siGooglecalendar } from "simple-icons";
 import { ModuleWithRequirements } from "@/actions/modules/list-modules";
-import { GoogleOAuthUI } from "./google-oauth";
+import { GoogleOAuthUI, GoogleOAuthUIProps } from "./google-oauth";
 
-export function GoogleCalendarUI(props: {
+type GoogleCalendarUIProps = {
   module: ModuleWithRequirements;
-}): React.ReactNode {
+} & Omit<Partial<GoogleOAuthUIProps>, 'module' | 'serviceName' | 'svg' | 'color' | 'scopes'>;
+
+export function GoogleCalendarUI({
+  module,
+  ...props
+}: GoogleCalendarUIProps): React.ReactNode {
   return (
     <GoogleOAuthUI
-      module={props.module}
+      module={module}
       serviceName="Calendar"
       svg={siGooglecalendar.svg}
       color={siGooglecalendar.hex}
       scopes={["https://www.googleapis.com/auth/calendar"]}
+      {...props}
     />
   );
 }

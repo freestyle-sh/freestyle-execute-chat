@@ -1,4 +1,5 @@
 "use server";
+
 import { db } from "@/db";
 import {
   freestyleModulesConfigurationsTable,
@@ -23,26 +24,24 @@ export async function deleteModuleConfiguration(moduleId: string) {
     .where(
       eq(
         freestyleModulesEnvironmentVariableRequirementsTable.moduleId,
-        moduleId
-      )
+        moduleId,
+      ),
     );
 
   // Delete all configurations for this module and user
   await Promise.all(
     envVarRequirements.map(async (requirement) => {
-      return db
+      return await db
         .delete(freestyleModulesConfigurationsTable)
         .where(
           and(
             eq(freestyleModulesConfigurationsTable.userId, userId),
             eq(
               freestyleModulesConfigurationsTable.environmentVariableId,
-              requirement.id
-            )
-          )
+              requirement.id,
+            ),
+          ),
         );
-    })
+    }),
   );
-
-  return { success: true };
 }

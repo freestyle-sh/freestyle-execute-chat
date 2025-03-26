@@ -1,17 +1,23 @@
 import { siGooglesheets } from "simple-icons";
 import { ModuleWithRequirements } from "@/actions/modules/list-modules";
-import { GoogleOAuthUI } from "./google-oauth";
+import { GoogleOAuthUI, GoogleOAuthUIProps } from "./google-oauth";
 
-export function GoogleSheetsUI(props: {
+type GoogleSheetsUIProps = {
   module: ModuleWithRequirements;
-}): React.ReactNode {
+} & Omit<Partial<GoogleOAuthUIProps>, 'module' | 'serviceName' | 'svg' | 'color' | 'scopes'>;
+
+export function GoogleSheetsUI({
+  module,
+  ...props
+}: GoogleSheetsUIProps): React.ReactNode {
   return (
     <GoogleOAuthUI
-      module={props.module}
+      module={module}
       serviceName="Sheets"
       svg={siGooglesheets.svg}
       color={siGooglesheets.hex}
       scopes={["https://www.googleapis.com/auth/spreadsheets"]}
+      {...props}
     />
   );
 }
