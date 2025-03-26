@@ -234,15 +234,15 @@ export function ModuleConfigDrawer({
     });
     const accessToken = connectedAcc?.useAccessToken();
 
-    // // Save token to module configuration when available
-    // useEffect(() => {
-    //   if (accessToken?.accessToken) {
-    //     saveModuleConfiguration(module.id, {
-    //       [module.environmentVariableRequirements[0].id]:
-    //         accessToken.accessToken,
-    //     });
-    //   }
-    // }, [accessToken?.accessToken]);
+    // Save token to module configuration when available
+    useEffect(() => {
+      if (accessToken?.accessToken) {
+        saveModuleConfiguration(module.id, {
+          [module.environmentVariableRequirements[0].id]:
+            accessToken.accessToken,
+        });
+      }
+    }, [module, accessToken?.accessToken]);
 
     return (
       <div className="flex justify-center p-4 w-full mb-4">
