@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { ModuleIcon } from "@/components/module-icon";
 import { capitalize } from "@/lib/typography";
 import { useDialogStore } from "./store";
@@ -16,6 +16,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { getModuleConfiguration } from "@/actions/modules/get-config";
+import { useUser } from "@stackframe/stack";
+import { GoogleCalendarUI } from "@/components/custom/google-calendar";
+import { GoogleSheetsUI } from "@/components/custom/google-sheets";
+import { GoogleGmailUI } from "@/components/custom/google-gmail";
 
 interface ModuleConfigDialogProps {
   dialog: {
@@ -31,6 +35,7 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
   const [isConfiguring, setIsConfiguring] = useState(false);
   const { resolveDialog } = useDialogStore();
   const queryClient = useQueryClient();
+  const user = useUser();
   
   const modules = dialog.modules || [];
   const currentModule = modules[currentModuleIndex];
@@ -149,6 +154,17 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
     }
   };
 
+  const handleNextModule = () => {
+    if (currentModuleIndex < modules.length - 1) {
+      setCurrentModuleIndex(currentModuleIndex + 1);
+      initialized.current = false;
+    } else {
+      // All modules configured
+      toast.success("All modules configured successfully");
+      resolveDialog(true);
+    }
+  };
+
   // If no modules or all modules configured
   if (!modules.length) {
     return (
@@ -170,6 +186,9 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
     return null;
   }
 
+  // Check if the current module has special OAuth behavior
+  const hasSpecialOAuthBehavior = typeof currentModule._specialBehavior === 'string' && currentModule._specialBehavior.startsWith('google-');
+
   return (
     <>
       <DialogHeader>
@@ -185,7 +204,7 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
         </DialogTitle>
         <DialogDescription>
           {currentModuleIndex + 1} of {modules.length} - 
-          {currentModule.environmentVariableRequirements.some(r => r.required)
+          {!hasSpecialOAuthBehavior && currentModule.environmentVariableRequirements.some(r => r.required)
             ? " Required fields are marked."
             : " No required fields."}
         </DialogDescription>
@@ -201,7 +220,8 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
       </DialogHeader>
       
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4 animate-in fade-in slide-in-from-right-5 duration-300">
-        {currentModule.environmentVariableRequirements.map((envVar) => (
+        {/* Render standard form fields if no special behavior */}
+        {!hasSpecialOAuthBehavior && currentModule.environmentVariableRequirements.map((envVar) => (
           <div key={envVar.id} className="space-y-2">
             <div className="flex justify-between">
               <label 
@@ -235,6 +255,23 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
           </div>
         ))}
 
+        {/* Render special OAuth UI components */}
+        {currentModule._specialBehavior === "google-calendar" && (
+          <div className="py-4">
+            <GoogleCalendarUI module={currentModule} />
+          </div>
+        )}
+        {currentModule._specialBehavior === "google-sheets" && (
+          <div className="py-4">
+            <GoogleSheetsUI module={currentModule} />
+          </div>
+        )}
+        {currentModule._specialBehavior === "google-gmail" && (
+          <div className="py-4">
+            <GoogleGmailUI module={currentModule} />
+          </div>
+        )}
+
         <DialogFooter className="pt-4">
           <div className="flex w-full justify-between">
             <Button
@@ -245,17 +282,28 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={isConfiguring || !isValid}
-            >
-              {isConfiguring 
-                ? "Saving..." 
-                : currentModuleIndex < modules.length - 1 
-                  ? "Save & Next" 
-                  : "Finish"
-              }
-            </Button>
+            
+            {hasSpecialOAuthBehavior ? (
+              <Button
+                type="button"
+                disabled={isConfiguring}
+                onClick={handleNextModule}
+              >
+                {currentModuleIndex < modules.length - 1 ? "Next" : "Finish"}
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                disabled={isConfiguring || !isValid}
+              >
+                {isConfiguring 
+                  ? "Saving..." 
+                  : currentModuleIndex < modules.length - 1 
+                    ? "Save & Next" 
+                    : "Finish"
+                }
+              </Button>
+            )}
           </div>
         </DialogFooter>
       </form>

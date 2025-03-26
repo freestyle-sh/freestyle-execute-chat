@@ -80,16 +80,26 @@ export function GoogleSheetsUI(props: {
         </div>
       ) : (
         <div className="space-y-4 sm:space-y-0 sm:space-x-4 w-full text-center flex items-center justify-center h-full flex-col sm:flex-row ">
-          <DrawerClose asChild>
-            <Button
-              type="button"
-              variant="outline"
-              size="default"
-              className="w-full sm:max-w-[300px] cursor-pointer"
-            >
-              Cancel
-            </Button>
-          </DrawerClose>
+          {/* Use a button that works with both Drawer and Dialog context */}
+          <Button
+            type="button"
+            variant="outline"
+            size="default"
+            className="w-full sm:max-w-[300px] cursor-pointer"
+            onClick={(e) => {
+              // Find closest drawer or dialog close button and trigger it
+              const drawerClose = document.querySelector('[data-drawer-close="true"]');
+              const dialogClose = document.querySelector('[data-dialog-close="true"]');
+              
+              if (drawerClose) {
+                (drawerClose as HTMLButtonElement).click();
+              } else if (dialogClose) {
+                (dialogClose as HTMLButtonElement).click();
+              }
+            }}
+          >
+            Cancel
+          </Button>
           <Button
             type="button"
             className="flex items-center bg-white hover:bg-gray-100 text-gray-800 border border-gray-300 shadow-sm w-full sm:max-w-[300px]"

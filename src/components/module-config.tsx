@@ -165,7 +165,7 @@ export function ModuleConfigDrawer({
       deleteModuleConfiguration(module.id)
         .then(() => {
           setOpen(false);
-          // Invalidate both the module config and modules queries
+
           queryClient.invalidateQueries({
             queryKey: ["moduleConfig", module.id],
           });
