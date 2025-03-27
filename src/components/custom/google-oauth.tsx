@@ -113,35 +113,7 @@ export function GoogleOAuthUI({
           )}
         </div>
       ) : (
-        <div className="space-y-4 sm:space-y-0 sm:space-x-4 w-full text-center flex items-center justify-center h-full flex-col sm:flex-row ">
-          <Button
-            type="button"
-            variant="outline"
-            size="default"
-            className="w-full sm:max-w-[300px] cursor-pointer"
-            onClick={(e) => {
-              if (onCancel) {
-                onCancel();
-                return;
-              }
-
-              // Fallback: find closest drawer or dialog close button and trigger it
-              const drawerClose = document.querySelector(
-                '[data-drawer-close="true"]',
-              );
-              const dialogClose = document.querySelector(
-                '[data-dialog-close="true"]',
-              );
-
-              if (drawerClose) {
-                (drawerClose as HTMLButtonElement).click();
-              } else if (dialogClose) {
-                (dialogClose as HTMLButtonElement).click();
-              }
-            }}
-          >
-            Cancel
-          </Button>
+        <div className="w-full text-center flex items-center justify-center h-full">
           <Button
             type="button"
             className="flex items-center bg-white hover:bg-gray-100 text-gray-800 border border-gray-300 shadow-sm w-full sm:max-w-[300px]"
