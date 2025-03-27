@@ -2,14 +2,15 @@ import { FreestyleSandboxes } from "freestyle-sandboxes";
 import { prepareDirForDeploymentSync } from "freestyle-sandboxes/utils";
 
 const sandboxes = new FreestyleSandboxes({
-  apiKey: process.env.FREESTYLE_API_KEY!,
+  apiKey: process.env.FREESTYLE_IT_API_KEY!,
+  baseUrl: "https://api.freestyle.it.com",
 });
 
 const dir = prepareDirForDeploymentSync(".next/standalone/");
 
-const domains = ["chat.freestyle.sh"];
+const domains = ["chat.freestyle.it.com"];
 
-sandboxes.deployWeb(dir, {
+await sandboxes.deployWeb(dir, {
   entrypoint: "entry.js",
   envVars: {
     DATABASE_URL: process.env.DATABASE_URL!,
