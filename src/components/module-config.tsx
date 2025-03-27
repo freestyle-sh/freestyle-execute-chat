@@ -91,6 +91,11 @@ function ModuleConfigTrigger({
   isConfigLoading: boolean;
 }) {
   const { resolvedTheme } = useTheme();
+  
+  // Get configured status
+  const hasOAuthRequirements = module.environmentVariableRequirements.some(
+    req => req.source === "oauth"
+  );
 
   return (
     <DrawerTrigger asChild>
@@ -114,9 +119,9 @@ function ModuleConfigTrigger({
             Loading...
           </span>
         ) : module.isConfigured ? (
-          "Configured"
+          hasOAuthRequirements ? "Connected" : "Configured"
         ) : (
-          "Configure"
+          hasOAuthRequirements ? "Connect" : "Configure"
         )}
       </Button>
     </DrawerTrigger>
@@ -152,40 +157,7 @@ function ModuleConfigDrawerView({
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  // Get Google service details (for OAuth modules)
-  const getGoogleServiceDetails = () => {
-    if (
-      typeof module._specialBehavior !== "string" ||
-      !module._specialBehavior.startsWith("google-")
-    )
-      return null;
-
-    const service = module._specialBehavior.replace("google-", "");
-
-    switch (service) {
-      case "calendar":
-        return {
-          name: "Calendar",
-          scopes: ["https://www.googleapis.com/auth/calendar"],
-        };
-      case "sheets":
-        return {
-          name: "Sheets",
-          scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-        };
-      case "gmail":
-        return {
-          name: "Gmail",
-          scopes: [
-            "https://www.googleapis.com/auth/gmail.readonly",
-            "https://www.googleapis.com/auth/gmail.compose",
-          ],
-        };
-      default:
-        return null;
-    }
-  };
-
+  // Get default form values from existing configuration
   const getDefaultValues = useCallback(() => {
     return configData.reduce((acc: Record<string, string>, existingConfig) => {
       acc[existingConfig.environmentVariableId] = existingConfig?.value;
@@ -272,16 +244,38 @@ function ModuleConfigDrawerView({
     );
   };
 
-  // Render Google OAuth UI directly
-  const renderGoogleOAuthUI = () => {
-    const serviceDetails = getGoogleServiceDetails();
-    if (!serviceDetails) {
+  // Render OAuth UI for a specific provider
+  const renderOAuthUI = (envVar: EnvVarRequirement) => {
+    if (envVar.source !== "oauth" || !envVar.oauthProvider || !envVar.oauthScopes) {
       return null;
     }
 
+    // Check if the OAuth provider is valid for Stack Auth
+    type ValidProvider = "x" | "github" | "google" | "microsoft" | "spotify" | "facebook" | "discord" | "gitlab" | "bitbucket" | "linkedin" | "apple";
+    const validProviders: ValidProvider[] = ["x", "github", "google", "microsoft", "spotify", "facebook", "discord", "gitlab", "bitbucket", "linkedin", "apple"];
+    
+    // Type guard to make sure provider is valid
+    const isValidProvider = (provider: string): provider is ValidProvider => {
+      return validProviders.includes(provider as ValidProvider);
+    };
+    
+    // If not a valid provider, show error message
+    if (!isValidProvider(envVar.oauthProvider)) {
+      return (
+        <div className="p-4 text-center">
+          <div className="text-destructive">
+            Unsupported OAuth provider: {envVar.oauthProvider}
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            This provider is not supported by the authentication system.
+          </p>
+        </div>
+      );
+    }
+
     const user = useUser();
-    const connectedAcc = user?.useConnectedAccount("google", {
-      scopes: serviceDetails.scopes,
+    const connectedAcc = user?.useConnectedAccount(envVar.oauthProvider, {
+      scopes: envVar.oauthScopes ?? undefined,
     });
     const accessToken = connectedAcc?.useAccessToken();
 
@@ -289,11 +283,13 @@ function ModuleConfigDrawerView({
     useEffect(() => {
       if (accessToken?.accessToken) {
         saveModuleConfiguration(module.id, {
-          [module.environmentVariableRequirements[0].id]:
-            accessToken.accessToken,
+          [envVar.id]: accessToken.accessToken,
         });
       }
-    }, [module, accessToken?.accessToken]);
+    }, [module, accessToken?.accessToken, envVar.id]);
+
+    const providerName = envVar.oauthProvider.charAt(0).toUpperCase() + envVar.oauthProvider.slice(1);
+    const serviceName = envVar.name;
 
     return (
       <div className="flex justify-center p-4 w-full mb-4">
@@ -319,7 +315,7 @@ function ModuleConfigDrawerView({
               <code className="text-xs">{accessToken.accessToken}</code>
             </div>
             <p className="text-xs text-gray-500 text-center">
-              Google {serviceDetails.name} connected successfully
+              {providerName} {serviceName} connected successfully
             </p>
             <div className="flex justify-center items-center gap-3 text-center m-4">
               <Button
@@ -363,13 +359,14 @@ function ModuleConfigDrawerView({
               className="flex items-center bg-white hover:bg-gray-100 text-gray-800 border border-gray-300 shadow-sm w-full sm:max-w-[300px]"
               onClick={async () => {
                 try {
-                  await user?.getConnectedAccount("google", {
+                  // We know provider is valid at this point due to the isValidProvider check
+                  await user?.getConnectedAccount(envVar.oauthProvider as ValidProvider, {
                     or: "redirect",
-                    scopes: serviceDetails.scopes,
+                    scopes: envVar.oauthScopes ?? undefined,
                   });
                 } catch (error) {
                   toast.error(
-                    `Failed to connect to Google ${serviceDetails.name}`,
+                    `Failed to connect to ${providerName} ${serviceName}`,
                   );
                   console.error(error);
                 }
@@ -380,13 +377,23 @@ function ModuleConfigDrawerView({
                 darkModeColor={module.darkModeColor}
                 lightModeColor={module.lightModeColor}
               />
-              <span>Connect Google {serviceDetails.name}</span>
+              <span>Connect {providerName} {serviceName}</span>
             </Button>
           </div>
         )}
       </div>
     );
   };
+
+  // Check if this module has any OAuth requirements
+  const oauthRequirements = module.environmentVariableRequirements.filter(
+    (req) => req.source === "oauth"
+  );
+  
+  // Check if this module has any text requirements
+  const textRequirements = module.environmentVariableRequirements.filter(
+    (req) => req.source === "text"
+  );
 
   return (
     <>
@@ -411,9 +418,21 @@ function ModuleConfigDrawerView({
           </div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 ">
-            {module._specialBehavior == null && (
+            {/* Render OAuth UI for OAuth requirements */}
+            {oauthRequirements.length > 0 && (
               <div className="flex flex-col gap-4 py-6">
-                {module.environmentVariableRequirements.map((envVar) => (
+                {oauthRequirements.map((req) => (
+                  <div key={req.id} className="w-full">
+                    {renderOAuthUI(req)}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Render text input fields for text requirements */}
+            {textRequirements.length > 0 && (
+              <div className="flex flex-col gap-4 py-6">
+                {textRequirements.map((envVar) => (
                   <SettingsItem
                     key={envVar.id}
                     title={envVar.name}
@@ -486,10 +505,13 @@ function ModuleConfigDrawerView({
                 </DrawerFooter>
               </div>
             )}
-            {/* Render OAuth UI directly */}
-            {typeof module._specialBehavior === "string" &&
-              module._specialBehavior.startsWith("google-") &&
-              renderGoogleOAuthUI()}
+
+            {/* If no requirements are present, show a message */}
+            {module.environmentVariableRequirements.length === 0 && (
+              <div className="py-4 text-center text-muted-foreground">
+                No configuration required for this module.
+              </div>
+            )}
           </form>
         )}
       </div>

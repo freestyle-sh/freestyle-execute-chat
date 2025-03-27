@@ -36,14 +36,23 @@ export function GoogleOAuthUI({
   });
   const accessToken = connectedAcc?.useAccessToken();
 
+  // Find the OAuth requirement in the module
+  const oauthRequirement = module.environmentVariableRequirements.find(
+    (req) => req.source === "oauth" && req.oauthProvider === "google"
+  );
+
   useEffect(() => {
-    if (accessToken?.accessToken) {
+    if (accessToken?.accessToken && oauthRequirement) {
       saveModuleConfiguration(module.id, {
-        [module.environmentVariableRequirements[0].id]:
-          accessToken?.accessToken,
+        [oauthRequirement.id]: accessToken?.accessToken,
+      });
+    } else if (accessToken?.accessToken) {
+      // Fallback to legacy behavior
+      saveModuleConfiguration(module.id, {
+        [module.environmentVariableRequirements[0].id]: accessToken?.accessToken,
       });
     }
-  }, [module, accessToken]);
+  }, [module, accessToken, oauthRequirement]);
 
   return (
     <div className="flex justify-center p-4 w-full mb-4">
