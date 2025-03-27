@@ -1,0 +1,1 @@
+ALTER TABLE "FreestyleModules" ADD COLUMN "example" text NOT NULL;

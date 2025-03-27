@@ -1,6 +1,6 @@
 {
-  "id": "56a604cb-bf4f-407f-ac24-6610a5ab82c2",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "05cc0584-1139-4dfd-8a9a-d4b4ca0defbf",
+  "prevId": "56a604cb-bf4f-407f-ac24-6610a5ab82c2",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -70,6 +70,12 @@
         "content": {
           "name": "content",
           "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "varchar(16)",
           "primaryKey": false,
           "notNull": true
         },
@@ -175,32 +181,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.User": {
-      "name": "User",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "stack_id": {
-          "name": "stack_id",
-          "type": "varchar(64)",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.UserFormResponse": {
       "name": "UserFormResponse",
       "schema": "",
@@ -273,6 +253,32 @@
           "onUpdate": "no action"
         }
       },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.User": {
+      "name": "User",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "stack_id": {
+          "name": "stack_id",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},

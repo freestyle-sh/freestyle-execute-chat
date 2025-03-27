@@ -1,0 +1,1 @@
+ALTER TABLE "Messages" ALTER COLUMN "parts" DROP NOT NULL;
