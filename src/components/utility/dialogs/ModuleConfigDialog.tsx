@@ -74,14 +74,12 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
 
   const formSchema = createFormSchema(currentModule);
 
-  const {
-    data: moduleConfig,
-    isLoading: isLoadingConfig,
-    isError: isConfigError,
-  } = useQuery({
+  const { data: moduleConfig, isLoading: isLoadingConfig } = useQuery({
     queryKey: ["moduleConfig", currentModule?.id],
     queryFn: async () => {
-      if (!currentModule) return null;
+      if (!currentModule) {
+        return null;
+      }
       return getModuleConfiguration(currentModule.id);
     },
     enabled: !!currentModule,
