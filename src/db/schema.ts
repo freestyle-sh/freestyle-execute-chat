@@ -156,3 +156,27 @@ export const chatModulesEnabledTable = pgTable(
     index().on(table.chatId),
   ],
 );
+
+export const moduleRequestsTable = pgTable(
+  "ModuleRequests",
+  {
+    id: uuid("id").primaryKey().notNull().defaultRandom(),
+    chatId: uuid("chatId")
+      .notNull()
+      .references(() => chatsTable.id, {
+        onDelete: "cascade",
+      }),
+    moduleId: uuid("moduleId")
+      .notNull()
+      .references(() => freestyleModulesTable.id, {
+        onDelete: "cascade",
+      }),
+    toolCallId: varchar("toolCallId", { length: 128 }).notNull(),
+    reason: text("reason").notNull(),
+    state: varchar("state", { length: 32 }).notNull(), // "pending", "approved", "denied"
+    configValues: json("configValues"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  (table) => [index().on(table.chatId), index().on(table.toolCallId)],
+);
