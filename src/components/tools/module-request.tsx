@@ -10,10 +10,10 @@ import { toast } from "sonner";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { ModuleIcon } from "@/components/module-icon";
-import { 
-  getOrCreateModuleRequest, 
-  getModuleRequest, 
-  updateModuleRequest 
+import {
+  getOrCreateModuleRequest,
+  getModuleRequest,
+  updateModuleRequest,
 } from "@/actions/modules/request-module";
 import { listModules } from "@/actions/modules/list-modules";
 import { useModulesStore } from "@/stores/modules";
@@ -30,14 +30,17 @@ export type ModuleRequestProps = {
 };
 
 export function ModuleRequest({ request, className }: ModuleRequestProps) {
-  const { addToolResult } = useCurrentChat();
+  const { addToolResult, chatId } = useCurrentChat();
   const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isDenying, setIsDenying] = useState(false);
-  const [status, setStatus] = useState<"pending" | "approved" | "denied">("pending");
-  const { chatId } = useCurrentChat();
+  const [status, setStatus] = useState<"pending" | "approved" | "denied">(
+    "pending",
+  );
   const toggleModule = useModulesStore((state) => state.toggleModule);
   const toolCallId = request.toolCallId;
+
+  // ChatId is guaranteed to be defined through the context
 
   // Fetch module information
   const { data: modules, isLoading: isModulesLoading } = useQuery({
@@ -58,7 +61,7 @@ export function ModuleRequest({ request, className }: ModuleRequestProps) {
         toolCallId,
         reason: request.args.reason,
       });
-      
+
       // Then fetch the latest status
       return getModuleRequest(toolCallId);
     },
@@ -69,33 +72,33 @@ export function ModuleRequest({ request, className }: ModuleRequestProps) {
   useEffect(() => {
     if (moduleRequest) {
       setStatus(moduleRequest.state);
-      
+
       // If already approved, update the local store
       if (moduleRequest.state === "approved") {
         toggleModule(moduleRequest.moduleId, true);
       }
     }
   }, [moduleRequest, toggleModule]);
-  
+
   // Handle module request
   const requestMutation = useMutation({
     mutationFn: async () => {
       setIsProcessing(true);
-      
+
       if (!moduleRequest) {
         throw new Error("Module request not found");
       }
-      
+
       // If configured, enable the module and return
       if (module?.isConfigured) {
         // Update request state in database
         const result = await updateModuleRequest(moduleRequest.id, {
           state: "approved",
         });
-        
+
         // Toggle module in store
         toggleModule(request.args.moduleId, true);
-        
+
         // Return successful result
         return {
           status: "approved",
@@ -103,37 +106,38 @@ export function ModuleRequest({ request, className }: ModuleRequestProps) {
           moduleId: request.args.moduleId,
         };
       }
-      
+
       // Not configured, open configuration dialog
       if (module) {
         const configured = await configureModules([module]);
-        
+
         if (configured) {
           // Update request state in database
           const result = await updateModuleRequest(moduleRequest.id, {
             state: "approved",
           });
-          
+
           // Toggle module in store after configuration
           toggleModule(request.args.moduleId, true);
-          
+
           return {
             status: "approved",
             message: "Module configured and enabled successfully",
             moduleId: request.args.moduleId,
           };
-        } else {
-          // Configuration was cancelled
-          throw new Error("Module configuration was cancelled");
         }
-      } else {
-        throw new Error("Module not found");
+
+        // Configuration was cancelled
+        throw new Error("Module configuration was cancelled");
       }
+      throw new Error("Module not found");
     },
     onSuccess: (data) => {
       setStatus("approved");
       queryClient.invalidateQueries({ queryKey: ["chat-modules"] });
-      queryClient.invalidateQueries({ queryKey: ["moduleRequest", toolCallId] });
+      queryClient.invalidateQueries({
+        queryKey: ["moduleRequest", toolCallId],
+      });
 
       addToolResult({
         toolCallId,
@@ -145,7 +149,7 @@ export function ModuleRequest({ request, className }: ModuleRequestProps) {
     onError: (error) => {
       console.error("Error handling module request:", error);
       toast.error("Failed to enable module");
-      
+
       // Only set to denied if the error wasn't from cancellation
       if (error.message !== "Module configuration was cancelled") {
         setStatus("denied");
@@ -160,21 +164,23 @@ export function ModuleRequest({ request, className }: ModuleRequestProps) {
   const denyMutation = useMutation({
     mutationFn: async () => {
       setIsDenying(true);
-      
+
       if (!moduleRequest) {
         throw new Error("Module request not found");
       }
-      
+
       const result = await updateModuleRequest(moduleRequest.id, {
         state: "denied",
       });
-      
+
       return result;
     },
     onSuccess: () => {
       setStatus("denied");
-      queryClient.invalidateQueries({ queryKey: ["moduleRequest", toolCallId] });
-      
+      queryClient.invalidateQueries({
+        queryKey: ["moduleRequest", toolCallId],
+      });
+
       addToolResult({
         toolCallId,
         result: JSON.stringify({
@@ -183,7 +189,7 @@ export function ModuleRequest({ request, className }: ModuleRequestProps) {
           moduleId: request.args.moduleId,
         }),
       });
-      
+
       toast.info(`${module?.name || "Module"} access denied`);
     },
     onError: (error) => {
@@ -305,8 +311,10 @@ export function ModuleRequest({ request, className }: ModuleRequestProps) {
         badge={<ToolOutputBadge variant="info">Module Request</ToolOutputBadge>}
         content={
           <div className="flex items-center justify-center py-4">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-            <span className="ml-2 text-sm text-muted-foreground">Loading...</span>
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <span className="ml-2 text-sm text-muted-foreground">
+              Loading...
+            </span>
           </div>
         }
         className={className}
@@ -324,3 +332,4 @@ export function ModuleRequest({ request, className }: ModuleRequestProps) {
     />
   );
 }
+

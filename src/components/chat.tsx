@@ -44,6 +44,8 @@ import { Skeleton } from "./ui/skeleton";
 import { toggleChatModule } from "@/actions/modules/toggle-chat-module";
 import { AuthPopup } from "@/components/ui/auth-popup";
 import { useUser } from "@stackframe/stack";
+import { configureModules } from "@/components/utility/dialogs/store";
+import { toast } from "sonner";
 
 const MobileHeader = ({ title }: { title: string }) => {
   const { toggleMobile } = useSidebarStore();
@@ -334,15 +336,46 @@ export function PromptInputBasic({
     },
   });
 
-  const handleToggleModule = (moduleId: string, currentEnabled?: boolean) => {
+  const handleToggleModule = async (
+    moduleId: string,
+    currentEnabled?: boolean,
+  ) => {
     // Find the module to check if it's configured
     const foundModule = modules.find((m) => m.id === moduleId);
 
     if (foundModule && !foundModule.isConfigured) {
-      // If module isn't configured, navigate to settings page
+      // If module isn't configured, show module configuration dialog
       if (user) {
-        router.push(`/settings/modules?module=${moduleId}`);
+        // Open configuration dialog with confirmation
+        const modulesToConfigure = [foundModule];
+
+        try {
+          const confirmed = await configureModules(modulesToConfigure);
+          if (confirmed) {
+            // Module was configured, now enable it
+            const newEnabledState = true;
+
+            if (chatId) {
+              // Use the mutation for persisted chats
+              toggleModuleMutation.mutate({
+                moduleId,
+                enabled: newEnabledState,
+              });
+            } else {
+              // Use the zustand store for homepage (non-persisted) chat
+              toggleModule(moduleId, newEnabledState);
+            }
+
+            // Show success toast
+            toast.success(
+              `${capitalize(foundModule.name)} configured and enabled`,
+            );
+          }
+        } catch (error) {
+          console.error("Error configuring module:", error);
+        }
       } else {
+        // If not logged in, show auth popup
         showModuleAuthPopupAction();
       }
       return;
