@@ -178,7 +178,7 @@ export async function POST(request: Request) {
     sendFeedback: sendFeedbackTool(),
     // Human-in-the-loop tools
     structuredDataRequest: structuredDataRequestTool(),
-    moduleRequest: moduleRequestTool(),
+    moduleRequest: moduleRequestTool(modules),
   };
 
   const docRequestTool = requestDocumentationTool(modules);

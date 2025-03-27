@@ -81,7 +81,7 @@ export const freestyleModulesTable = pgTable("FreestyleModules", {
   lightModeColor: varchar("lightModeColor", { length: 16 }).notNull(),
   darkModeColor: varchar("darkModeColor", { length: 16 }).notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-  nodeModules: json("node_modules").notNull(),
+  nodeModules: json("node_modules").notNull().$type<Record<string, string>>(),
   priority: integer("priority").notNull().default(0),
   setupInstructions: text("setup_instructions"),
   documentation: text("documentation"),

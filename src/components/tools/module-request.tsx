@@ -4,21 +4,23 @@ import type { ToolInvocation } from "ai";
 import { Puzzle } from "lucide-react";
 import { ToolOutput, ToolOutputBadge } from "@/components/tool-output";
 import { useCurrentChat } from "../chat";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { ModuleIcon } from "@/components/module-icon";
-import { requestModuleAccess } from "@/actions/modules/request-module";
 import { listModules } from "@/actions/modules/list-modules";
+import { useModulesStore } from "@/stores/modules";
+import { getModuleConfiguration } from "@/actions/modules/get-config";
+import { getAllModuleConfigurations } from "@/actions/modules/get-all-configs";
+import { configureModules } from "@/components/utility/dialogs/store";
 
 export type ModuleRequestProps = {
   request: ToolInvocation & {
     args: {
       moduleId: string;
       reason: string;
-      configValues?: Record<string, string>;
     };
   };
   className?: string;
@@ -27,12 +29,13 @@ export type ModuleRequestProps = {
 export function ModuleRequest({ request, className }: ModuleRequestProps) {
   const { addToolResult } = useCurrentChat();
   const queryClient = useQueryClient();
-  const [isApproving, setIsApproving] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [isDenying, setIsDenying] = useState(false);
   const [status, setStatus] = useState<"pending" | "approved" | "denied">(
     "pending",
   );
   const { chatId } = useCurrentChat();
+  const toggleModule = useModulesStore((state) => state.toggleModule);
 
   // Fetch module information
   const { data: modules, isLoading: isModulesLoading } = useQuery({
@@ -42,18 +45,42 @@ export function ModuleRequest({ request, className }: ModuleRequestProps) {
 
   const module = modules?.find((m) => m.id === request.args.moduleId);
 
-  // Handle module access request
   const requestMutation = useMutation({
     mutationFn: async () => {
-      setIsApproving(true);
-      const result = await requestModuleAccess({
-        chatId,
-        moduleId: request.args.moduleId,
-        reason: request.args.reason,
-        configValues: request.args.configValues,
-      });
+      setIsProcessing(true);
 
-      return result;
+      if (module === undefined) {
+        throw new Error("Module not found");
+      }
+
+      // If configured, enable the module and return
+      if (module?.isConfigured) {
+        // Toggle module in store
+        toggleModule(request.args.moduleId, true);
+
+        return {
+          status: "approved",
+          message: "Module enabled successfully",
+          moduleId: request.args.moduleId,
+        };
+      }
+
+      // Not configured, open configuration dialog
+      const configured = await configureModules([module]);
+
+      // Configuration was cancelled
+      if (!configured) {
+        throw new Error("Module configuration was cancelled");
+      }
+
+      // Toggle module in store after configuration
+      toggleModule(request.args.moduleId, true);
+
+      return {
+        status: "approved",
+        message: "Module configured and enabled successfully",
+        moduleId: request.args.moduleId,
+      };
     },
     onSuccess: (data) => {
       setStatus("approved");
@@ -62,21 +89,22 @@ export function ModuleRequest({ request, className }: ModuleRequestProps) {
       const toolCallId = request.toolCallId;
       addToolResult({
         toolCallId,
-        result: JSON.stringify({
-          status: "approved",
-          message: "Module access granted successfully",
-          moduleId: request.args.moduleId,
-        }),
+        result: JSON.stringify(data),
       });
 
-      toast.success(`${module?.name || "Module"} access granted`);
+      toast.success(`${module?.name || "Module"} enabled successfully`);
     },
     onError: (error) => {
-      console.error("Error approving module access:", error);
-      toast.error("Failed to grant module access");
+      console.error("Error handling module request:", error);
+      toast.error("Failed to enable module");
+
+      // Only set to denied if the error wasn't from cancellation
+      if (error.message !== "Module configuration was cancelled") {
+        setStatus("denied");
+      }
     },
     onSettled: () => {
-      setIsApproving(false);
+      setIsProcessing(false);
     },
   });
 
@@ -122,7 +150,7 @@ export function ModuleRequest({ request, className }: ModuleRequestProps) {
             )}
             <div>
               <div className="text-sm font-medium text-green-600 dark:text-green-400">
-                Module access granted
+                Module enabled
               </div>
               <div className="text-xs text-muted-foreground">
                 {module?.name || request.args.moduleId} is now available for
@@ -192,16 +220,16 @@ export function ModuleRequest({ request, className }: ModuleRequestProps) {
           <Button
             variant="outline"
             onClick={handleDeny}
-            disabled={isApproving || isDenying}
+            disabled={isProcessing || isDenying}
             className="text-destructive border-destructive/30 hover:bg-destructive/10"
           >
             {isDenying ? "Denying..." : "Deny"}
           </Button>
           <Button
             onClick={() => requestMutation.mutate()}
-            disabled={isApproving || isDenying}
+            disabled={isProcessing || isDenying}
           >
-            {isApproving ? "Approving..." : "Approve"}
+            {isProcessing ? "Processing..." : "Enable"}
           </Button>
         </div>
       </div>
