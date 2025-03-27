@@ -1,4 +1,5 @@
 import { maybeUpdateChatTitle } from "@/actions/chats/create-chat";
+import { insertMessage } from "@/actions/chats/insert-message";
 import { listModules } from "@/actions/modules/list-modules";
 import { db } from "@/db";
 import { messagesTable } from "@/db/schema";

@@ -134,7 +134,7 @@ export function ChatUI({
     initialMessages,
     onError: (error) => {
       // const errorJson = JSON.parse(error.message as unknown as string);
-      // if (errorJson?.error?.kind == "AnonymousUserMessageLimit") {
+      // if (errorJson?.error?.kind === "AnonymousUserMessageLimit") {
       //   // Show our custom auth popup
       //   setIsAuthPopupOpen(true);
       //   setIsModuleAuthPopup(false);
@@ -652,4 +652,3 @@ export function PromptInputBasic({
     </PromptInput>
   );
 }
-

@@ -120,6 +120,27 @@
       "when": 1743050117556,
       "tag": "0016_confused_namora",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1743050534065,
+      "tag": "0017_loud_lizard",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1743051403464,
+      "tag": "0018_curved_energizer",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1743051526864,
+      "tag": "0019_secret_golden_guardian",
+      "breakpoints": true
     }
   ]
 }

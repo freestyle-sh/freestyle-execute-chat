@@ -9,6 +9,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -171,7 +172,7 @@ export const moduleRequestsTable = pgTable(
       .references(() => freestyleModulesTable.id, {
         onDelete: "cascade",
       }),
-    toolCallId: varchar("toolCallId", { length: 128 }).notNull(),
+    toolCallId: varchar("toolCallId", { length: 128 }).notNull().unique(),
     reason: text("reason").notNull(),
     state: varchar("state", { length: 32 }).notNull(), // "pending", "approved", "denied"
     configValues: json("configValues"),

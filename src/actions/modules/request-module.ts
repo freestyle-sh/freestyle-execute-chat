@@ -33,16 +33,13 @@ export async function getOrCreateModuleRequest({
   configValues?: Record<string, string>;
 }): Promise<ModuleRequestResponse> {
   try {
-    // Check if a request already exists for this tool call
+    // Check if a request already exists for this tool call ID
+    // We only need to check by toolCallId since it's globally unique 
+    // and guarantees deduplication across sessions
     const existingRequest = await db
       .select()
       .from(moduleRequestsTable)
-      .where(
-        and(
-          eq(moduleRequestsTable.chatId, chatId),
-          eq(moduleRequestsTable.toolCallId, toolCallId),
-        ),
-      )
+      .where(eq(moduleRequestsTable.toolCallId, toolCallId))
       .then((rows) => rows[0]);
 
     if (existingRequest) {

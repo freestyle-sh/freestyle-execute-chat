@@ -2,7 +2,7 @@ CREATE TABLE "ModuleRequests" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"chatId" uuid NOT NULL,
 	"moduleId" uuid NOT NULL,
-	"toolCallId" varchar(128) NOT NULL,
+	"toolCallId" varchar(128) UNIQUE NOT NULL,
 	"reason" text NOT NULL,
 	"state" varchar(32) NOT NULL,
 	"configValues" json,
