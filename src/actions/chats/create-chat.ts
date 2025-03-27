@@ -120,26 +120,24 @@ export async function createChat(
   // Apply selected modules to the new chat if provided
   if (selectedModules) {
     try {
-      await Promise.all(
-        Object.entries(selectedModules).map(([moduleId, { enabled }]) =>
-          db
-            .insert(chatModulesEnabledTable)
-            .values({
-              chatId,
-              moduleId,
-              enabled,
-            })
-            .onConflictDoUpdate({
-              target: [
-                chatModulesEnabledTable.chatId,
-                chatModulesEnabledTable.moduleId,
-              ],
-              set: {
-                enabled: enabled ?? false,
-              },
-            })
-        )
-      );
+      const moduleValues = Object.keys(selectedModules).map((moduleId) => ({
+        chatId,
+        moduleId,
+        enabled: true,
+      }));
+
+      await db
+        .insert(chatModulesEnabledTable)
+        .values(moduleValues)
+        .onConflictDoUpdate({
+          target: [
+            chatModulesEnabledTable.chatId,
+            chatModulesEnabledTable.moduleId,
+          ],
+          set: {
+            enabled: true,
+          },
+        });
     } catch (error) {
       console.error("Failed to apply modules to chat:", error);
     }
