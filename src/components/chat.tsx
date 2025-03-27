@@ -15,7 +15,7 @@ import {
   MenuIcon,
   Square,
 } from "lucide-react";
-import { createIdGenerator, type ChatRequestOptions } from "ai";
+import type { ChatRequestOptions } from "ai";
 import {
   type ChangeEvent,
   createContext,
@@ -28,7 +28,6 @@ import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import type { Message } from "@/db/schema";
 import { insertMessage } from "@/actions/chats/insert-message";
-// import { useTransitionRouter } from "next-view-transitions";
 import ChatMessage from "./message";
 import { useRouter } from "next/navigation";
 import { ChatContainer } from "./chat-container";
@@ -121,17 +120,24 @@ export function ChatUI({
   const [isAuthPopupOpen, setIsAuthPopupOpen] = useState(false);
   const [isModuleAuthPopup, setIsModuleAuthPopup] = useState(false);
 
-  // Use our own version of addToolResult to avoid duplicate inserts
-  const chatHookResult = useChat({
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    status,
+    reload,
+    addToolResult,
+  } = useChat({
     id: chatId,
     initialMessages,
     onError: (error) => {
-      // const errorJson = JSON.parse(error.message as unknown as string);
-      // if (errorJson?.error?.kind === "AnonymousUserMessageLimit") {
-      //   // Show our custom auth popup
-      //   setIsAuthPopupOpen(true);
-      //   setIsModuleAuthPopup(false);
-      // }
+      const errorJson = JSON.parse(error.message as unknown as string);
+      if (errorJson?.error?.kind === "AnonymousUserMessageLimit") {
+        // Show our custom auth popup
+        setIsAuthPopupOpen(true);
+        setIsModuleAuthPopup(false);
+      }
     },
     fetch: async (req, init) => {
       return fetch(req, {
@@ -150,16 +156,6 @@ export function ChatUI({
       queryClient.invalidateQueries({ queryKey: ["chats"] });
     },
   });
-
-  const {
-    messages,
-    input,
-    handleInputChange,
-    handleSubmit,
-    status,
-    reload,
-    addToolResult,
-  } = chatHookResult;
 
   useEffect(() => {
     if (hasRunRef.current) return; // already ran
@@ -218,7 +214,7 @@ export function ChatUI({
             isLoading={status === "streaming" || status === "submitted"}
             chatId={chatId}
             user={user}
-            showModuleAuthPopup={showModuleAuthPopup}
+            showModuleAuthPopupAction={showModuleAuthPopup}
           />
         </div>
 
@@ -251,7 +247,7 @@ export function PromptInputBasic({
   handleSubmitAction: handleSubmit,
   handleValueChangeAction: handleValueChange,
   user,
-  showModuleAuthPopup,
+  showModuleAuthPopupAction,
 }: {
   input: string;
   isLoading: boolean;
@@ -266,7 +262,7 @@ export function PromptInputBasic({
     chatRequestOptions?: ChatRequestOptions,
   ) => void;
   user: unknown;
-  showModuleAuthPopup: () => void;
+  showModuleAuthPopupAction: () => void;
 }) {
   // State to track if module tray is open
   const [isModuleTrayOpen, setIsModuleTrayOpen] = useState(false);
@@ -325,7 +321,7 @@ export function PromptInputBasic({
 
       return { previousModules };
     },
-    onError: (err, variables, context) => {
+    onError: (_err, _variables, context) => {
       // If the mutation fails, use the context returned from onMutate to roll back
       if (context?.previousModules) {
         queryClient.setQueryData(["modules", chatId], context.previousModules);
@@ -347,7 +343,7 @@ export function PromptInputBasic({
       if (user) {
         router.push(`/settings/modules?module=${moduleId}`);
       } else {
-        showModuleAuthPopup();
+        showModuleAuthPopupAction();
       }
       return;
     }
