@@ -6,6 +6,7 @@ import {
 } from "@/actions/chats/get-structured-data";
 import LogoComponent from "./logo";
 import { CodeExecution } from "./tools/code-execution";
+import { ModuleRequest } from "./tools/module-request";
 import { SendFeedback } from "./tools/send-feedback";
 import { RequestDocs } from "./tools/request-docs";
 import { StructuredDataRequest } from "./tools/structured-data-request";
@@ -94,6 +95,9 @@ export function AIMessage({
                   request={part.toolInvocation}
                   chatId={chatId}
                 />
+              )}
+              {part.toolInvocation.toolName === "moduleRequest" && (
+                <ModuleRequest request={part.toolInvocation} />
               )}
             </>
           )}

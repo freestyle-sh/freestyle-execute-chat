@@ -5,6 +5,7 @@ import { messagesTable } from "@/db/schema";
 import { claudeSonnetModel } from "@/lib/model";
 import stripe from "@/lib/stripe";
 import { systemPrompt } from "@/lib/system-prompt";
+import { moduleRequestTool } from "@/lib/tools/module-request";
 import { requestDocumentationTool } from "@/lib/tools/request-documentation";
 import { sendFeedbackTool } from "@/lib/tools/send-feedback";
 import { structuredDataRequestTool } from "@/lib/tools/structured-data-request";
@@ -175,8 +176,9 @@ export async function POST(request: Request) {
       envVars,
     }),
     sendFeedback: sendFeedbackTool(),
-    // Human-in-the-loop tool
+    // Human-in-the-loop tools
     structuredDataRequest: structuredDataRequestTool(),
+    moduleRequest: moduleRequestTool(),
   };
 
   const docRequestTool = requestDocumentationTool(modules);

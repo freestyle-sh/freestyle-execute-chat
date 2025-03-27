@@ -28,6 +28,14 @@ export const systemPrompt = ({
   3. Once submitted, you can access the form data to continue your task
   4. If the user cancels the form request, you should acknowledge this and offer alternatives
 
+  You have the ability to request access to modules using the "moduleRequest" tool. This is useful when you need access to specific integrations or functionality. When you use this tool:
+  1. Specify the moduleId of the module you need access to
+  2. Provide a clear reason why this module is necessary for the current task
+  3. Optionally provide configuration values for the module if you have them
+  4. Wait for the user to approve or deny your request
+  5. If approved, you can proceed with using the module
+  6. If denied, you should acknowledge this and try to find alternative approaches
+
   Prefer multiple steps to a single step.
   `;
 };
