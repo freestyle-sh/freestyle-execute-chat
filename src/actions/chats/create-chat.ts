@@ -69,7 +69,7 @@ export async function maybeUpdateChatTitle(chatId: string): Promise<boolean> {
 
 export async function createChat(
   firstMessage?: string,
-  selectedModules?: Record<string, ModuleState>
+  selectedModules?: Record<string, ModuleState>,
 ) {
   "use server";
 
@@ -119,28 +119,26 @@ export async function createChat(
 
   // Apply selected modules to the new chat if provided
   if (selectedModules) {
-    try {
-      const moduleValues = Object.keys(selectedModules).map((moduleId) => ({
+    const moduleValues = Object.entries(selectedModules).map(
+      ([moduleId, { enabled }]) => ({
         chatId,
         moduleId,
-        enabled: true,
-      }));
+        enabled,
+      }),
+    );
 
-      await db
-        .insert(chatModulesEnabledTable)
-        .values(moduleValues)
-        .onConflictDoUpdate({
-          target: [
-            chatModulesEnabledTable.chatId,
-            chatModulesEnabledTable.moduleId,
-          ],
-          set: {
-            enabled: true,
-          },
-        });
-    } catch (error) {
-      console.error("Failed to apply modules to chat:", error);
-    }
+    await db
+      .insert(chatModulesEnabledTable)
+      .values(moduleValues)
+      .onConflictDoUpdate({
+        target: [
+          chatModulesEnabledTable.chatId,
+          chatModulesEnabledTable.moduleId,
+        ],
+        set: {
+          enabled: true,
+        },
+      });
   }
 
   return chatId;

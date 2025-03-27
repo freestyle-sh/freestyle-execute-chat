@@ -22,7 +22,7 @@ export default function Home() {
 
   const selectedModules = useModulesStore((state) => state.selectedModules);
 
-  const { data: modules, isLoading: modulesLoading } = useQuery({
+  const { data: modules } = useQuery({
     queryKey: ["modules", { user: user?.id }],
     queryFn: () => listModules(),
   });
