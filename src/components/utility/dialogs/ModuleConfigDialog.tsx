@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,7 +20,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { getModuleConfiguration } from "@/actions/modules/get-config";
@@ -72,73 +72,66 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
     return z.object(schemaFields);
   };
 
-  // Use a dynamic schema with a Record to avoid TypeScript errors with unknown fields
-  const formSchema = currentModule
-    ? createFormSchema(currentModule)
-    : z.object({});
+  const formSchema = createFormSchema(currentModule);
 
-  // This allows for dynamic fields based on the current module
-  type FormValues = Record<string, string>;
+  const {
+    data: moduleConfig,
+    isLoading: isLoadingConfig,
+    isError: isConfigError,
+  } = useQuery({
+    queryKey: ["moduleConfig", currentModule?.id],
+    queryFn: async () => {
+      if (!currentModule) return null;
+      return getModuleConfiguration(currentModule.id);
+    },
+    enabled: !!currentModule,
+    staleTime: 30000, // 30 seconds
+  });
 
-  // Initialize form with existing configurations if available
-  const [defaultValues, setDefaultValues] = useState<Record<string, string>>(
-    {},
-  );
-  const initialized = useRef(false);
+  // Compute default values based on fetched configuration
+  const defaultValues = useMemo(() => {
+    const defaults: Record<string, string> = {};
 
-  useEffect(() => {
-    if (!currentModule || initialized.current) return;
-
-    const fetchConfig = async () => {
-      try {
-        const data = await getModuleConfiguration(currentModule.id);
-        const defaults: Record<string, string> = {};
-
-        for (const envVar of currentModule.environmentVariableRequirements) {
-          const existingConfig = data.configurations?.find(
-            (config) => config.environmentVariableRequirementId === envVar.id,
-          );
-          defaults[envVar.id] = existingConfig?.value || "";
-        }
-
-        setDefaultValues(defaults);
-        reset(defaults);
-        initialized.current = true;
-      } catch (error) {
-        console.error("Failed to fetch module configuration", error);
-        // Initialize with empty values if fetch fails
-        const defaults: Record<string, string> = {};
-        for (const envVar of currentModule.environmentVariableRequirements) {
-          defaults[envVar.id] = "";
-        }
-        setDefaultValues(defaults);
-        reset(defaults);
-        initialized.current = true;
+    if (currentModule && moduleConfig) {
+      // Set form values from existing configuration
+      for (const envVar of currentModule.environmentVariableRequirements) {
+        const existingConfig = moduleConfig.configurations?.find(
+          (config: {
+            environmentVariableRequirementId: string;
+            value: string;
+          }) => config.environmentVariableRequirementId === envVar.id,
+        );
+        defaults[envVar.id] = existingConfig?.value || "";
       }
-    };
+    } else if (currentModule) {
+      // If no config yet or loading/error, initialize with empty values
+      for (const envVar of currentModule.environmentVariableRequirements) {
+        defaults[envVar.id] = "";
+      }
+    }
 
-    fetchConfig();
-  }, [currentModule]);
+    return defaults;
+  }, [currentModule, moduleConfig]);
 
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors, isValid },
-  } = useForm<FormValues>({
+  } = useForm<Record<string, string>>({
     resolver: zodResolver(formSchema),
     defaultValues,
     mode: "onChange",
   });
 
-  // Reset form when moving to next module
+  // Reset form when module or moduleConfig changes
   useEffect(() => {
     if (currentModule) {
-      initialized.current = false;
+      reset(defaultValues);
     }
-  }, [currentModule]);
+  }, [currentModule, defaultValues, reset]);
 
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: Record<string, string>) => {
     if (!currentModule) {
       return;
     }
@@ -185,7 +178,6 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
       // Move to next module or complete
       if (currentModuleIndex < modules.length - 1) {
         setCurrentModuleIndex(currentModuleIndex + 1);
-        initialized.current = false;
       } else {
         resolveDialog(true);
       }
@@ -235,7 +227,6 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
 
     if (currentModuleIndex < modules.length - 1) {
       setCurrentModuleIndex(currentModuleIndex + 1);
-      initialized.current = false;
     } else {
       resolveDialog(true);
     }
@@ -288,7 +279,6 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
           // otherwise complete the dialog
           if (currentModuleIndex < modules.length - 1) {
             setCurrentModuleIndex(currentModuleIndex + 1);
-            initialized.current = false;
           } else {
             resolveDialog(true);
           }
@@ -369,8 +359,19 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-4 py-4 animate-in fade-in slide-in-from-right-5 duration-300"
       >
+        {/* Show loading state when fetching config */}
+        {isLoadingConfig && !hasSpecialOAuthBehavior && (
+          <div className="space-y-4 animate-pulse">
+            <div className="h-5 w-1/3 bg-muted rounded-md" />
+            <div className="h-10 w-full bg-muted rounded-md" />
+            <div className="h-5 w-1/2 bg-muted rounded-md" />
+            <div className="h-10 w-full bg-muted rounded-md" />
+          </div>
+        )}
+
         {/* Render standard form fields if no special behavior */}
-        {!hasSpecialOAuthBehavior &&
+        {!isLoadingConfig &&
+          !hasSpecialOAuthBehavior &&
           currentModule.environmentVariableRequirements.map((envVar) => (
             <div key={envVar.id} className="space-y-2">
               <div className="flex justify-between">
@@ -464,26 +465,31 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
                     size="default"
                     className="text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive/90 cursor-pointer"
                     onClick={handleRemoveConfiguration}
-                    disabled={isConfiguring}
+                    disabled={isConfiguring || isLoadingConfig}
                   >
                     Disconnect
                   </Button>
                 )}
                 <Button
                   type="button"
-                  disabled={isConfiguring}
+                  disabled={isConfiguring || isLoadingConfig}
                   onClick={handleNextModule}
                 >
                   {currentModuleIndex < modules.length - 1 ? "Next" : "Finish"}
                 </Button>
               </div>
             ) : (
-              <Button type="submit" disabled={isConfiguring || !isValid}>
+              <Button
+                type="submit"
+                disabled={isConfiguring || isLoadingConfig || !isValid}
+              >
                 {isConfiguring
                   ? "Saving..."
-                  : currentModuleIndex < modules.length - 1
-                    ? "Save & Next"
-                    : "Finish"}
+                  : isLoadingConfig
+                    ? "Loading..."
+                    : currentModuleIndex < modules.length - 1
+                      ? "Save & Next"
+                      : "Finish"}
               </Button>
             )}
           </div>
