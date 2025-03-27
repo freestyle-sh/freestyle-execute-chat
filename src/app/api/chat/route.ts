@@ -15,7 +15,7 @@ import { StripeAgentToolkit } from "@stripe/agent-toolkit/ai-sdk";
 import {
   streamText,
   type Tool,
-  ToolInvocation,
+  type ToolInvocation,
   type UIMessage,
   wrapLanguageModel,
 } from "ai";
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
   } = await request.json();
 
   if (
-    json.messages.filter((message) => message.role == "user").length > 5 &&
+    json.messages.filter((message) => message.role === "user").length > 5 &&
     !stackUser
   ) {
     return new Response(
@@ -199,8 +199,7 @@ export async function POST(request: Request) {
               part.toolInvocation.result?.result &&
               part.toolInvocation.result?.result.length > 5003
             ) {
-              part.toolInvocation.result.result =
-                part.toolInvocation.result.result.slice(0, 5000) + "...";
+              part.toolInvocation.result.result = `${part.toolInvocation.result.result.slice(0, 5000)}...`;
             }
           }
         }
