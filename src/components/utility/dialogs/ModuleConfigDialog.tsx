@@ -47,7 +47,6 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const { resolveDialog } = useDialogStore();
   const queryClient = useQueryClient();
-  const user = useUser();
 
   const toggleModule = useModulesStore((state) => state.toggleModule);
   const params = useParams<{ chat?: string }>();
@@ -109,9 +108,9 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
         console.error("Failed to fetch module configuration", error);
         // Initialize with empty values if fetch fails
         const defaults: Record<string, string> = {};
-        currentModule.environmentVariableRequirements.forEach((envVar) => {
+        for (const envVar of currentModule.environmentVariableRequirements) {
           defaults[envVar.id] = "";
-        });
+        }
         setDefaultValues(defaults);
         reset(defaults);
         initialized.current = true;
@@ -149,29 +148,45 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
     try {
       await saveModuleConfiguration(currentModule.id, data);
 
-      // Invalidate queries - also include specific chat module queries
-      queryClient.invalidateQueries({
-        queryKey: ["moduleConfig", currentModule.id],
-      });
-      if (chatId) {
-        queryClient.invalidateQueries({ queryKey: ["modules", chatId] });
-      } else {
-        queryClient.invalidateQueries({ queryKey: ["homepage"] });
-      }
-
       // Add to configured modules list
       setConfiguredModules([...configuredModules, currentModule.id]);
 
       // Update the Zustand store to enable this module by default after configuration
       toggleModule(currentModule.id, true);
 
+      // Optimistically update all module query cache entries
+      // First update the homepage version (for non-persisted chats)
+      queryClient.setQueryData(
+        ["modules", "homepage"],
+        (old: ModuleWithRequirements[] | undefined) => {
+          if (!old) return [];
+          return old.map((module) => {
+            if (module.id === currentModule.id) {
+              return {
+                ...module,
+                isConfigured: true,
+                isEnabled: true,
+              };
+            }
+            return module;
+          });
+        },
+      );
+
+      // Then invalidate any other specific chat module queries to refresh them
+      queryClient.invalidateQueries({
+        queryKey: ["moduleConfig", currentModule.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["modules", chatId],
+        exact: false,
+      });
+
       // Move to next module or complete
       if (currentModuleIndex < modules.length - 1) {
         setCurrentModuleIndex(currentModuleIndex + 1);
         initialized.current = false;
       } else {
-        // All modules configured
-        toast.success("All modules configured successfully");
         resolveDialog(true);
       }
     } catch (error) {
@@ -189,23 +204,39 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
       // Update the Zustand store to enable this module after OAuth flow
       toggleModule(currentModule.id, true);
 
-      // Invalidate all relevant queries
+      // Optimistically update all module query cache entries
+      // First update the homepage version (for non-persisted chats)
+      queryClient.setQueryData(
+        ["modules", "homepage"],
+        (old: ModuleWithRequirements[] | undefined) => {
+          if (!old) return [];
+          return old.map((module) => {
+            if (module.id === currentModule.id) {
+              return {
+                ...module,
+                isConfigured: true,
+                isEnabled: true,
+              };
+            }
+            return module;
+          });
+        },
+      );
+
+      // Then invalidate any other specific chat module queries to refresh them
       queryClient.invalidateQueries({
         queryKey: ["moduleConfig", currentModule.id],
       });
-      if (chatId) {
-        queryClient.invalidateQueries({ queryKey: ["modules", chatId] });
-      } else {
-        queryClient.invalidateQueries({ queryKey: ["homepage"] });
-      }
+      queryClient.invalidateQueries({
+        queryKey: ["modules", chatId],
+        exact: false,
+      });
     }
 
     if (currentModuleIndex < modules.length - 1) {
       setCurrentModuleIndex(currentModuleIndex + 1);
       initialized.current = false;
     } else {
-      // All modules configured
-      toast.success("All modules configured successfully");
       resolveDialog(true);
     }
   };
@@ -222,18 +253,36 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
     toast.promise(
       deleteModuleConfiguration(currentModule.id)
         .then(() => {
-          // Invalidate all relevant queries
+          // Update the Zustand store to disable this module
+          toggleModule(currentModule.id, false);
+
+          // Optimistically update all module query cache entries
+          // First update the homepage version (for non-persisted chats)
+          queryClient.setQueryData(
+            ["modules", "homepage"],
+            (old: ModuleWithRequirements[] | undefined) => {
+              if (!old) return [];
+              return old.map((module) => {
+                if (module.id === currentModule.id) {
+                  return {
+                    ...module,
+                    isConfigured: false,
+                    isEnabled: false,
+                  };
+                }
+                return module;
+              });
+            },
+          );
+
+          // Then invalidate any other specific chat module queries to refresh them
           queryClient.invalidateQueries({
             queryKey: ["moduleConfig", currentModule.id],
           });
-          if (chatId) {
-            queryClient.invalidateQueries({ queryKey: ["modules", chatId] });
-          } else {
-            queryClient.invalidateQueries({ queryKey: ["homepage"] });
-          }
-
-          // Update the Zustand store to disable this module
-          toggleModule(currentModule.id, false);
+          queryClient.invalidateQueries({
+            queryKey: ["modules", chatId],
+            exact: false,
+          });
 
           // If there are more modules, proceed to the next one
           // otherwise complete the dialog
