@@ -120,6 +120,13 @@
       "when": 1743059537309,
       "tag": "0016_fearless_taskmaster",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1743114253392,
+      "tag": "0017_nice_mandarin",
+      "breakpoints": true
     }
   ]
 }

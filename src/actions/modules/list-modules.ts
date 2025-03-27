@@ -39,7 +39,18 @@ function determineIfModuleIsConfigured(
   return configurations.length > 0;
 }
 
+export type EnvVarRequirementSource =
+  | {
+      source: "oauth";
+      // both oauthProvider and oauthScopes should be non-null if source="oauth",
+      // but this is not guaranteed by the db.
+      oauthProvider: string | null;
+      oauthScopes: string[] | null;
+    }
+  | { source: "text" };
+
 export type EnvVarRequirement = {
+  source: "oauth" | "text";
   id: string;
   moduleId: string;
   name: string;
@@ -47,7 +58,7 @@ export type EnvVarRequirement = {
   example: string | null;
   required: boolean;
   public: boolean;
-};
+} & EnvVarRequirementSource;
 
 export type ModuleConfigVar = {
   id: string;
