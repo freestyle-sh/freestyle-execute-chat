@@ -1,10 +1,9 @@
 "use server";
 import { db } from "@/db";
 import { chatsTable, messagesTable } from "@/db/schema";
-import { desc, eq } from "drizzle-orm";
-import type { Message } from "ai";
+import { and, desc, eq } from "drizzle-orm";
+import type { Message, ToolInvocation } from "ai";
 import { stackServerApp } from "@/stack";
-import { z } from "zod";
 
 export async function insertMessage(chatId: string, message: Message) {
   "use server";
@@ -21,33 +20,56 @@ export async function insertMessage(chatId: string, message: Message) {
     throw new Error("Chat does not belong to user");
   }
 
-  const lastMessage = await z
-    .string()
-    .uuid()
-    .safeParseAsync(message.id)
-    .then(async (res) => {
-      if (res.success) {
-        return await db
-          .select()
-          .from(messagesTable)
-          .where(eq(messagesTable.id, message.id))
-          .limit(1)
-          .then((result) => result.at(0));
-      }
+  // Check if this is a tool-related result
+  const toolResultParts = message.parts?.filter(
+    (part) =>
+      part.type === "tool-invocation" &&
+      part.toolInvocation?.state === "result",
+  ) as
+    | { type: "tool-invocation"; toolInvocation: ToolInvocation }[]
+    | undefined;
+  const toolCallIds =
+    toolResultParts?.map((part) => part.toolInvocation.toolCallId) ?? [];
 
-      return undefined;
-    });
+  // Get existing assistant messages in this chat
+  const assistantMessages = await db
+    .select()
+    .from(messagesTable)
+    .where(
+      and(
+        eq(messagesTable.chatId, chatId),
+        eq(messagesTable.role, "assistant"),
+      ),
+    )
+    .orderBy(desc(messagesTable.createdAt));
 
-  if (lastMessage !== undefined) {
-    return await db
-      .update(messagesTable)
-      .set({
-        content: message.content,
-        parts: message.parts,
-      })
-      .where(eq(messagesTable.id, message.id))
-      .returning()
-      .then((result) => result[0]);
+  // Find the message with a matching tool call ID
+  for (const existingMessage of assistantMessages) {
+    if (existingMessage.parts === undefined) {
+      continue;
+    }
+
+    const parts = existingMessage.parts;
+
+    const matchingParts = parts.filter(
+      (part) =>
+        part.type === "tool-invocation" &&
+        toolCallIds.includes(part.toolInvocation.toolCallId) &&
+        (part.toolInvocation.state === "call" ||
+          part.toolInvocation.state === "partial-call"),
+    );
+
+    if (matchingParts.length > 0) {
+      return await db
+        .update(messagesTable)
+        .set({
+          parts: message.parts,
+          content: message.content,
+        })
+        .where(eq(messagesTable.id, existingMessage.id))
+        .returning()
+        .then((result) => result[0]);
+    }
   }
 
   return await db

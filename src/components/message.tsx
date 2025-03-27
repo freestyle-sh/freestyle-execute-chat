@@ -4,7 +4,10 @@ import {
   getOrCreateStructuredDataResponse,
   getStructuredDataResponse,
 } from "@/actions/chats/get-structured-data";
-import { getModuleRequest, getOrCreateModuleRequest } from "@/actions/modules/request-module";
+import {
+  getModuleRequest,
+  getOrCreateModuleRequest,
+} from "@/actions/modules/request-module";
 import LogoComponent from "./logo";
 import { CodeExecution } from "./tools/code-execution";
 import { ModuleRequest } from "./tools/module-request";
@@ -187,7 +190,7 @@ function ModuleRequestWrapper({
       if (!toolCallId || !chatId) {
         throw new Error("Missing toolCallId or chatId");
       }
-      
+
       // First, ensure a module request exists in the database
       await getOrCreateModuleRequest({
         chatId,
@@ -195,7 +198,7 @@ function ModuleRequestWrapper({
         toolCallId,
         reason: request.args.reason,
       });
-      
+
       // Then fetch the latest state
       return getModuleRequest(toolCallId);
     },
@@ -220,11 +223,7 @@ function ModuleRequestWrapper({
     );
   }
 
-  return (
-    <ModuleRequest 
-      request={request} 
-    />
-  );
+  return <ModuleRequest request={request} />;
 }
 
 export default function ChatMessage({

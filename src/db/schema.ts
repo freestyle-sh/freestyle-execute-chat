@@ -40,7 +40,7 @@ export const messagesTable = pgTable(
       onDelete: "cascade",
     }),
     content: text("content").notNull(),
-    parts: json("parts").notNull(),
+    parts: json("parts").notNull().$type<SdkMessage["parts"]>(),
     role: varchar("role", { length: 16 }).notNull(),
     createdAt: timestamp("created_at").notNull(),
   },
@@ -155,6 +155,7 @@ export const chatModulesEnabledTable = pgTable(
   (table) => [
     primaryKey({ columns: [table.chatId, table.moduleId] }),
     index().on(table.chatId),
+    index().on(table.moduleId),
   ],
 );
 

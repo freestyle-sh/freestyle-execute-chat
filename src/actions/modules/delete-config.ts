@@ -2,6 +2,7 @@
 
 import { db } from "@/db";
 import {
+  chatModulesEnabledTable,
   freestyleModulesConfigurationsTable,
   freestyleModulesEnvironmentVariableRequirementsTable,
 } from "@/db/schema";
@@ -44,4 +45,10 @@ export async function deleteModuleConfiguration(moduleId: string) {
         );
     }),
   );
+
+  // Disable the module for chats where it's enabled.
+  await db
+    .update(chatModulesEnabledTable)
+    .set({ enabled: false })
+    .where(eq(chatModulesEnabledTable.moduleId, moduleId));
 }

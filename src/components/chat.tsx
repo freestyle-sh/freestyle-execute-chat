@@ -15,7 +15,7 @@ import {
   MenuIcon,
   Square,
 } from "lucide-react";
-import type { ChatRequestOptions } from "ai";
+import { createIdGenerator, type ChatRequestOptions } from "ai";
 import {
   type ChangeEvent,
   createContext,
@@ -144,18 +144,6 @@ export function ChatUI({
       });
     },
     onFinish: async (message) => {
-      // // Check if this is a tool-related update
-      // const isToolUpdate = message.parts?.some(
-      //   (part) =>
-      //     part.type === "tool-invocation" &&
-      //     part.toolInvocation.state === "result",
-      // );
-      //
-      // // Only insert non-tool updates to avoid duplication
-      // if (!isToolUpdate) {
-      //   await insertMessage(chatId, message);
-      // }
-
       await insertMessage(chatId, message);
 
       // Invalidate chats list to update sidebar history order
