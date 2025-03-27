@@ -1,1 +1,0 @@
-ALTER TABLE "FreestyleModules" ADD COLUMN "_special_behavior" json;

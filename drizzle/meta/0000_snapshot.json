@@ -1,9 +1,92 @@
 {
-  "id": "56a604cb-bf4f-407f-ac24-6610a5ab82c2",
+  "id": "de306ee7-89c3-424b-9a4b-aa2495d0faf7",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.ChatModulesEnabled": {
+      "name": "ChatModulesEnabled",
+      "schema": "",
+      "columns": {
+        "chatId": {
+          "name": "chatId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "moduleId": {
+          "name": "moduleId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "enabled": {
+          "name": "enabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        }
+      },
+      "indexes": {
+        "ChatModulesEnabled_chatId_index": {
+          "name": "ChatModulesEnabled_chatId_index",
+          "columns": [
+            {
+              "expression": "chatId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "ChatModulesEnabled_chatId_Chats_id_fk": {
+          "name": "ChatModulesEnabled_chatId_Chats_id_fk",
+          "tableFrom": "ChatModulesEnabled",
+          "tableTo": "Chats",
+          "columnsFrom": [
+            "chatId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "ChatModulesEnabled_moduleId_FreestyleModules_id_fk": {
+          "name": "ChatModulesEnabled_moduleId_FreestyleModules_id_fk",
+          "tableFrom": "ChatModulesEnabled",
+          "tableTo": "FreestyleModules",
+          "columnsFrom": [
+            "moduleId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "ChatModulesEnabled_chatId_moduleId_pk": {
+          "name": "ChatModulesEnabled_chatId_moduleId_pk",
+          "columns": [
+            "chatId",
+            "moduleId"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.Chats": {
       "name": "Chats",
       "schema": "",
@@ -18,6 +101,12 @@
         "user_id": {
           "name": "user_id",
           "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(256)",
           "primaryKey": false,
           "notNull": false
         },
@@ -40,10 +129,283 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.FreestyleModulesConfigurations": {
+      "name": "FreestyleModulesConfigurations",
+      "schema": "",
+      "columns": {
+        "userId": {
+          "name": "userId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "environmentVariableId": {
+          "name": "environmentVariableId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "FreestyleModulesConfigurations_userId_index": {
+          "name": "FreestyleModulesConfigurations_userId_index",
+          "columns": [
+            {
+              "expression": "userId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "FreestyleModulesConfigurations_userId_User_id_fk": {
+          "name": "FreestyleModulesConfigurations_userId_User_id_fk",
+          "tableFrom": "FreestyleModulesConfigurations",
+          "tableTo": "User",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "FreestyleModulesConfigurations_environmentVariableId_FreestyleModulesEnvironmentVariableRequirements_id_fk": {
+          "name": "FreestyleModulesConfigurations_environmentVariableId_FreestyleModulesEnvironmentVariableRequirements_id_fk",
+          "tableFrom": "FreestyleModulesConfigurations",
+          "tableTo": "FreestyleModulesEnvironmentVariableRequirements",
+          "columnsFrom": [
+            "environmentVariableId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "FreestyleModulesConfigurations_userId_environmentVariableId_pk": {
+          "name": "FreestyleModulesConfigurations_userId_environmentVariableId_pk",
+          "columns": [
+            "userId",
+            "environmentVariableId"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.FreestyleModulesEnvironmentVariableRequirements": {
+      "name": "FreestyleModulesEnvironmentVariableRequirements",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "moduleId": {
+          "name": "moduleId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "example": {
+          "name": "example",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "required": {
+          "name": "required",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "public": {
+          "name": "public",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {
+        "FreestyleModulesEnvironmentVariableRequirements_moduleId_index": {
+          "name": "FreestyleModulesEnvironmentVariableRequirements_moduleId_index",
+          "columns": [
+            {
+              "expression": "moduleId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "FreestyleModulesEnvironmentVariableRequirements_id_index": {
+          "name": "FreestyleModulesEnvironmentVariableRequirements_id_index",
+          "columns": [
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "FreestyleModulesEnvironmentVariableRequirements_moduleId_FreestyleModules_id_fk": {
+          "name": "FreestyleModulesEnvironmentVariableRequirements_moduleId_FreestyleModules_id_fk",
+          "tableFrom": "FreestyleModulesEnvironmentVariableRequirements",
+          "tableTo": "FreestyleModules",
+          "columnsFrom": [
+            "moduleId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.FreestyleModules": {
+      "name": "FreestyleModules",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "example": {
+          "name": "example",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "svg": {
+          "name": "svg",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lightModeColor": {
+          "name": "lightModeColor",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "darkModeColor": {
+          "name": "darkModeColor",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "node_modules": {
+          "name": "node_modules",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "priority": {
+          "name": "priority",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "setup_instructions": {
+          "name": "setup_instructions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "documentation": {
+          "name": "documentation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "_special_behavior": {
+          "name": "_special_behavior",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -73,6 +435,18 @@
           "primaryKey": false,
           "notNull": true
         },
+        "parts": {
+          "name": "parts",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": true
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -80,7 +454,23 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "Messages_chat_id_index": {
+          "name": "Messages_chat_id_index",
+          "columns": [
+            {
+              "expression": "chat_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "Messages_chat_id_Chats_id_fk": {
           "name": "Messages_chat_id_Chats_id_fk",
@@ -92,7 +482,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -102,8 +492,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.ModuleConfig": {
-      "name": "ModuleConfig",
+    "public.ModuleRequests": {
+      "name": "ModuleRequests",
       "schema": "",
       "columns": {
         "id": {
@@ -113,30 +503,41 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "moduleId": {
-          "name": "moduleId",
-          "type": "varchar(64)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "userId": {
-          "name": "userId",
+        "chatId": {
+          "name": "chatId",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "enabled": {
-          "name": "enabled",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "envVars": {
-          "name": "envVars",
-          "type": "json",
+        "moduleId": {
+          "name": "moduleId",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
+        },
+        "toolCallId": {
+          "name": "toolCallId",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "configValues": {
+          "name": "configValues",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
         },
         "createdAt": {
           "name": "createdAt",
@@ -153,50 +554,76 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "ModuleRequests_chatId_index": {
+          "name": "ModuleRequests_chatId_index",
+          "columns": [
+            {
+              "expression": "chatId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "ModuleRequests_toolCallId_index": {
+          "name": "ModuleRequests_toolCallId_index",
+          "columns": [
+            {
+              "expression": "toolCallId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
-        "ModuleConfig_userId_User_id_fk": {
-          "name": "ModuleConfig_userId_User_id_fk",
-          "tableFrom": "ModuleConfig",
-          "tableTo": "User",
+        "ModuleRequests_chatId_Chats_id_fk": {
+          "name": "ModuleRequests_chatId_Chats_id_fk",
+          "tableFrom": "ModuleRequests",
+          "tableTo": "Chats",
           "columnsFrom": [
-            "userId"
+            "chatId"
           ],
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "ModuleRequests_moduleId_FreestyleModules_id_fk": {
+          "name": "ModuleRequests_moduleId_FreestyleModules_id_fk",
+          "tableFrom": "ModuleRequests",
+          "tableTo": "FreestyleModules",
+          "columnsFrom": [
+            "moduleId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.User": {
-      "name": "User",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "stack_id": {
-          "name": "stack_id",
-          "type": "varchar(64)",
-          "primaryKey": false,
-          "notNull": true
+      "uniqueConstraints": {
+        "ModuleRequests_toolCallId_unique": {
+          "name": "ModuleRequests_toolCallId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "toolCallId"
+          ]
         }
       },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -269,10 +696,36 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.User": {
+      "name": "User",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "stack_id": {
+          "name": "stack_id",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
