@@ -21,8 +21,7 @@ export type RequestDocsProps = {
 };
 
 export const RequestDocs = ({ request, className }: RequestDocsProps) => {
-  // Extract query and result, handling both custom format and ToolInvocation
-  let query: string | undefined;
+  // Extract result, handling both custom format and ToolInvocation
   let result:
     | {
         _type: "success" | "error" | "pending";
@@ -30,20 +29,6 @@ export const RequestDocs = ({ request, className }: RequestDocsProps) => {
         error?: string;
       }
     | undefined;
-
-  if ("args" in request && request.args.query) {
-    query = request.args.query;
-  } else if (
-    "input" in request &&
-    typeof request.input === "object" &&
-    request.input
-  ) {
-    // Handle tool invocation format
-    const input = request.input as Record<string, unknown>;
-    if ("query" in input && typeof input.query === "string") {
-      query = input.query;
-    }
-  }
 
   if ("result" in request && request.result) {
     result = request.result;
@@ -68,12 +53,28 @@ export const RequestDocs = ({ request, className }: RequestDocsProps) => {
     ? "pending"
     : "info";
 
+  // Get moduleIds as an array
+  let moduleIds: string[] = [];
+  if ("args" in request && request.args.moduleIds) {
+    moduleIds = Array.isArray(request.args.moduleIds) 
+      ? request.args.moduleIds 
+      : [request.args.moduleIds];
+  }
+
+  const modulesList = moduleIds.length > 0 
+    ? moduleIds.map((id, index) => (
+        <span key={id}>
+          <b>{id}</b>{index < moduleIds.length - 1 ? ", " : ""}
+        </span>
+      ))
+    : <b>No modules</b>;
+
   return (
     <>
       <ToolOutput
         title={
           <>
-            Loaded documentation for <b>{request.args.moduleId}</b> into context
+            Loaded documentation for {modulesList} into context
           </>
         }
         icon={FileQuestion}

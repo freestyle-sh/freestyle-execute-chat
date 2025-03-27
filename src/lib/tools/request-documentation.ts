@@ -12,17 +12,26 @@ export const requestDocumentationTool = (enabledModules: FreestyleModule[]) => {
   }
 
   return tool({
-    description: "Request documentation for a module",
+    description: "Request documentation for multiple modules",
     parameters: z.object({
-      moduleId: z
-        .enum(enabledModulesWithDocs as unknown as [string, ...string[]])
-        .describe("The ID of the module to request documentation for"),
+      moduleIds: z
+        .array(
+          z.enum(enabledModulesWithDocs as unknown as [string, ...string[]])
+        )
+        .min(1)
+        .describe("The IDs of the modules to request documentation for"),
     }),
 
-    execute: async ({ moduleId }) => {
-      const freestyleModule = enabledModules.find((v) => v.name === moduleId)!;
+    execute: async ({ moduleIds }) => {
+      const moduleDocumentation = moduleIds.map((moduleId) => {
+        const freestyleModule = enabledModules.find(
+          (v) => v.name === moduleId
+        )!;
+        return `Documentation for ${freestyleModule.name}:\n${freestyleModule.documentation}`;
+      });
 
-      return `Documentation for ${freestyleModule.name}:\n${freestyleModule.documentation}`;
+      console.log(moduleDocumentation);
+      return moduleDocumentation.join("\n\n");
     },
   });
 };

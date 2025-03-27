@@ -179,7 +179,9 @@ export async function POST(request: Request) {
     structuredDataRequest: structuredDataRequestTool(),
   };
 
-  const docRequestTool = requestDocumentationTool(modules);
+  const docRequestTool = requestDocumentationTool(
+    modules.filter((module) => module.isEnabled)
+  );
 
   if (docRequestTool) {
     tools.requestDocumentation = docRequestTool;
