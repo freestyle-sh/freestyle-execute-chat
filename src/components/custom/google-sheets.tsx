@@ -1,10 +1,13 @@
 import { siGooglesheets } from "simple-icons";
-import { ModuleWithRequirements } from "@/actions/modules/list-modules";
-import { GoogleOAuthUI, GoogleOAuthUIProps } from "./google-oauth";
+import type { ModuleWithRequirements } from "@/actions/modules/list-modules";
+import { GoogleOAuthUI, type GoogleOAuthUIProps } from "./google-oauth";
 
 type GoogleSheetsUIProps = {
   module: ModuleWithRequirements;
-} & Omit<Partial<GoogleOAuthUIProps>, 'module' | 'serviceName' | 'svg' | 'color' | 'scopes'>;
+} & Omit<
+  Partial<GoogleOAuthUIProps>,
+  "module" | "serviceName" | "svg" | "color" | "scopes"
+>;
 
 export function GoogleSheetsUI({
   module,
@@ -21,3 +24,4 @@ export function GoogleSheetsUI({
     />
   );
 }
+

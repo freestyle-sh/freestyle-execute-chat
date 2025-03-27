@@ -1,6 +1,6 @@
 import { ModuleIcon } from "../module-icon";
 import { Button } from "../ui/button";
-import { ModuleWithRequirements } from "@/actions/modules/list-modules";
+import type { ModuleWithRequirements } from "@/actions/modules/list-modules";
 import { useUser } from "@stackframe/stack";
 import { toast } from "sonner";
 import { saveModuleConfiguration } from "@/actions/modules/set-config";
@@ -28,7 +28,7 @@ export function GoogleOAuthUI({
   onCancel,
   onDelete,
   onComplete,
-  isInDialog = false
+  isInDialog = false,
 }: GoogleOAuthUIProps): React.ReactNode {
   const user = useUser();
   const connectedAcc = user?.useConnectedAccount("google", {
@@ -43,7 +43,7 @@ export function GoogleOAuthUI({
           accessToken?.accessToken,
       });
     }
-  });
+  }, [module, accessToken]);
 
   return (
     <div className="flex justify-center p-4 w-full mb-4">
@@ -98,7 +98,9 @@ export function GoogleOAuthUI({
                     onComplete();
                   } else {
                     // Find closest drawer close button and trigger it
-                    const drawerClose = document.querySelector('[data-drawer-close="true"]');
+                    const drawerClose = document.querySelector(
+                      '[data-drawer-close="true"]',
+                    );
                     if (drawerClose) {
                       (drawerClose as HTMLButtonElement).click();
                     }
@@ -122,7 +124,7 @@ export function GoogleOAuthUI({
                 onCancel();
                 return;
               }
-              
+
               // Fallback: find closest drawer or dialog close button and trigger it
               const drawerClose = document.querySelector(
                 '[data-drawer-close="true"]',
@@ -167,4 +169,3 @@ export function GoogleOAuthUI({
     </div>
   );
 }
-
