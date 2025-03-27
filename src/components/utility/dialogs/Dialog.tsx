@@ -5,11 +5,13 @@ import { useDialogStore } from "./store";
 import { AlertDialog } from "./AlertDialog";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { PromptDialog } from "./PromptDialog";
+import { ModuleConfigDialog } from "./ModuleConfigDialog";
 
 const dialogTypes = {
   alert: AlertDialog,
   confirm: ConfirmDialog,
   prompt: PromptDialog,
+  moduleConfig: ModuleConfigDialog,
 };
 
 export function DialogProvider() {
@@ -17,7 +19,11 @@ export function DialogProvider() {
 
   const handleOpenChange = (open: boolean) => {
     if (!open && activeDialog) {
-      resolveDialog(null);
+      if (activeDialog.type === "moduleConfig") {
+        resolveDialog(false);
+      } else {
+        resolveDialog(null);
+      }
     }
   };
 
@@ -26,11 +32,13 @@ export function DialogProvider() {
   }
 
   const Component = dialogTypes[activeDialog.type];
+  const isModuleConfig = activeDialog.type === "moduleConfig";
 
   return (
     <Dialog open={!!activeDialog} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <Component dialog={activeDialog} />
+      <DialogContent className={isModuleConfig ? "sm:max-w-[500px]" : "sm:max-w-[425px]"}>
+        {/* Use type assertion to handle different dialog types */}
+        <Component dialog={activeDialog as any} />
       </DialogContent>
     </Dialog>
   );

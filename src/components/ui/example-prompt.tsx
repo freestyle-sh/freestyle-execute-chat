@@ -5,7 +5,7 @@ import { ModuleIcon } from "@/components/module-icon";
 import type { ModuleWithRequirements } from "@/actions/modules/list-modules";
 import { useModulesStore } from "@/stores/modules";
 import { useRouter } from "next/navigation";
-import { confirm } from "@/components/utility/dialogs";
+import { confirm, configureModules } from "@/components/utility/dialogs/index";
 import { capitalize } from "@/lib/typography";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "./skeleton";
@@ -79,23 +79,42 @@ export function ExamplePrompt({
         );
 
         if (unconfiguredModules.length > 0) {
+          // Ask user if they want to configure modules now
           const confirmation = await confirm(
             "Module Configuration Required",
             <ModuleInfoContent modules={unconfiguredModules} />,
+            {
+              okButton: {
+                text: "Configure",
+              },
+            },
           );
 
           if (confirmation) {
-            router.push("/settings/modules");
-          }
+            // Show module configuration dialog for each unconfigured module
+            const success = await configureModules(unconfiguredModules);
 
-          return;
+            if (!success) {
+              return; // User canceled configuration
+            }
+
+            // Refresh modules to get updated configuration status
+            // This is handled by queryClient invalidation in the dialog
+          } else {
+            return; // User canceled
+          }
         }
 
         try {
-          for (const moduleId of moduleNames) {
-            toggleModule(moduleId, true);
+          // Enable all required modules
+          for (const moduleName of moduleNames) {
+            const module = modules.find((m) => m.name === moduleName);
+            if (module) {
+              toggleModule(module.id, true);
+            }
           }
 
+          // Set the prompt
           onSelectAction(promptText);
         } catch {}
       } else {

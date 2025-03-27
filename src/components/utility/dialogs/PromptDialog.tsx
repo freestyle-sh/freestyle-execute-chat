@@ -12,7 +12,7 @@ import type { DialogQueueItem } from "./types";
 import { useDialogStore } from "./store";
 
 export function PromptDialog({
-  dialog: { title, message, defaultValue },
+  dialog: { title, message, defaultValue, okButton, cancelButton },
 }: {
   dialog: DialogQueueItem<string | null>;
 }) {
@@ -73,10 +73,18 @@ export function PromptDialog({
       </div>
 
       <DialogFooter className="flex sm:justify-between">
-        <Button variant="outline" onClick={() => resolve(null)}>
-          Cancel
+        <Button 
+          variant={cancelButton?.variant ?? "outline"} 
+          onClick={() => resolve(null)}
+        >
+          {cancelButton?.text ?? "Cancel"}
         </Button>
-        <Button onClick={() => resolve(inputValue)}>Submit</Button>
+        <Button 
+          variant={okButton?.variant ?? "default"}
+          onClick={() => resolve(inputValue)}
+        >
+          {okButton?.text ?? "Submit"}
+        </Button>
       </DialogFooter>
     </>
   );

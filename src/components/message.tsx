@@ -4,8 +4,13 @@ import {
   getOrCreateStructuredDataResponse,
   getStructuredDataResponse,
 } from "@/actions/chats/get-structured-data";
+import {
+  getModuleRequest,
+  getOrCreateModuleRequest,
+} from "@/actions/modules/request-module";
 import LogoComponent from "./logo";
 import { CodeExecution } from "./tools/code-execution";
+import { ModuleRequest } from "./tools/module-request";
 import { SendFeedback } from "./tools/send-feedback";
 import { RequestDocs } from "./tools/request-docs";
 import { StructuredDataRequest } from "./tools/structured-data-request";
@@ -95,6 +100,12 @@ export function AIMessage({
                   chatId={chatId}
                 />
               )}
+              {part.toolInvocation.toolName === "moduleRequest" && (
+                <ModuleRequestWrapper
+                  request={part.toolInvocation}
+                  chatId={chatId}
+                />
+              )}
             </>
           )}
         </Message>
@@ -158,6 +169,61 @@ function StructuredDataRequestWrapper({
       formData={formResponse.formData as Record<string, unknown> | null}
     />
   );
+}
+
+function ModuleRequestWrapper({
+  request,
+  chatId,
+}: {
+  request: ToolInvocation;
+  chatId: string;
+}) {
+  const toolCallId = request.toolCallId;
+
+  const {
+    data: moduleRequest,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["moduleRequest", toolCallId],
+    queryFn: async () => {
+      if (!toolCallId || !chatId) {
+        throw new Error("Missing toolCallId or chatId");
+      }
+
+      // First, ensure a module request exists in the database
+      await getOrCreateModuleRequest({
+        chatId,
+        moduleId: request.args.moduleId,
+        toolCallId,
+        reason: request.args.reason,
+      });
+
+      // Then fetch the latest state
+      return getModuleRequest(toolCallId);
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="animate-pulse p-4 rounded-md bg-muted/20 border">
+        <div className="h-4 w-3/4 bg-muted rounded mb-2" />
+        <div className="h-4 w-1/2 bg-muted rounded" />
+      </div>
+    );
+  }
+
+  if (error || !moduleRequest) {
+    return (
+      <div className="p-4 rounded-md bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+        <p className="text-sm text-red-700 dark:text-red-400">
+          Error: Could not load the module request. Please try again.
+        </p>
+      </div>
+    );
+  }
+
+  return <ModuleRequest request={request} />;
 }
 
 export default function ChatMessage({

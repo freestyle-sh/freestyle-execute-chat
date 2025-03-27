@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { PaintbrushIcon, PlugIcon, UserIcon } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "motion/react";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 const tabs = [
   {
@@ -41,19 +41,27 @@ export default function SettingsLayout({
   const router = useRouter();
   const prevPathRef = useRef(pathname);
 
-  const currentTab =
-    tabs.find((tab) => pathname.startsWith(tab.href)) || tabs[0];
+  const currentTab = useMemo(
+    () => tabs.find((tab) => pathname.startsWith(tab.href)) ?? tabs[0],
+    [pathname],
+  );
 
-  let xOffset = 0;
+  const xOffset = useMemo(() => {
+    let xOffset = 0;
 
-  // We find the previous tab by matching previous pathname
-  const prevTab = tabs.find((tab) => prevPathRef.current.startsWith(tab.href));
+    // We find the previous tab by matching previous pathname
+    const prevTab = tabs.find((tab) =>
+      prevPathRef.current.startsWith(tab.href),
+    );
 
-  if (prevTab && currentTab.index !== prevTab.index) {
-    // If we're moving right (increasing index), slide from right
-    // If we're moving left (decreasing index), slide from left
-    xOffset = currentTab.index > prevTab.index ? 50 : -50;
-  }
+    if (prevTab && currentTab.index !== prevTab.index) {
+      // If we're moving right (increasing index), slide from right
+      // If we're moving left (decreasing index), slide from left
+      xOffset = currentTab.index > prevTab.index ? 50 : -50;
+    }
+
+    return xOffset;
+  }, [currentTab]);
 
   // Update the ref after figuring out direction
   useEffect(() => {
@@ -72,7 +80,7 @@ export default function SettingsLayout({
   }
 
   return (
-    <div className="p-6 animate-fade-in">
+    <div className="p-6">
       <h1 className="text-2xl font-bold mb-6 gradient-text">Settings</h1>
       <div className="max-w-3xl animate-slide-up">
         <div className="w-full">
@@ -101,7 +109,7 @@ export default function SettingsLayout({
                 type: "spring",
                 stiffness: 400,
                 damping: 35,
-                duration: 0.15
+                duration: 0.15,
               }}
               className="w-full"
             >
@@ -113,4 +121,3 @@ export default function SettingsLayout({
     </div>
   );
 }
-

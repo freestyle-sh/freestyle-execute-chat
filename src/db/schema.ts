@@ -9,6 +9,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -39,14 +40,14 @@ export const messagesTable = pgTable(
       onDelete: "cascade",
     }),
     content: text("content").notNull(),
-    parts: json("parts").notNull(),
+    parts: json("parts").notNull().$type<SdkMessage["parts"]>(),
     role: varchar("role", { length: 16 }).notNull(),
     createdAt: timestamp("created_at").notNull(),
   },
   (table) => [
     // speed up lookups by chatId
     index().on(table.chatId),
-  ]
+  ],
 );
 
 export type Message = InferSelectModel<typeof messagesTable> & SdkMessage;
@@ -81,7 +82,7 @@ export const freestyleModulesTable = pgTable("FreestyleModules", {
   lightModeColor: varchar("lightModeColor", { length: 16 }).notNull(),
   darkModeColor: varchar("darkModeColor", { length: 16 }).notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-  nodeModules: json("node_modules").notNull(),
+  nodeModules: json("node_modules").notNull().$type<Record<string, string>>(),
   priority: integer("priority").notNull().default(0),
   setupInstructions: text("setup_instructions"),
   documentation: text("documentation"),
@@ -108,7 +109,8 @@ export const freestyleModulesEnvironmentVariableRequirementsTable = pgTable(
   (table) => [
     // speed up lookups by moduleId
     index().on(table.moduleId),
-  ]
+    index().on(table.id),
+  ],
 );
 
 export const freestyleModulesConfigurationsTable = pgTable(
@@ -125,14 +127,14 @@ export const freestyleModulesConfigurationsTable = pgTable(
         () => freestyleModulesEnvironmentVariableRequirementsTable.id,
         {
           onDelete: "cascade",
-        }
+        },
       ),
     value: text("value").notNull(),
   },
   (table) => [
     primaryKey({ columns: [table.userId, table.environmentVariableId] }),
     index().on(table.userId),
-  ]
+  ],
 );
 
 export const chatModulesEnabledTable = pgTable(
@@ -153,5 +155,30 @@ export const chatModulesEnabledTable = pgTable(
   (table) => [
     primaryKey({ columns: [table.chatId, table.moduleId] }),
     index().on(table.chatId),
-  ]
+    index().on(table.moduleId),
+  ],
+);
+
+export const moduleRequestsTable = pgTable(
+  "ModuleRequests",
+  {
+    id: uuid("id").primaryKey().notNull().defaultRandom(),
+    chatId: uuid("chatId")
+      .notNull()
+      .references(() => chatsTable.id, {
+        onDelete: "cascade",
+      }),
+    moduleId: uuid("moduleId")
+      .notNull()
+      .references(() => freestyleModulesTable.id, {
+        onDelete: "cascade",
+      }),
+    toolCallId: varchar("toolCallId", { length: 128 }).notNull().unique(),
+    reason: text("reason").notNull(),
+    state: varchar("state", { length: 32 }).notNull(), // "pending", "approved", "denied"
+    configValues: json("configValues"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  (table) => [index().on(table.chatId), index().on(table.toolCallId)],
 );

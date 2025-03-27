@@ -1,11 +1,22 @@
-"use client";
-
 import { ModulesSettings } from "@/components/modules-settings";
-import { useSearchParams } from "next/navigation";
+import { SettingsSection } from "@/components/settings";
+import { Suspense } from "react";
 
-export default function ModulesPage() {
-  const searchParams = useSearchParams();
-  const moduleToOpen = searchParams.get("module");
-
-  return <ModulesSettings moduleToOpen={moduleToOpen} />;
+export default async function ModulesPage({
+  searchParams: { module },
+}: {
+  searchParams: {
+    module: string | null;
+  };
+}) {
+  return (
+    <SettingsSection
+      title="Module Configurations"
+      description="Configure your modules to use external services and APIs"
+    >
+      <Suspense>
+        <ModulesSettings moduleToOpen={module} />
+      </Suspense>
+    </SettingsSection>
+  );
 }

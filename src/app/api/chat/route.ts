@@ -1,10 +1,12 @@
 import { maybeUpdateChatTitle } from "@/actions/chats/create-chat";
+import { insertMessage } from "@/actions/chats/insert-message";
 import { listModules } from "@/actions/modules/list-modules";
 import { db } from "@/db";
 import { messagesTable } from "@/db/schema";
 import { claudeSonnetModel } from "@/lib/model";
 import stripe from "@/lib/stripe";
 import { systemPrompt } from "@/lib/system-prompt";
+import { moduleRequestTool } from "@/lib/tools/module-request";
 import { requestDocumentationTool } from "@/lib/tools/request-documentation";
 import { sendFeedbackTool } from "@/lib/tools/send-feedback";
 import { structuredDataRequestTool } from "@/lib/tools/structured-data-request";
@@ -14,7 +16,7 @@ import { StripeAgentToolkit } from "@stripe/agent-toolkit/ai-sdk";
 import {
   streamText,
   type Tool,
-  ToolInvocation,
+  type ToolInvocation,
   type UIMessage,
   wrapLanguageModel,
 } from "ai";
@@ -58,7 +60,7 @@ export async function POST(request: Request) {
   } = await request.json();
 
   if (
-    json.messages.filter((message) => message.role == "user").length > 5 &&
+    json.messages.filter((message) => message.role === "user").length > 5 &&
     !stackUser
   ) {
     return new Response(
@@ -69,7 +71,7 @@ export async function POST(request: Request) {
       }),
       {
         status: 403,
-      }
+      },
     );
   }
 
@@ -87,12 +89,12 @@ export async function POST(request: Request) {
     modules
       .filter((module) => module.isEnabled)
       .map((module) => module.nodeModules as Record<string, string>)
-      .flatMap(Object.entries)
+      .flatMap(Object.entries),
   );
 
   // Get all previous messages with tool outputs from code execution
   const previousMessages = json.messages.filter(
-    (msg) => msg.role === "assistant"
+    (msg) => msg.role === "assistant",
   );
 
   // Extract execution results from previous messages and add to environment variables
@@ -103,8 +105,8 @@ export async function POST(request: Request) {
         (part) =>
           part.toolInvocation as ToolInvocation & {
             result?: { result?: unknown };
-          }
-      )
+          },
+      ),
   );
 
   // Only take the last 5:
@@ -115,12 +117,12 @@ export async function POST(request: Request) {
     (acc, toolCall) => {
       if (toolCall?.result?.result) {
         acc[`PREV_EXEC_${toolCall.toolCallId}`] = JSON.stringify(
-          toolCall.result.result
+          toolCall.result.result,
         );
       }
       return acc;
     },
-    {}
+    {},
   );
 
   // Combine module env vars with execution results
@@ -132,7 +134,7 @@ export async function POST(request: Request) {
           return module.configurations.map((configuration) => {
             return [configuration.name, configuration.value];
           });
-        })
+        }),
     ),
     ...executionResults,
   };
@@ -143,10 +145,7 @@ export async function POST(request: Request) {
 
   const lastMessage = json.messages[json.messages.length - 1];
 
-  if (
-    json.messages.length >= 2 ||
-    (allowFirstMessage && lastMessage.role === "user")
-  ) {
+  if (allowFirstMessage && lastMessage.role === "user") {
     console.log("Inserting message into database");
     await db.insert(messagesTable).values({
       ...lastMessage,
@@ -163,7 +162,7 @@ export async function POST(request: Request) {
   console.log("Updating chat title");
 
   maybeUpdateChatTitle(chatId).catch((error) =>
-    console.error("Failed to update chat title:", error)
+    console.error("Failed to update chat title:", error),
   );
 
   console.log("Chat title updated");
@@ -175,8 +174,9 @@ export async function POST(request: Request) {
       envVars,
     }),
     sendFeedback: sendFeedbackTool(),
-    // Human-in-the-loop tool
+    // Human-in-the-loop tools
     structuredDataRequest: structuredDataRequestTool(),
+    moduleRequest: moduleRequestTool(modules),
   };
 
   const docRequestTool = requestDocumentationTool(
@@ -199,8 +199,7 @@ export async function POST(request: Request) {
               part.toolInvocation.result?.result &&
               part.toolInvocation.result?.result.length > 5003
             ) {
-              part.toolInvocation.result.result =
-                part.toolInvocation.result.result.slice(0, 5000) + "...";
+              part.toolInvocation.result.result = `${part.toolInvocation.result.result.slice(0, 5000)}...`;
             }
           }
         }

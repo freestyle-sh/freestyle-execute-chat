@@ -94,7 +94,7 @@ export default function Home() {
           isLoading={submitting || isLoading}
           handleValueChangeAction={(e) => setPrompt(e.target.value)}
           user={user}
-          showModuleAuthPopup={() => {
+          showModuleAuthPopupAction={() => {
             router.push("/handler/signup");
           }}
         />

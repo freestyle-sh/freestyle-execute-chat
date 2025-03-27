@@ -1,15 +1,25 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueries,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { getModuleConfiguration } from "@/actions/modules/get-config";
 
 import { SettingsSection } from "@/components/settings";
 import { ModuleConfigDrawer } from "@/components/module-config";
 import { ModuleIcon } from "@/components/module-icon";
-import { listModules } from "@/actions/modules/list-modules";
+import {
+  listModules,
+  ModuleWithRequirements,
+} from "@/actions/modules/list-modules";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { saveModuleConfiguration } from "@/actions/modules/set-config";
 import { useUser } from "@stackframe/stack";
+import { Suspense, useMemo } from "react";
 
 interface ModulesSettingsProps {
   moduleToOpen?: string | null;
@@ -17,8 +27,6 @@ interface ModulesSettingsProps {
 
 export function ModulesSettings({ moduleToOpen }: ModulesSettingsProps = {}) {
   const queryClient = useQueryClient();
-
-  const user = useUser();
 
   const {
     data: modules,
@@ -28,6 +36,19 @@ export function ModulesSettings({ moduleToOpen }: ModulesSettingsProps = {}) {
     queryKey: ["modules"],
     queryFn: () => listModules(),
   });
+
+  const moduleMap = modules
+    ?.filter((module) => module.environmentVariableRequirements.length > 0)
+    .reduce(
+      (
+        acc: Record<string, ModuleWithRequirements>,
+        news: ModuleWithRequirements,
+      ) => {
+        acc[news.id] = news;
+        return acc;
+      },
+      {},
+    );
 
   const mutation = useMutation({
     mutationFn: ({
@@ -76,19 +97,15 @@ export function ModulesSettings({ moduleToOpen }: ModulesSettingsProps = {}) {
   }
 
   return (
-    <SettingsSection
-      title="Module Configurations"
-      description="Configure your modules to use external services and APIs"
-    >
-      <div className="space-y-4">
-        {isLoading ? (
-          <div className="space-y-4">
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-24 w-full" />
-          </div>
-        ) : null}
-        {modules?.map((module) => (
+    <div className="space-y-4">
+      {isLoading ? (
+        <div className="space-y-4">
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+        </div>
+      ) : (
+        modules?.map((module) => (
           <Card key={module.id} className="p-6">
             <div className="flex items-start justify-between gap-4">
               <div className="flex gap-3">
@@ -128,8 +145,9 @@ export function ModulesSettings({ moduleToOpen }: ModulesSettingsProps = {}) {
                   <ModuleConfigDrawer
                     module={module}
                     onConfigSaveAction={handleConfigSave}
-                    _user={user}
                     defaultOpen={moduleToOpen === module.id}
+                    isConfigLoading={isLoading}
+                    configData={moduleMap?.[module.id]?.configurations ?? []}
                   />
                 ) : (
                   <div className="text-xs text-muted-foreground italic">
@@ -139,8 +157,8 @@ export function ModulesSettings({ moduleToOpen }: ModulesSettingsProps = {}) {
               </div>
             </div>
           </Card>
-        ))}
-      </div>
-    </SettingsSection>
+        ))
+      )}
+    </div>
   );
 }

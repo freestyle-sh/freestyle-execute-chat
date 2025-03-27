@@ -10,7 +10,7 @@ import type { DialogQueueItem } from "./types";
 import { useDialogStore } from "./store";
 
 export function ConfirmDialog({
-  dialog: { title, message },
+  dialog: { title, message, okButton, cancelButton },
 }: {
   dialog: DialogQueueItem<boolean>;
 }) {
@@ -47,10 +47,18 @@ export function ConfirmDialog({
       </DialogHeader>
 
       <DialogFooter className="flex justify-end max-sm:justify-between">
-        <Button variant="outline" onClick={() => resolve(false)}>
-          Cancel
+        <Button 
+          variant={cancelButton?.variant ?? "outline"} 
+          onClick={() => resolve(false)}
+        >
+          {cancelButton?.text ?? "Cancel"}
         </Button>
-        <Button onClick={() => resolve(true)}>OK</Button>
+        <Button 
+          variant={okButton?.variant ?? "default"}
+          onClick={() => resolve(true)}
+        >
+          {okButton?.text ?? "OK"}
+        </Button>
       </DialogFooter>
     </>
   );

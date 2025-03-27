@@ -6,10 +6,10 @@ import { redirect } from "next/navigation";
 
 export default function SettingsPage() {
   const user = useUser();
-  
+
   if (!user) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[80vh] p-6 animate-fade-in">
+      <div className="flex flex-col items-center justify-center min-h-[80vh] p-6">
         <div className="max-w-md w-full text-center">
           <h1 className="text-2xl font-bold mb-6 gradient-text">Settings</h1>
           <div className="flex flex-col items-center p-8 rounded-lg border bg-card">
@@ -39,3 +39,4 @@ export default function SettingsPage() {
   // Redirect to the modules tab by default
   redirect("/settings/modules");
 }
+
