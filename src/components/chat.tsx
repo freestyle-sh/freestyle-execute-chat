@@ -121,15 +121,8 @@ export function ChatUI({
   const [isAuthPopupOpen, setIsAuthPopupOpen] = useState(false);
   const [isModuleAuthPopup, setIsModuleAuthPopup] = useState(false);
 
-  const {
-    messages,
-    input,
-    handleInputChange,
-    handleSubmit,
-    status,
-    reload,
-    addToolResult,
-  } = useChat({
+  // Use our own version of addToolResult to avoid duplicate inserts
+  const chatHookResult = useChat({
     id: chatId,
     initialMessages,
     onError: (error) => {
@@ -151,12 +144,34 @@ export function ChatUI({
       });
     },
     onFinish: async (message) => {
+      // // Check if this is a tool-related update
+      // const isToolUpdate = message.parts?.some(
+      //   (part) =>
+      //     part.type === "tool-invocation" &&
+      //     part.toolInvocation.state === "result",
+      // );
+      //
+      // // Only insert non-tool updates to avoid duplication
+      // if (!isToolUpdate) {
+      //   await insertMessage(chatId, message);
+      // }
+
       await insertMessage(chatId, message);
 
       // Invalidate chats list to update sidebar history order
       queryClient.invalidateQueries({ queryKey: ["chats"] });
     },
   });
+
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    status,
+    reload,
+    addToolResult,
+  } = chatHookResult;
 
   useEffect(() => {
     if (hasRunRef.current) return; // already ran

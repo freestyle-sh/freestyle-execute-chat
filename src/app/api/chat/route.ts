@@ -146,8 +146,8 @@ export async function POST(request: Request) {
   const lastMessage = json.messages[json.messages.length - 1];
 
   if (
-    json.messages.length >= 2 ||
-    (allowFirstMessage && lastMessage.role === "user")
+    (json.messages.length >= 2 || allowFirstMessage) &&
+    lastMessage.role === "user"
   ) {
     console.log("Inserting message into database");
     await db.insert(messagesTable).values({
