@@ -41,5 +41,11 @@ export default async function initGoogleGmail() {
     name: "GOOGLE_GMAIL_ACCESS_TOKEN",
     description: "Google Gmail token",
     example: "your-google-gmail-token",
+    source: "oauth",
+    oauthProvider: "google",
+    oauthScopes: [
+      "https://www.googleapis.com/auth/gmail.readonly",
+      "https://www.googleapis.com/auth/gmail.compose",
+    ],
   });
 }

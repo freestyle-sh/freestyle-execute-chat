@@ -41,5 +41,8 @@ export default async function initGoogleCalendar() {
     name: "GOOGLE_CALENDAR_ACCESS_TOKEN",
     description: "Google Calendar token",
     example: "your-google-calendar-token",
+    source: "oauth",
+    oauthProvider: "google",
+    oauthScopes: ["https://www.googleapis.com/auth/calendar"],
   });
 }

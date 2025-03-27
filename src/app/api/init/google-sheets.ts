@@ -41,5 +41,8 @@ export default async function initGoogleSheets() {
     name: "GOOGLE_SHEETS_ACCESS_TOKEN",
     description: "Google Sheets token",
     example: "your-google-sheets-token",
+    source: "oauth",
+    oauthProvider: "google",
+    oauthScopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
 }

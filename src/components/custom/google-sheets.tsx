@@ -1,12 +1,12 @@
 import { siGooglesheets } from "simple-icons";
 import type { ModuleWithRequirements } from "@/actions/modules/list-modules";
-import { GoogleOAuthUI, type GoogleOAuthUIProps } from "./google-oauth";
+import { OAuthUI, type OAuthUIProps } from "./oauth";
 
 type GoogleSheetsUIProps = {
   module: ModuleWithRequirements;
 } & Omit<
-  Partial<GoogleOAuthUIProps>,
-  "module" | "serviceName" | "svg" | "color" | "scopes"
+  Partial<OAuthUIProps>,
+  "module" | "serviceName" | "providerName" | "svg" | "color" | "scopes"
 >;
 
 export function GoogleSheetsUI({
@@ -14,9 +14,10 @@ export function GoogleSheetsUI({
   ...props
 }: GoogleSheetsUIProps): React.ReactNode {
   return (
-    <GoogleOAuthUI
+    <OAuthUI
       module={module}
       serviceName="Sheets"
+      providerName="google"
       svg={siGooglesheets.svg}
       color={siGooglesheets.hex}
       scopes={["https://www.googleapis.com/auth/spreadsheets"]}
@@ -24,4 +25,3 @@ export function GoogleSheetsUI({
     />
   );
 }
-

@@ -10,7 +10,7 @@ import React, {
 import { z, type ZodTypeAny } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ModuleIcon } from "@/components/module-icon";
 import { Markdown } from "@/components/ui/markdown";
@@ -44,18 +44,11 @@ import { Input } from "@/components/ui/input";
 import { SettingsItem } from "@/components/settings";
 import { cn } from "@/lib/utils";
 import { capitalize } from "@/lib/typography";
-import { getModuleConfiguration } from "@/actions/modules/get-config";
 import { deleteModuleConfiguration } from "@/actions/modules/delete-config";
 import { saveModuleConfiguration } from "@/actions/modules/set-config";
-import {
-  CurrentInternalUser,
-  CurrentUser,
-  User,
-  useUser,
-} from "@stackframe/stack";
+import { useUser } from "@stackframe/stack";
 import { useTheme } from "next-themes";
 import { CopyIcon, Loader2 } from "lucide-react";
-import { Skeleton } from "./ui/skeleton";
 
 interface ModuleConfigDrawerProps {
   module: ModuleWithRequirements;
@@ -244,12 +237,16 @@ function ModuleConfigDrawerView({
     );
   };
 
-  // Render OAuth UI for a specific provider
-  const renderOAuthUI = (envVar: EnvVarRequirement) => {
-    if (envVar.source !== "oauth" || !envVar.oauthProvider || !envVar.oauthScopes) {
-      return null;
-    }
-
+  // OAuth UI component for a specific provider
+  function OAuthConfigUI({
+    envVar,
+    module,
+    onRemoveConfig,
+  }: {
+    envVar: EnvVarRequirement;
+    module: ModuleWithRequirements;
+    onRemoveConfig: () => void;
+  }) {
     // Check if the OAuth provider is valid for Stack Auth
     type ValidProvider = "x" | "github" | "google" | "microsoft" | "spotify" | "facebook" | "discord" | "gitlab" | "bitbucket" | "linkedin" | "apple";
     const validProviders: ValidProvider[] = ["x", "github", "google", "microsoft", "spotify", "facebook", "discord", "gitlab", "bitbucket", "linkedin", "apple"];
@@ -259,8 +256,24 @@ function ModuleConfigDrawerView({
       return validProviders.includes(provider as ValidProvider);
     };
     
-    // If not a valid provider, show error message
-    if (!isValidProvider(envVar.oauthProvider)) {
+    // Always call all Hooks at the top level
+    const user = useUser();
+    // Setup dummy values in case of early return
+    let validProvider: string | null = null;
+    let providerScopes: string[] | undefined = undefined;
+    
+    // Check for valid requirements for rendering
+    if (envVar.source === "oauth" && envVar.oauthProvider && envVar.oauthScopes) {
+      // If valid, set values for hooks
+      validProvider = isValidProvider(envVar.oauthProvider) ? envVar.oauthProvider : null;
+      providerScopes = envVar.oauthScopes;
+    } else {
+      // Early return for invalid requirements
+      return null;
+    }
+    
+    // Show error for unsupported providers
+    if (!validProvider) {
       return (
         <div className="p-4 text-center">
           <div className="text-destructive">
@@ -273,20 +286,20 @@ function ModuleConfigDrawerView({
       );
     }
 
-    const user = useUser();
-    const connectedAcc = user?.useConnectedAccount(envVar.oauthProvider, {
-      scopes: envVar.oauthScopes ?? undefined,
+    // Now we can safely use the provider in hooks
+    const connectedAcc = user?.useConnectedAccount(validProvider as ValidProvider, {
+      scopes: providerScopes,
     });
     const accessToken = connectedAcc?.useAccessToken();
 
-    // Save token to module configuration when available
+    // Always call useEffect at the top level, regardless of conditions
     useEffect(() => {
-      if (accessToken?.accessToken) {
+      if (accessToken?.accessToken && envVar.id) {
         saveModuleConfiguration(module.id, {
           [envVar.id]: accessToken.accessToken,
         });
       }
-    }, [module, accessToken?.accessToken, envVar.id]);
+    }, [accessToken?.accessToken, envVar.id, module.id]);
 
     const providerName = envVar.oauthProvider.charAt(0).toUpperCase() + envVar.oauthProvider.slice(1);
     const serviceName = envVar.name;
@@ -325,7 +338,7 @@ function ModuleConfigDrawerView({
                 className="w-full sm:flex-1 sm:max-w-[200px] text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive/90 cursor-pointer"
                 onClick={(e) => {
                   e.preventDefault();
-                  handleRemoveConfiguration();
+                  onRemoveConfig();
                 }}
               >
                 Disconnect
@@ -383,7 +396,7 @@ function ModuleConfigDrawerView({
         )}
       </div>
     );
-  };
+  }
 
   // Check if this module has any OAuth requirements
   const oauthRequirements = module.environmentVariableRequirements.filter(
@@ -423,7 +436,11 @@ function ModuleConfigDrawerView({
               <div className="flex flex-col gap-4 py-6">
                 {oauthRequirements.map((req) => (
                   <div key={req.id} className="w-full">
-                    {renderOAuthUI(req)}
+                    <OAuthConfigUI
+                      envVar={req}
+                      module={module}
+                      onRemoveConfig={handleRemoveConfiguration}
+                    />
                   </div>
                 ))}
               </div>

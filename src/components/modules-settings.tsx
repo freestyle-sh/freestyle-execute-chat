@@ -3,10 +3,8 @@
 import {
   useQuery,
   useMutation,
-  useQueries,
   useQueryClient,
 } from "@tanstack/react-query";
-import { getModuleConfiguration } from "@/actions/modules/get-config";
 
 import { SettingsSection } from "@/components/settings";
 import { ModuleConfigDrawer } from "@/components/module-config";
@@ -18,8 +16,6 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { saveModuleConfiguration } from "@/actions/modules/set-config";
-import { useUser } from "@stackframe/stack";
-import { Suspense, useMemo } from "react";
 
 interface ModulesSettingsProps {
   moduleToOpen?: string | null;
@@ -106,8 +102,8 @@ export function ModulesSettings({ moduleToOpen }: ModulesSettingsProps = {}) {
         </div>
       ) : (
         modules?.map((module) => {
-          // Check if module has OAuth requirements
-          const hasOAuth = module.environmentVariableRequirements.some(
+          // We check for OAuth requirements in the rendering code
+          module.environmentVariableRequirements.some(
             (req) => req.source === "oauth"
           );
           

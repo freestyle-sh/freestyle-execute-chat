@@ -319,8 +319,7 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
 
   // Check if the current module has special OAuth behavior
   const hasSpecialOAuthBehavior =
-    typeof currentModule._specialBehavior === "string" &&
-    currentModule._specialBehavior.startsWith("google-");
+    typeof currentModule._specialBehavior === "string";
 
   return (
     <>

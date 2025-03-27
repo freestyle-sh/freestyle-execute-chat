@@ -1,12 +1,12 @@
 import { siGmail } from "simple-icons";
 import { ModuleWithRequirements } from "@/actions/modules/list-modules";
-import { GoogleOAuthUI, GoogleOAuthUIProps } from "./google-oauth";
+import { OAuthUI, OAuthUIProps } from "./oauth";
 
 type GoogleGmailUIProps = {
   module: ModuleWithRequirements;
 } & Omit<
-  Partial<GoogleOAuthUIProps>,
-  "module" | "serviceName" | "svg" | "color" | "scopes"
+  Partial<OAuthUIProps>,
+  "module" | "serviceName" | "providerName" | "svg" | "color" | "scopes"
 >;
 
 export function GoogleGmailUI({
@@ -14,9 +14,10 @@ export function GoogleGmailUI({
   ...props
 }: GoogleGmailUIProps): React.ReactNode {
   return (
-    <GoogleOAuthUI
+    <OAuthUI
       module={module}
       serviceName="Gmail"
+      providerName="google"
       svg={siGmail.svg}
       color={siGmail.hex}
       scopes={[
@@ -27,4 +28,3 @@ export function GoogleGmailUI({
     />
   );
 }
-
