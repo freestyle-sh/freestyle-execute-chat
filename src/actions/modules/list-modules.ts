@@ -51,7 +51,6 @@ export type EnvVarRequirementSource =
   | { source: "text" };
 
 export type EnvVarRequirement = {
-  source: "oauth" | "text";
   id: string;
   moduleId: string;
   name: string;
