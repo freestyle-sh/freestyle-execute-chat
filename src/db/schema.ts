@@ -5,6 +5,7 @@ import {
   index,
   integer,
   json,
+  pgEnum,
   pgTable,
   primaryKey,
   text,
@@ -91,6 +92,11 @@ export const freestyleModulesTable = pgTable("FreestyleModules", {
 
 export type FreestyleModule = InferSelectModel<typeof freestyleModulesTable>;
 
+export const envVarRequirementSource = pgEnum("ModuleVarRequirementSource", [
+  "text",
+  "oauth",
+]);
+
 export const freestyleModulesEnvironmentVariableRequirementsTable = pgTable(
   "FreestyleModulesEnvironmentVariableRequirements",
   {
@@ -105,6 +111,15 @@ export const freestyleModulesEnvironmentVariableRequirementsTable = pgTable(
     example: text("example"),
     required: boolean("required").default(true).notNull(),
     public: boolean("public").default(false).notNull(),
+    source: envVarRequirementSource("source")
+      .default("text")
+      .$type<"text" | "oauth">()
+      .notNull(),
+    // The OAuth provider name in Stack Auth
+    oauthProvider: varchar("oauthProvider", { length: 64 }),
+    // The scopes required for the OAuth provider
+    // Use with `user.useConnectedAccount("google", { scopes: ["..."] })`
+    oauthScopes: json("oauthScopes").$type<string[]>(),
   },
   (table) => [
     // speed up lookups by moduleId

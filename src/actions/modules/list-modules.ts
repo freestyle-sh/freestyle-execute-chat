@@ -9,6 +9,7 @@ import {
 } from "@/db/schema";
 import { and, desc, eq } from "drizzle-orm";
 import { stackServerApp } from "@/stack";
+import { auth } from "../auth";
 
 // Helper function to determine if a module is configured
 function determineIfModuleIsConfigured(
@@ -39,6 +40,16 @@ function determineIfModuleIsConfigured(
   return configurations.length > 0;
 }
 
+export type EnvVarRequirementSource =
+  | {
+      source: "oauth";
+      // both oauthProvider and oauthScopes should be non-null if source="oauth",
+      // but this is not guaranteed by the db.
+      oauthProvider: string | null;
+      oauthScopes: string[] | null;
+    }
+  | { source: "text" };
+
 export type EnvVarRequirement = {
   id: string;
   moduleId: string;
@@ -47,7 +58,7 @@ export type EnvVarRequirement = {
   example: string | null;
   required: boolean;
   public: boolean;
-};
+} & EnvVarRequirementSource;
 
 export type ModuleConfigVar = {
   id: string;
@@ -74,7 +85,11 @@ export async function listModules(
 ): Promise<ModuleWithRequirements[]> {
   "use server";
 
-  const user = await stackServerApp.getUser({ or: "anonymous" });
+  const user = await auth({ or: "anonymous" });
+  if (!user) {
+    throw new Error("User not found");
+  }
+
   const userId = user.id;
 
   // Get all modules ordered by priority

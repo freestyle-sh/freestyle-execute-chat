@@ -14,7 +14,7 @@ export default async function initGoogleCalendar() {
       svg: siGooglecalendar.svg,
       lightModeColor: siGooglecalendar.hex,
       darkModeColor: siGooglecalendar.hex,
-      _specialBehavior: "google-calendar",
+      // No special behavior needed anymore
       documentation: `
       ## Setup
       import { calendar_v3, auth } from '@googleapis/calendar';
@@ -41,5 +41,8 @@ export default async function initGoogleCalendar() {
     name: "GOOGLE_CALENDAR_ACCESS_TOKEN",
     description: "Google Calendar token",
     example: "your-google-calendar-token",
+    source: "oauth",
+    oauthProvider: "google",
+    oauthScopes: ["https://www.googleapis.com/auth/calendar"],
   });
 }

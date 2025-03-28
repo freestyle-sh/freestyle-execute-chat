@@ -1,9 +1,9 @@
 "use server";
 
-import { stackServerApp } from "@/stack";
+import { auth } from "../auth";
 
 export async function toggleMfa(enabled: boolean) {
-  const user = await stackServerApp.getUser();
+  const user = await auth();
 
   if (!user) {
     throw new Error("User not found");
@@ -15,7 +15,7 @@ export async function toggleMfa(enabled: boolean) {
 }
 
 export async function getMfaStatus() {
-  const user = await stackServerApp.getUser();
+  const user = await auth();
 
   if (!user) {
     throw new Error("User not found");
@@ -27,7 +27,7 @@ export async function getMfaStatus() {
 }
 
 export async function updateProfileName(name: string) {
-  const user = await stackServerApp.getUser();
+  const user = await auth();
 
   if (!user) {
     throw new Error("User not found");
@@ -43,7 +43,7 @@ export async function updateProfileName(name: string) {
 }
 
 export async function updateAvatar(avatarUrl: string) {
-  const user = await stackServerApp.getUser();
+  const user = await auth();
 
   if (!user) {
     throw new Error("User not found");
@@ -58,7 +58,7 @@ export async function updatePassword(
   currentPassword: string,
   newPassword: string,
 ) {
-  const user = await stackServerApp.getUser();
+  const user = await auth();
 
   if (!user) {
     throw new Error("User not found");
@@ -71,7 +71,7 @@ export async function updatePassword(
 }
 
 export async function makeEmailPrimary(email: string) {
-  const user = await stackServerApp.getUser();
+  const user = await auth();
 
   if (!user) {
     throw new Error("User not found");
@@ -96,7 +96,7 @@ export async function makeEmailPrimary(email: string) {
 }
 
 export async function addEmail(email: string) {
-  const user = await stackServerApp.getUser();
+  const user = await auth();
 
   if (!user) {
     throw new Error("User not found");
@@ -110,7 +110,7 @@ export async function addEmail(email: string) {
 }
 
 export async function removeEmail(email: string) {
-  const user = await stackServerApp.getUser();
+  const user = await auth();
 
   if (!user) {
     throw new Error("User not found");

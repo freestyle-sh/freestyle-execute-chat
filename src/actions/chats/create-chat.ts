@@ -15,6 +15,7 @@ import { asc, eq } from "drizzle-orm";
 
 import type { ModuleState } from "@/stores/modules";
 import { stackServerApp } from "@/stack";
+import { auth } from "../auth";
 
 export async function generateChatTitle(message: string, chatId: string) {
   try {
@@ -69,11 +70,14 @@ export async function maybeUpdateChatTitle(chatId: string): Promise<boolean> {
 
 export async function createChat(
   firstMessage?: string,
-  selectedModules?: Record<string, ModuleState>,
+  selectedModules?: Record<string, ModuleState>
 ) {
   "use server";
 
-  const user = await stackServerApp.getUser({ or: "anonymous" });
+  const user = await auth({ or: "anonymous" });
+  if (user === null) {
+    throw new Error("User not found");
+  }
   const userId = user.id;
 
   await db
@@ -118,13 +122,14 @@ export async function createChat(
   }
 
   // Apply selected modules to the new chat if provided
-  if (selectedModules) {
-    const moduleValues = Object.entries(selectedModules).map(
+
+  if (Object.keys(selectedModules ?? {}).length > 0) {
+    const moduleValues = Object.entries(selectedModules ?? {}).map(
       ([moduleId, { enabled }]) => ({
         chatId,
         moduleId,
         enabled,
-      }),
+      })
     );
 
     await db

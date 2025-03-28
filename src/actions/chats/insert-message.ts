@@ -4,11 +4,15 @@ import { chatsTable, messagesTable } from "@/db/schema";
 import { and, desc, eq } from "drizzle-orm";
 import type { Message, ToolInvocation } from "ai";
 import { stackServerApp } from "@/stack";
+import { auth } from "../auth";
 
 export async function insertMessage(chatId: string, message: Message) {
   "use server";
 
-  const user = await stackServerApp.getUser({ or: "anonymous" });
+  const user = await auth({ or: "anonymous" });
+  if (!user) {
+    throw new Error("User not found");
+  }
   const userId = user.id;
 
   const chat = await db

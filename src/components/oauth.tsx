@@ -1,15 +1,17 @@
-import { ModuleIcon } from "../module-icon";
-import { Button } from "../ui/button";
+import { ModuleIcon } from "./module-icon";
+import { Button } from "./ui/button";
 import type { ModuleWithRequirements } from "@/actions/modules/list-modules";
 import { useUser } from "@stackframe/stack";
 import { toast } from "sonner";
 import { saveModuleConfiguration } from "@/actions/modules/set-config";
 import { useEffect } from "react";
 import { CopyIcon } from "lucide-react";
+import { capitalize } from "@/lib/typography";
 
-export interface GoogleOAuthUIProps {
+export interface OAuthUIProps {
   module: ModuleWithRequirements;
   serviceName: string;
+  providerName: string;
   svg: string;
   color: string;
   scopes: string[];
@@ -19,31 +21,73 @@ export interface GoogleOAuthUIProps {
   isInDialog?: boolean; // Whether the component is rendered in a dialog or drawer
 }
 
-export function GoogleOAuthUI({
+export function OAuthUI({
   module,
   serviceName,
+  providerName,
   svg,
   color,
   scopes,
-  onCancel,
+  // onCancel, - not currently used
   onDelete,
   onComplete,
   isInDialog = false,
-}: GoogleOAuthUIProps): React.ReactNode {
+}: OAuthUIProps): React.ReactNode {
+  // Type for valid OAuth providers
+  type ValidProvider =
+    | "x"
+    | "github"
+    | "google"
+    | "microsoft"
+    | "spotify"
+    | "facebook"
+    | "discord"
+    | "gitlab"
+    | "bitbucket"
+    | "linkedin"
+    | "apple";
+
+  // Type guard to check if provider is valid
+  const isValidProvider = (provider: string): provider is ValidProvider => {
+    return [
+      "x",
+      "github",
+      "google",
+      "microsoft",
+      "spotify",
+      "facebook",
+      "discord",
+      "gitlab",
+      "bitbucket",
+      "linkedin",
+      "apple",
+    ].includes(provider as ValidProvider);
+  };
+
   const user = useUser();
-  const connectedAcc = user?.useConnectedAccount("google", {
-    scopes,
-  });
+  const connectedAcc = isValidProvider(providerName)
+    ? user?.useConnectedAccount(providerName, { scopes })
+    : undefined;
   const accessToken = connectedAcc?.useAccessToken();
 
+  // Find the OAuth requirement in the module
+  const oauthRequirement = module.environmentVariableRequirements.find(
+    (req) => req.source === "oauth" && req.oauthProvider === providerName,
+  );
+
   useEffect(() => {
-    if (accessToken?.accessToken) {
+    if (accessToken?.accessToken && oauthRequirement) {
+      saveModuleConfiguration(module.id, {
+        [oauthRequirement.id]: accessToken?.accessToken,
+      });
+    } else if (accessToken?.accessToken) {
+      // Fallback to legacy behavior
       saveModuleConfiguration(module.id, {
         [module.environmentVariableRequirements[0].id]:
           accessToken?.accessToken,
       });
     }
-  }, [module, accessToken]);
+  }, [module, accessToken, oauthRequirement]);
 
   return (
     <div className="flex justify-center p-4 w-full mb-4">
@@ -69,7 +113,8 @@ export function GoogleOAuthUI({
             <code className="text-xs">{accessToken.accessToken}</code>
           </div>
           <p className="text-xs text-gray-500 mt-2 text-center">
-            Google {serviceName} connected successfully
+            {providerName.charAt(0).toUpperCase() + providerName.slice(1)}{" "}
+            {serviceName} connected successfully
           </p>
           {!isInDialog && (
             <div className="flex justify-center items-center gap-3 text-center m-4">
@@ -118,13 +163,20 @@ export function GoogleOAuthUI({
             type="button"
             className="flex items-center bg-white hover:bg-gray-100 text-gray-800 border border-gray-300 shadow-sm w-full sm:max-w-[300px]"
             onClick={async () => {
+              if (!isValidProvider(providerName)) {
+                toast.error(`Unsupported OAuth provider: ${providerName}`);
+                return;
+              }
+
               try {
-                await user?.getConnectedAccount("google", {
+                await user?.getConnectedAccount(providerName, {
                   or: "redirect",
                   scopes,
                 });
               } catch (error) {
-                toast.error(`Failed to connect to Google ${serviceName}`);
+                toast.error(
+                  `Failed to connect to ${providerName.charAt(0).toUpperCase() + providerName.slice(1)} ${serviceName}`,
+                );
                 console.error(error);
               }
             }}
@@ -134,7 +186,7 @@ export function GoogleOAuthUI({
               darkModeColor={color}
               lightModeColor={color}
             />
-            <span>Connect Google {serviceName}</span>
+            <span>{`Connect ${capitalize(providerName)}`}</span>
           </Button>
         </div>
       )}

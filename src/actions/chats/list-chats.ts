@@ -3,11 +3,15 @@ import { db } from "@/db";
 import { chatsTable, messagesTable } from "@/db/schema";
 import { eq, desc, sql, max } from "drizzle-orm";
 import { stackServerApp } from "@/stack";
+import { auth } from "../auth";
 
 export async function listChats() {
   "use server";
 
-  const user = await stackServerApp.getUser({ or: "anonymous" });
+  const user = await auth({ or: "anonymous" });
+  if (!user) {
+    throw new Error("User not found");
+  }
   const userId = user.id;
 
   // Get all chats with their latest message timestamp

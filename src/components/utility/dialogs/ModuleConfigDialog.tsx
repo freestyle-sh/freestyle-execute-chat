@@ -26,11 +26,9 @@ import { Input } from "@/components/ui/input";
 import { getModuleConfiguration } from "@/actions/modules/get-config";
 import { deleteModuleConfiguration } from "@/actions/modules/delete-config";
 import { useUser } from "@stackframe/stack";
-import { GoogleCalendarUI } from "@/components/custom/google-calendar";
-import { GoogleSheetsUI } from "@/components/custom/google-sheets";
-import { GoogleGmailUI } from "@/components/custom/google-gmail";
 import { useModulesStore } from "@/stores/modules";
 import { useParams } from "next/navigation";
+import { OAuthUI } from "@/components/oauth";
 
 interface ModuleConfigDialogProps {
   dialog: {
@@ -317,10 +315,11 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
     return null;
   }
 
-  // Check if the current module has special OAuth behavior
-  const hasSpecialOAuthBehavior =
-    typeof currentModule._specialBehavior === "string" &&
-    currentModule._specialBehavior.startsWith("google-");
+  // Check if the current module has OAuth requirements
+  const hasOAuthRequirements =
+    currentModule.environmentVariableRequirements.some(
+      (req) => req.source === "oauth",
+    );
 
   return (
     <>
@@ -337,7 +336,7 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
         </DialogTitle>
         <DialogDescription>
           {currentModuleIndex + 1} of {modules.length} -
-          {!hasSpecialOAuthBehavior &&
+          {!hasOAuthRequirements &&
           currentModule.environmentVariableRequirements.some((r) => r.required)
             ? " Required fields are marked."
             : " No required fields."}
@@ -358,7 +357,7 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
         className="space-y-4 py-4 animate-in fade-in slide-in-from-right-5 duration-300"
       >
         {/* Show loading state when fetching config */}
-        {isLoadingConfig && !hasSpecialOAuthBehavior && (
+        {isLoadingConfig && !hasOAuthRequirements && (
           <div className="space-y-4 animate-pulse">
             <div className="h-5 w-1/3 bg-muted rounded-md" />
             <div className="h-10 w-full bg-muted rounded-md" />
@@ -367,79 +366,74 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
           </div>
         )}
 
-        {/* Render standard form fields if no special behavior */}
+        {/* Render standard form fields for text-entry requirements */}
         {!isLoadingConfig &&
-          !hasSpecialOAuthBehavior &&
-          currentModule.environmentVariableRequirements.map((envVar) => (
-            <div key={envVar.id} className="space-y-2">
-              <div className="flex justify-between">
-                <label
-                  htmlFor={envVar.id}
+          currentModule.environmentVariableRequirements
+            .filter((envVar) => envVar.source === "text")
+            .map((envVar) => (
+              <div key={envVar.id} className="space-y-2">
+                <div className="flex justify-between">
+                  <label
+                    htmlFor={envVar.id}
+                    className={cn(
+                      "text-sm font-medium",
+                      envVar.required
+                        ? "after:content-['*'] after:ml-0.5 after:text-destructive"
+                        : "",
+                    )}
+                  >
+                    {envVar.name}
+                  </label>
+                </div>
+                <Input
+                  id={envVar.id}
+                  {...register(envVar.id)}
+                  type={envVar.public ? "text" : "password"}
+                  placeholder={envVar.example || ""}
                   className={cn(
-                    "text-sm font-medium",
-                    envVar.required
-                      ? "after:content-['*'] after:ml-0.5 after:text-destructive"
-                      : "",
+                    errors[envVar.id] ? "border-destructive" : "",
+                    envVar.required ? "border-amber-500/30" : "",
                   )}
-                >
-                  {envVar.name}
-                </label>
-              </div>
-              <Input
-                id={envVar.id}
-                {...register(envVar.id)}
-                type={envVar.public ? "text" : "password"}
-                placeholder={envVar.example || ""}
-                className={cn(
-                  errors[envVar.id] ? "border-destructive" : "",
-                  envVar.required ? "border-amber-500/30" : "",
+                />
+                {envVar.description && (
+                  <p className="text-xs text-muted-foreground">
+                    {envVar.description}
+                  </p>
                 )}
-              />
-              {envVar.description && (
-                <p className="text-xs text-muted-foreground">
-                  {envVar.description}
-                </p>
-              )}
-              {errors[envVar.id] && (
-                <p className="text-xs text-destructive">
-                  {errors[envVar.id]?.message as string}
-                </p>
-              )}
-            </div>
-          ))}
+                {errors[envVar.id] && (
+                  <p className="text-xs text-destructive">
+                    {errors[envVar.id]?.message as string}
+                  </p>
+                )}
+              </div>
+            ))}
 
-        {/* Render special OAuth UI components */}
-        {currentModule._specialBehavior === "google-calendar" && (
+        {/* Render OAuth UI components for OAuth requirements */}
+        {hasOAuthRequirements && (
           <div className="py-4">
-            <GoogleCalendarUI
-              module={currentModule}
-              isInDialog={true}
-              onCancel={() => resolveDialog(false)}
-              onDelete={handleRemoveConfiguration}
-              onComplete={handleNextModule}
-            />
-          </div>
-        )}
-        {currentModule._specialBehavior === "google-sheets" && (
-          <div className="py-4">
-            <GoogleSheetsUI
-              module={currentModule}
-              isInDialog={true}
-              onCancel={() => resolveDialog(false)}
-              onDelete={handleRemoveConfiguration}
-              onComplete={handleNextModule}
-            />
-          </div>
-        )}
-        {currentModule._specialBehavior === "google-gmail" && (
-          <div className="py-4">
-            <GoogleGmailUI
-              module={currentModule}
-              isInDialog={true}
-              onCancel={() => resolveDialog(false)}
-              onDelete={handleRemoveConfiguration}
-              onComplete={handleNextModule}
-            />
+            {currentModule.environmentVariableRequirements
+              .filter((req) => req.source === "oauth")
+              .map((req) => {
+                if (!req.oauthProvider) {
+                  throw new Error("Expected oauthProvider to be non-null");
+                }
+
+                return (
+                  <OAuthUI
+                    key={req.id}
+                    module={currentModule}
+                    serviceName={req.name}
+                    providerName={req.oauthProvider}
+                    svg={currentModule.svg}
+                    color={currentModule.darkModeColor}
+                    scopes={req.oauthScopes || []}
+                    isInDialog={true}
+                    onCancel={() => resolveDialog(false)}
+                    onDelete={handleRemoveConfiguration}
+                    onComplete={handleNextModule}
+                  />
+                );
+              })}
           </div>
         )}
 
@@ -454,7 +448,7 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
               Cancel
             </Button>
 
-            {hasSpecialOAuthBehavior ? (
+            {hasOAuthRequirements ? (
               <div className="flex gap-2">
                 {currentModule.isConfigured && (
                   <Button
