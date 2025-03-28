@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { saveModuleConfiguration } from "@/actions/modules/set-config";
 import { useEffect } from "react";
 import { CopyIcon } from "lucide-react";
+import { capitalize } from "@/lib/typography";
 
 export interface OAuthUIProps {
   module: ModuleWithRequirements;
@@ -86,7 +87,7 @@ export function OAuthUI({
           accessToken?.accessToken,
       });
     }
-  }, [module, accessToken, oauthRequirement, providerName]);
+  }, [module, accessToken, oauthRequirement]);
 
   return (
     <div className="flex justify-center p-4 w-full mb-4">
@@ -185,11 +186,7 @@ export function OAuthUI({
               darkModeColor={color}
               lightModeColor={color}
             />
-            <span>
-              Connect{" "}
-              {providerName.charAt(0).toUpperCase() + providerName.slice(1)}{" "}
-              {serviceName}
-            </span>
+            <span>{`Connect ${capitalize(providerName)}`}</span>
           </Button>
         </div>
       )}

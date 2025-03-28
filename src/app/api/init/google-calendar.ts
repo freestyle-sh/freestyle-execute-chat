@@ -14,7 +14,7 @@ export default async function initGoogleCalendar() {
       svg: siGooglecalendar.svg,
       lightModeColor: siGooglecalendar.hex,
       darkModeColor: siGooglecalendar.hex,
-      _specialBehavior: "google-calendar",
+      // No special behavior needed anymore
       documentation: `
       ## Setup
       import { calendar_v3, auth } from '@googleapis/calendar';

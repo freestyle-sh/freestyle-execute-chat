@@ -9,6 +9,7 @@ import {
 } from "@/db/schema";
 import { and, desc, eq } from "drizzle-orm";
 import { stackServerApp } from "@/stack";
+import { auth } from "../auth";
 
 // Helper function to determine if a module is configured
 function determineIfModuleIsConfigured(
@@ -85,7 +86,11 @@ export async function listModules(
 ): Promise<ModuleWithRequirements[]> {
   "use server";
 
-  const user = await stackServerApp.getUser({ or: "anonymous" });
+  const user = await auth({ or: "anonymous" });
+  if (!user) {
+    throw new Error("User not found");
+  }
+
   const userId = user.id;
 
   // Get all modules ordered by priority

@@ -84,10 +84,10 @@ function ModuleConfigTrigger({
   isConfigLoading: boolean;
 }) {
   const { resolvedTheme } = useTheme();
-  
+
   // Get configured status
   const hasOAuthRequirements = module.environmentVariableRequirements.some(
-    req => req.source === "oauth"
+    (req) => req.source === "oauth",
   );
 
   return (
@@ -112,9 +112,15 @@ function ModuleConfigTrigger({
             Loading...
           </span>
         ) : module.isConfigured ? (
-          hasOAuthRequirements ? "Connected" : "Configured"
+          hasOAuthRequirements ? (
+            "Connected"
+          ) : (
+            "Configured"
+          )
+        ) : hasOAuthRequirements ? (
+          "Connect"
         ) : (
-          hasOAuthRequirements ? "Connect" : "Configure"
+          "Configure"
         )}
       </Button>
     </DrawerTrigger>
@@ -248,30 +254,59 @@ function ModuleConfigDrawerView({
     onRemoveConfig: () => void;
   }) {
     // Check if the OAuth provider is valid for Stack Auth
-    type ValidProvider = "x" | "github" | "google" | "microsoft" | "spotify" | "facebook" | "discord" | "gitlab" | "bitbucket" | "linkedin" | "apple";
-    const validProviders: ValidProvider[] = ["x", "github", "google", "microsoft", "spotify", "facebook", "discord", "gitlab", "bitbucket", "linkedin", "apple"];
-    
+    type ValidProvider =
+      | "x"
+      | "github"
+      | "google"
+      | "microsoft"
+      | "spotify"
+      | "facebook"
+      | "discord"
+      | "gitlab"
+      | "bitbucket"
+      | "linkedin"
+      | "apple";
+    const validProviders: ValidProvider[] = [
+      "x",
+      "github",
+      "google",
+      "microsoft",
+      "spotify",
+      "facebook",
+      "discord",
+      "gitlab",
+      "bitbucket",
+      "linkedin",
+      "apple",
+    ];
+
     // Type guard to make sure provider is valid
     const isValidProvider = (provider: string): provider is ValidProvider => {
       return validProviders.includes(provider as ValidProvider);
     };
-    
+
     // Always call all Hooks at the top level
     const user = useUser();
     // Setup dummy values in case of early return
     let validProvider: string | null = null;
     let providerScopes: string[] | undefined = undefined;
-    
+
     // Check for valid requirements for rendering
-    if (envVar.source === "oauth" && envVar.oauthProvider && envVar.oauthScopes) {
+    if (
+      envVar.source === "oauth" &&
+      envVar.oauthProvider &&
+      envVar.oauthScopes
+    ) {
       // If valid, set values for hooks
-      validProvider = isValidProvider(envVar.oauthProvider) ? envVar.oauthProvider : null;
+      validProvider = isValidProvider(envVar.oauthProvider)
+        ? envVar.oauthProvider
+        : null;
       providerScopes = envVar.oauthScopes;
     } else {
       // Early return for invalid requirements
       return null;
     }
-    
+
     // Show error for unsupported providers
     if (!validProvider) {
       return (
@@ -287,9 +322,12 @@ function ModuleConfigDrawerView({
     }
 
     // Now we can safely use the provider in hooks
-    const connectedAcc = user?.useConnectedAccount(validProvider as ValidProvider, {
-      scopes: providerScopes,
-    });
+    const connectedAcc = user?.useConnectedAccount(
+      validProvider as ValidProvider,
+      {
+        scopes: providerScopes,
+      },
+    );
     const accessToken = connectedAcc?.useAccessToken();
 
     // Always call useEffect at the top level, regardless of conditions
@@ -301,7 +339,9 @@ function ModuleConfigDrawerView({
       }
     }, [accessToken?.accessToken, envVar.id, module.id]);
 
-    const providerName = envVar.oauthProvider.charAt(0).toUpperCase() + envVar.oauthProvider.slice(1);
+    const providerName =
+      envVar.oauthProvider.charAt(0).toUpperCase() +
+      envVar.oauthProvider.slice(1);
     const serviceName = envVar.name;
 
     return (
@@ -369,14 +409,17 @@ function ModuleConfigDrawerView({
             </DrawerClose>
             <Button
               type="button"
-              className="flex items-center bg-white hover:bg-gray-100 text-gray-800 border border-gray-300 shadow-sm w-full sm:max-w-[300px]"
+              className="flex justify-center gap-0 bg-white hover:bg-gray-100 text-gray-800 border border-gray-300 shadow-sm w-full sm:max-w-[300px]"
               onClick={async () => {
                 try {
                   // We know provider is valid at this point due to the isValidProvider check
-                  await user?.getConnectedAccount(envVar.oauthProvider as ValidProvider, {
-                    or: "redirect",
-                    scopes: envVar.oauthScopes ?? undefined,
-                  });
+                  await user?.getConnectedAccount(
+                    envVar.oauthProvider as ValidProvider,
+                    {
+                      or: "redirect",
+                      scopes: envVar.oauthScopes ?? undefined,
+                    },
+                  );
                 } catch (error) {
                   toast.error(
                     `Failed to connect to ${providerName} ${serviceName}`,
@@ -390,7 +433,7 @@ function ModuleConfigDrawerView({
                 darkModeColor={module.darkModeColor}
                 lightModeColor={module.lightModeColor}
               />
-              <span>Connect {providerName} {serviceName}</span>
+              <span>Connect {providerName}</span>
             </Button>
           </div>
         )}
@@ -400,12 +443,12 @@ function ModuleConfigDrawerView({
 
   // Check if this module has any OAuth requirements
   const oauthRequirements = module.environmentVariableRequirements.filter(
-    (req) => req.source === "oauth"
+    (req) => req.source === "oauth",
   );
-  
+
   // Check if this module has any text requirements
   const textRequirements = module.environmentVariableRequirements.filter(
-    (req) => req.source === "text"
+    (req) => req.source === "text",
   );
 
   return (

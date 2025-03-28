@@ -1,13 +1,14 @@
 "use server";
 
 import { stackServerApp } from "@/stack";
+import { auth } from "../auth";
 
 export async function getUserProfile() {
-  const user = await stackServerApp.getUser();
-
+  const user = await auth();
   if (!user) {
     return null;
   }
+
   const contacts = await user.listContactChannels();
 
   return {
@@ -21,7 +22,7 @@ export async function getUserProfile() {
 }
 
 export async function getUserEmails() {
-  const user = await stackServerApp.getUser();
+  const user = await auth();
 
   if (!user) {
     return null;

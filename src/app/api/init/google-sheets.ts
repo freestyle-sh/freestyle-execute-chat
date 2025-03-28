@@ -14,7 +14,7 @@ export default async function initGoogleSheets() {
       svg: siGooglesheets.svg,
       lightModeColor: siGooglesheets.hex,
       darkModeColor: siGooglesheets.hex,
-      _specialBehavior: "google-sheets",
+      // No special behavior needed anymore
       documentation: `
       ## Setup
       import { sheets_v4, auth } from '@googleapis/sheets';

@@ -15,6 +15,7 @@ import { asc, eq } from "drizzle-orm";
 
 import type { ModuleState } from "@/stores/modules";
 import { stackServerApp } from "@/stack";
+import { auth } from "../auth";
 
 export async function generateChatTitle(message: string, chatId: string) {
   try {
@@ -73,7 +74,10 @@ export async function createChat(
 ) {
   "use server";
 
-  const user = await stackServerApp.getUser({ or: "anonymous" });
+  const user = await auth({ or: "anonymous" });
+  if (user === null) {
+    throw new Error("User not found");
+  }
   const userId = user.id;
 
   await db

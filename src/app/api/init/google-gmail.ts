@@ -14,7 +14,7 @@ export default async function initGoogleGmail() {
       svg: siGmail.svg,
       lightModeColor: siGmail.hex,
       darkModeColor: siGmail.hex,
-      _specialBehavior: "google-gmail",
+      // No special behavior needed anymore
       documentation: `
       ## Setup
       import { gmail_v1, auth } from '@googleapis/gmail';
