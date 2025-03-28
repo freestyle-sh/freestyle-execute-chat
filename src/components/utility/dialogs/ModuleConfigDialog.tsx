@@ -28,7 +28,7 @@ import { deleteModuleConfiguration } from "@/actions/modules/delete-config";
 import { useUser } from "@stackframe/stack";
 import { useModulesStore } from "@/stores/modules";
 import { useParams } from "next/navigation";
-import { OAuthUI } from "@/components/custom/oauth";
+import { OAuthUI } from "@/components/oauth";
 
 interface ModuleConfigDialogProps {
   dialog: {

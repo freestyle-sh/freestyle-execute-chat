@@ -1,5 +1,5 @@
-import { ModuleIcon } from "../module-icon";
-import { Button } from "../ui/button";
+import { ModuleIcon } from "./module-icon";
+import { Button } from "./ui/button";
 import type { ModuleWithRequirements } from "@/actions/modules/list-modules";
 import { useUser } from "@stackframe/stack";
 import { toast } from "sonner";
@@ -193,4 +193,3 @@ export function OAuthUI({
     </div>
   );
 }
-
