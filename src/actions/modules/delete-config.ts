@@ -8,14 +8,19 @@ import {
 } from "@/db/schema";
 import { stackServerApp } from "@/stack";
 import { and, eq } from "drizzle-orm";
+import { auth } from "../auth";
 
 /**
  * Delete all configurations for a module
  */
 export async function deleteModuleConfiguration(moduleId: string) {
-  const user = await stackServerApp.getUser({
+  const user = await auth({
     or: "anonymous",
   });
+  if (!user) {
+    throw new Error("User not found");
+  }
+
   const userId = user.id;
 
   // Get all environment variable requirements for this module

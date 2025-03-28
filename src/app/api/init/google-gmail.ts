@@ -14,7 +14,7 @@ export default async function initGoogleGmail() {
       svg: siGmail.svg,
       lightModeColor: siGmail.hex,
       darkModeColor: siGmail.hex,
-      _specialBehavior: "google-gmail",
+      // No special behavior needed anymore
       documentation: `
       ## Setup
       import { gmail_v1, auth } from '@googleapis/gmail';
@@ -41,5 +41,11 @@ export default async function initGoogleGmail() {
     name: "GOOGLE_GMAIL_ACCESS_TOKEN",
     description: "Google Gmail token",
     example: "your-google-gmail-token",
+    source: "oauth",
+    oauthProvider: "google",
+    oauthScopes: [
+      "https://www.googleapis.com/auth/gmail.readonly",
+      "https://www.googleapis.com/auth/gmail.compose",
+    ],
   });
 }

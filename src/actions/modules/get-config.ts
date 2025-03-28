@@ -7,6 +7,7 @@ import {
 } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { stackServerApp } from "@/stack";
+import { auth } from "../auth";
 
 /**
  * Get module configuration for a specific module
@@ -15,9 +16,13 @@ export async function getModuleConfiguration(moduleId: string) {
   "use server";
 
   // Use a placeholder user ID for now
-  const user = await stackServerApp.getUser({
+  const user = await auth({
     or: "anonymous",
   });
+  if (!user) {
+    throw new Error("User not found");
+  }
+
   const userId = user.id;
   // Get all environment variable requirements for this module
   const requirements = await db
@@ -26,8 +31,8 @@ export async function getModuleConfiguration(moduleId: string) {
     .where(
       eq(
         freestyleModulesEnvironmentVariableRequirementsTable.moduleId,
-        moduleId
-      )
+        moduleId,
+      ),
     );
 
   // Get existing configurations for this module and user
@@ -38,17 +43,17 @@ export async function getModuleConfiguration(moduleId: string) {
       freestyleModulesEnvironmentVariableRequirementsTable,
       eq(
         freestyleModulesConfigurationsTable.environmentVariableId,
-        freestyleModulesEnvironmentVariableRequirementsTable.id
-      )
+        freestyleModulesEnvironmentVariableRequirementsTable.id,
+      ),
     )
     .where(
       and(
         eq(
           freestyleModulesEnvironmentVariableRequirementsTable.moduleId,
-          moduleId
+          moduleId,
         ),
-        eq(freestyleModulesConfigurationsTable.userId, userId)
-      )
+        eq(freestyleModulesConfigurationsTable.userId, userId),
+      ),
     );
 
   // Map configurations to a more user-friendly format

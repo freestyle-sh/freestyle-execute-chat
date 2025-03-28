@@ -7,6 +7,7 @@ import {
 } from "@/db/schema";
 import { and, eq, inArray } from "drizzle-orm";
 import { stackServerApp } from "@/stack";
+import { auth } from "../auth";
 
 /**
  * Get configurations for multiple modules at once
@@ -20,9 +21,13 @@ export async function getAllModuleConfigurations(moduleIds: string[]) {
   }
 
   // Use a placeholder user ID for now
-  const user = await stackServerApp.getUser({
+  const user = await auth({
     or: "anonymous",
   });
+  if (!user) {
+    throw new Error("User not found");
+  }
+
   const userId = user.id;
 
   // Get all environment variable requirements for these modules
@@ -32,8 +37,8 @@ export async function getAllModuleConfigurations(moduleIds: string[]) {
     .where(
       inArray(
         freestyleModulesEnvironmentVariableRequirementsTable.moduleId,
-        moduleIds
-      )
+        moduleIds,
+      ),
     );
 
   // Get existing configurations for these modules and user
@@ -44,37 +49,39 @@ export async function getAllModuleConfigurations(moduleIds: string[]) {
       freestyleModulesEnvironmentVariableRequirementsTable,
       eq(
         freestyleModulesConfigurationsTable.environmentVariableId,
-        freestyleModulesEnvironmentVariableRequirementsTable.id
-      )
+        freestyleModulesEnvironmentVariableRequirementsTable.id,
+      ),
     )
     .where(
       and(
         inArray(
           freestyleModulesEnvironmentVariableRequirementsTable.moduleId,
-          moduleIds
+          moduleIds,
         ),
-        eq(freestyleModulesConfigurationsTable.userId, userId)
-      )
+        eq(freestyleModulesConfigurationsTable.userId, userId),
+      ),
     );
 
   // Group configurations by module ID
   const configsByModule: Record<string, any[]> = {};
-  
+
   // Initialize with empty arrays for all requested modules
-  moduleIds.forEach(id => {
+  moduleIds.forEach((id) => {
     configsByModule[id] = [];
   });
-  
+
   // Map configurations to a more user-friendly format and group by module
-  configurations.forEach(config => {
-    const moduleId = config.FreestyleModulesEnvironmentVariableRequirements.moduleId;
-    
+  configurations.forEach((config) => {
+    const moduleId =
+      config.FreestyleModulesEnvironmentVariableRequirements.moduleId;
+
     if (!configsByModule[moduleId]) {
       configsByModule[moduleId] = [];
     }
-    
+
     configsByModule[moduleId].push({
-      environmentVariableRequirementId: config.FreestyleModulesEnvironmentVariableRequirements.id,
+      environmentVariableRequirementId:
+        config.FreestyleModulesEnvironmentVariableRequirements.id,
       name: config.FreestyleModulesEnvironmentVariableRequirements.name,
       value: config.FreestyleModulesConfigurations.value,
     });
@@ -82,3 +89,4 @@ export async function getAllModuleConfigurations(moduleIds: string[]) {
 
   return configsByModule;
 }
+

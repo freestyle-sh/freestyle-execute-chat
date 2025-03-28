@@ -1,3 +1,4 @@
+import { auth } from "@/actions/auth";
 import { maybeUpdateChatTitle } from "@/actions/chats/create-chat";
 import { insertMessage } from "@/actions/chats/insert-message";
 import { listModules } from "@/actions/modules/list-modules";
@@ -35,7 +36,7 @@ const stripeAgentToolkit = new StripeAgentToolkit({
 });
 
 export async function POST(request: Request) {
-  const stackUser = await stackServerApp.getUser({ or: "return-null" });
+  const stackUser = await auth({ or: "return-null" });
 
   let customerId = stackUser?.serverMetadata?.customerId;
   if (customerId == null && stackUser) {
@@ -180,7 +181,7 @@ export async function POST(request: Request) {
   };
 
   const docRequestTool = requestDocumentationTool(
-    modules.filter((module) => module.isEnabled)
+    modules.filter((module) => module.isEnabled),
   );
 
   if (docRequestTool) {

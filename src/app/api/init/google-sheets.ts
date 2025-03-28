@@ -14,7 +14,7 @@ export default async function initGoogleSheets() {
       svg: siGooglesheets.svg,
       lightModeColor: siGooglesheets.hex,
       darkModeColor: siGooglesheets.hex,
-      _specialBehavior: "google-sheets",
+      // No special behavior needed anymore
       documentation: `
       ## Setup
       import { sheets_v4, auth } from '@googleapis/sheets';
@@ -41,5 +41,8 @@ export default async function initGoogleSheets() {
     name: "GOOGLE_SHEETS_ACCESS_TOKEN",
     description: "Google Sheets token",
     example: "your-google-sheets-token",
+    source: "oauth",
+    oauthProvider: "google",
+    oauthScopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
 }
