@@ -3,103 +3,28 @@
 <div align="center">
   <img src="public/logo.svg" width="120" height="120" alt="Freestyle Execute Chat Logo" />
   <h1>Freestyle Execute Chat</h1>
-  <p>A powerful, extensible chat interface with code execution capabilities</p>
+  <p>An AI assistant that truly assists - with real-world capabilities</p>
 </div>
 
-## ✨ Features
+## 🔍 Vision
 
-- 💬 **Advanced Chat Interface** - Rich conversation experience with AI assistant
-- 🧩 **Module System** - Extend functionality with integrations (AWS, GitHub, Google services, and more)
-- 💻 **Code Execution** - Run and visualize code execution directly in chat
-- 📊 **Structured Data** - Request and process specific information from users
-- 🌓 **Theme Support** - Light and dark mode with customizable appearance
-- 📱 **Responsive Design** - Works seamlessly across desktop and mobile devices
+Freestyle Execute Chat represents a new vision for AI assistants - one where they don't just talk about doing things, but can actually take action on your behalf. Unlike traditional chatbots that are limited to conversation, this assistant can:
 
-## 🚀 Getting Started
+- Execute code to solve problems in real-time
+- Connect to your services and tools through extensible modules
+- Perform complex workflows spanning multiple systems
+- Adapt to your specific needs through customization
 
-### Prerequisites
+The core philosophy is simple: **an assistant should assist**, not just converse. By giving our AI the ability to execute code and interact with external systems, we bridge the gap between conversation and action.
 
-- Node.js 18+ (recommended: 20+)
-- Bun package manager
-- PostgreSQL database (or Neon.tech account)
+## ✨ Key Capabilities
 
-### Installation
+- 💻 **Real Code Execution** - The assistant can write and run code directly in the chat to process data, create visualizations, or solve computational problems
+- 🧩 **Extensible Module System** - Connect the assistant to the tools you use every day through our module system
+- 📊 **Structured Data Collection** - Request and validate specific information from users in structured formats
+- 🔒 **Security-Focused Design** - Careful permission boundaries protect your data and systems
+- 🎨 **Customizable UI** - Adapt the interface to your preferences with theming options
 
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/freestyle-execute-chat.git
-cd freestyle-execute-chat
+## Vision
 
-# Install dependencies
-bun install
-
-# Set up environment variables
-cp .env.example .env.local
-# Edit .env.local with your configuration
-
-# Run development server
-bun dev
-```
-
-### Build and Development
-
-```bash
-# Development server with hot reload
-bun dev
-
-# Production build
-bun build
-
-# Start production server
-bun start
-
-# Run linting
-bun lint
-
-# Type checking
-bunx tsc --noEmit
-```
-
-## 🧩 Modules
-
-Freestyle Execute Chat supports various integrations through its module system:
-
-- 📅 Google Calendar
-- 📧 Gmail
-- 📊 Google Sheets
-- 🔍 GitHub
-- ☁️ AWS
-- 💵 Stripe
-- 📚 Documentation integrations
-- 💬 Slack
-- 📨 Resend
-- ⚡ Vercel
-- 💾 Supabase
-- 📊 Postgres
-- 📱 HubSpot
-- 🔍 Exa search
-
-## 🧠 Technologies
-
-- Next.js 15 with App Router
-- React 19
-- TypeScript
-- Tailwind CSS
-- Drizzle ORM
-- Zustand for state management
-- Shadcn/UI components
-
-## 🤝 Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is licensed under the [MIT License](LICENSE).
-
+Freestyle Chat is a jack of all trades master of none chat assistant. We believe their is an incredible opportunity for people (like you), to fork it, focus on a single vertical, and master them. We encourage you to steal our code and make it your own and we're here to help you do that.
