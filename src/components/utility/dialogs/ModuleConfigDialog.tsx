@@ -29,6 +29,7 @@ import { useUser } from "@stackframe/stack";
 import { useModulesStore } from "@/stores/modules";
 import { useParams } from "next/navigation";
 import { OAuthUI } from "@/components/oauth";
+import { AuthPopup } from "@/components/ui/auth-popup";
 
 interface ModuleConfigDialogProps {
   dialog: {
@@ -43,12 +44,21 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
   const [configuredModules, setConfiguredModules] = useState<string[]>([]);
   const [isConfiguring, setIsConfiguring] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [showAuthPopup, setShowAuthPopup] = useState(false);
   const { resolveDialog } = useDialogStore();
   const queryClient = useQueryClient();
+  const user = useUser();
 
   const toggleModule = useModulesStore((state) => state.toggleModule);
   const params = useParams<{ chat?: string }>();
   const chatId = params.chat;
+  
+  // Check authentication on component mount
+  useEffect(() => {
+    if (!user?.isSignedIn) {
+      setShowAuthPopup(true);
+    }
+  }, [user]);
 
   const modules = dialog.modules || [];
   const currentModule = modules[currentModuleIndex];
@@ -310,6 +320,23 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
   }
 
   // If we have a current module to configure
+  // If auth popup is shown, render it
+  if (showAuthPopup) {
+    return (
+      <AuthPopup
+        isOpen={showAuthPopup}
+        onClose={() => {
+          setShowAuthPopup(false);
+          resolveDialog(false); // Close the dialog when auth popup is closed
+        }}
+        title="Sign in Required"
+        message="You need to sign in to configure modules"
+        ctaText="Sign In"
+        allowClose={true}
+      />
+    );
+  }
+
   if (!currentModule) {
     resolveDialog(false);
     return null;

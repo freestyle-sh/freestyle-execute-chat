@@ -14,6 +14,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ModuleIcon } from "@/components/module-icon";
 import { Markdown } from "@/components/ui/markdown";
+import { AuthPopup } from "@/components/ui/auth-popup";
 import type {
   EnvVarRequirement,
   ModuleConfigVar,
@@ -287,26 +288,36 @@ function ModuleConfigDrawerView({
 
     // Always call all Hooks at the top level
     const user = useUser();
-    // Setup dummy values in case of early return
-    let validProvider: string | null = null;
-    let providerScopes: string[] | undefined = undefined;
+    // Setup values needed for hooks and conditional logic
+    const validProvider = envVar.source === "oauth" && 
+                         envVar.oauthProvider && 
+                         isValidProvider(envVar.oauthProvider) ? 
+                         envVar.oauthProvider as ValidProvider : 
+                         null;
+    const providerScopes = envVar.source === "oauth" && envVar.oauthScopes ? 
+                          envVar.oauthScopes : 
+                          [];
+    
+    // Always initialize hooks safely at the top level
+    const connectedAcc = validProvider ? 
+                          user?.useConnectedAccount(validProvider, { scopes: providerScopes }) : 
+                          null;
+    const accessToken = connectedAcc?.useAccessToken();
 
-    // Check for valid requirements for rendering
-    if (
-      envVar.source === "oauth" &&
-      envVar.oauthProvider &&
-      envVar.oauthScopes
-    ) {
-      // If valid, set values for hooks
-      validProvider = isValidProvider(envVar.oauthProvider)
-        ? envVar.oauthProvider
-        : null;
-      providerScopes = envVar.oauthScopes;
-    } else {
-      // Early return for invalid requirements
+    // Always call useEffect at the top level, regardless of conditions
+    useEffect(() => {
+      if (accessToken?.accessToken && envVar.id) {
+        saveModuleConfiguration(module.id, {
+          [envVar.id]: accessToken.accessToken,
+        });
+      }
+    }, [accessToken?.accessToken, envVar.id, module.id]);
+    
+    // Early return checks after hooks
+    if (envVar.source !== "oauth" || !envVar.oauthProvider || !envVar.oauthScopes) {
       return null;
     }
-
+    
     // Show error for unsupported providers
     if (!validProvider) {
       return (
@@ -320,24 +331,6 @@ function ModuleConfigDrawerView({
         </div>
       );
     }
-
-    // Now we can safely use the provider in hooks
-    const connectedAcc = user?.useConnectedAccount(
-      validProvider as ValidProvider,
-      {
-        scopes: providerScopes,
-      },
-    );
-    const accessToken = connectedAcc?.useAccessToken();
-
-    // Always call useEffect at the top level, regardless of conditions
-    useEffect(() => {
-      if (accessToken?.accessToken && envVar.id) {
-        saveModuleConfiguration(module.id, {
-          [envVar.id]: accessToken.accessToken,
-        });
-      }
-    }, [accessToken?.accessToken, envVar.id, module.id]);
 
     const providerName =
       envVar.oauthProvider.charAt(0).toUpperCase() +
@@ -624,12 +617,26 @@ export function ModuleConfigDrawer({
 }: ModuleConfigDrawerProps) {
   const [open, setOpen] = useState(defaultOpen);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAuthPopup, setShowAuthPopup] = useState(false);
+  const user = useUser();
+
+  // Handler for drawer open state changes
+  const handleOpenChange = (isOpen: boolean) => {
+    // If trying to open the drawer and no authenticated user
+    if (isOpen && !user?.isSignedIn) {
+      // Prevent drawer from opening
+      setShowAuthPopup(true);
+      return;
+    }
+    // Otherwise, set drawer state normally
+    setOpen(isOpen);
+  };
 
   return (
     <>
       <Drawer
         open={open}
-        onOpenChange={setOpen}
+        onOpenChange={handleOpenChange}
         direction="bottom"
         snapPoints={["content"]}
       >
@@ -671,6 +678,20 @@ export function ModuleConfigDrawer({
           </Suspense>
         </DrawerContent>
       </Drawer>
+
+      {/* Auth Popup for anonymous users */}
+      {showAuthPopup && (
+        <div className="z-50">
+          <AuthPopup
+            isOpen={showAuthPopup}
+            onClose={() => setShowAuthPopup(false)}
+            title="Sign in Required"
+            message="You need to sign in to configure modules"
+            ctaText="Sign In"
+            allowClose={true}
+          />
+        </div>
+      )}
     </>
   );
 }
