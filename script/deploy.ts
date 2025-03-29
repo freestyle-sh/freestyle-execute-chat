@@ -2,13 +2,13 @@ import { FreestyleSandboxes } from "freestyle-sandboxes";
 import { prepareDirForDeploymentSync } from "freestyle-sandboxes/utils";
 
 const sandboxes = new FreestyleSandboxes({
-  apiKey: process.env.FREESTYLE_IT_API_KEY!,
-  baseUrl: "https://api.freestyle.it.com",
+  apiKey: process.env.FREESTYLE_API_KEY!,
+  // baseUrl: "https://api.freestyle.it.com",
 });
 
 const dir = prepareDirForDeploymentSync(".next/standalone/");
 
-const domains = ["chat.freestyle.it.com"];
+const domains = ["sub.jacobzwang.com"];
 
 await sandboxes.deployWeb(dir, {
   entrypoint: "entry.js",

@@ -1,6 +1,6 @@
 import { auth } from "@/actions/auth";
 import { maybeUpdateChatTitle } from "@/actions/chats/create-chat";
-import { insertMessage } from "@/actions/chats/insert-message";
+// import { insertMessage } from "@/actions/chats/insert-message";
 import { listModules } from "@/actions/modules/list-modules";
 import { db } from "@/db";
 import { messagesTable } from "@/db/schema";
@@ -11,30 +11,30 @@ import { moduleRequestTool } from "@/lib/tools/module-request";
 import { requestDocumentationTool } from "@/lib/tools/request-documentation";
 import { sendFeedbackTool } from "@/lib/tools/send-feedback";
 import { structuredDataRequestTool } from "@/lib/tools/structured-data-request";
-import { stackServerApp } from "@/stack";
-import { StripeAgentToolkit } from "@stripe/agent-toolkit/ai-sdk";
+// import { stackServerApp } from "@/stack";
+// import { StripeAgentToolkit } from "@stripe/agent-toolkit/ai-sdk";
 
 import {
   streamText,
   type Tool,
   type ToolInvocation,
   type UIMessage,
-  wrapLanguageModel,
+  // wrapLanguageModel,
 } from "ai";
 import { executeTool } from "freestyle-sandboxes/ai";
 import { z } from "zod";
 // import { custom } from "zod";
 
-const stripeAgentToolkit = new StripeAgentToolkit({
-  secretKey: process.env.STRIPE_KEY!,
-  configuration: {
-    actions: {
-      paymentLinks: {
-        create: true,
-      },
-    },
-  },
-});
+// const stripeAgentToolkit = new StripeAgentToolkit({
+//   secretKey: process.env.STRIPE_KEY!,
+//   configuration: {
+//     actions: {
+//       paymentLinks: {
+//         create: true,
+//       },
+//     },
+//   },
+// });
 
 export async function POST(request: Request) {
   const stackUser = await auth({ or: "return-null" });
@@ -112,7 +112,7 @@ export async function POST(request: Request) {
   );
 
   // Only take the last 5:
-  const lastFiveToolCalls = allToolCalls.slice(-5);
+  const lastFiveToolCalls = allToolCalls.slice(-10);
 
   // Reduce them to build `executionResults`:
   const executionResults = lastFiveToolCalls.reduce<Record<string, string>>(
@@ -140,6 +140,8 @@ export async function POST(request: Request) {
     ),
     ...executionResults,
   };
+
+  console.log("Env vars:", envVars);
 
   if (!chatId) {
     throw new Error("chat-id header is required");
@@ -225,7 +227,7 @@ export async function POST(request: Request) {
 
   console.log("Sending response");
 
-  return streamText({
+  const textStreamer = streamText({
     // model: customerId
     //   ? wrapLanguageModel({
     //       model: claudeSonnetModel,
@@ -244,8 +246,21 @@ export async function POST(request: Request) {
     //   : claudeSonnetModel,
     model: claudeSonnetModel,
     maxSteps: 10,
+    onStepFinish: async (step) => {
+      console.log("Step finished", step.finishReason);
+      return {
+        tools: {
+          ...step.tools,
+        },
+      };
+      // textStreamer.
+    },
     system: systemPrompt({ requestDocsToolEnabled: docRequestTool !== null }),
     tools,
+
     messages: messages,
-  }).toDataStreamResponse();
+    abortSignal: request.signal,
+  });
+
+  return textStreamer.toDataStreamResponse();
 }
