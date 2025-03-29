@@ -41,18 +41,20 @@ export const systemPrompt = ({
 };
 
 export const PREV_EXECUTION_DOCS = `
-You have access to your previous 5 execution results as environment variables. They are prefixed with "PREV_EXEC_" followed by a unique identifier from the message ID. For example, "process.env.PREV_EXEC_toolu_01abc123xyz". Use these to reference results from previous code executions. It will only include the "result" field. When these environment variables contain JSON, you'll need to parse them with JSON.parse().
+You have access to your previous 5 execution results as environment variables. They are prefixed with "PREV_EXEC_" followed by the OUTPUT_NAME parameter of the tool you executed.
 
+\`\`\`ts
 // Example of accessing previous execution result
-const prevResult = process.env.PREV_EXEC_toolu_01abc123xyz;
+const prevResult = process.env.PREV_EXEC_FACTORIAL_OF_15;
 const parsedData = JSON.parse(prevResult);
+\`\`\`
 
-Previous execution results are stored in environment variables with the format PREV_EXEC_ followed by the execution ID (which starts with 'toolu_'). These IDs are unique to each execution.
+Previous execution results are stored in environment variables with the format PREV_EXEC_ followed by the OUTPUT_NAME parameter of the tool you executed. For example, if you executed a tool with OUTPUT_NAME "FACTORIAL_OF_15", the result will be stored in the environment variable PREV_EXEC_FACTORIAL_OF_15.
 
 Only the 5 most recent execution results are available. Each execution result contains only the 'result' field from the execution.
 
-Do not attempt to access environment variables like PREV_EXEC_codeExecutor or other variations that don't follow the pattern PREV_EXEC_toolu_[ID]. Always use the exact execution ID.
+Do not attempt to access environment variables like PREV_EXEC_codeExecutor or other variations that don't follow the pattern PREV_EXEC_<OUTPUT_NAME>.
 
-If you're unsure which execution IDs are available, you can list them with: Object.keys(process.env).filter(key => key.startsWith('PREV_EXEC_'))
+If you're unsure which past executions are available, you can list them with: Object.keys(process.env).filter(key => key.startsWith('PREV_EXEC_'))
 
 When the user asks you to use the output of a previous code execution, always use these environment variables to re-writing or re-executing code.`.trim();

@@ -22,6 +22,7 @@ import {
   wrapLanguageModel,
 } from "ai";
 import { executeTool } from "freestyle-sandboxes/ai";
+import { z } from "zod";
 // import { custom } from "zod";
 
 const stripeAgentToolkit = new StripeAgentToolkit({
@@ -72,7 +73,7 @@ export async function POST(request: Request) {
       }),
       {
         status: 403,
-      },
+      }
     );
   }
 
@@ -90,12 +91,12 @@ export async function POST(request: Request) {
     modules
       .filter((module) => module.isEnabled)
       .map((module) => module.nodeModules as Record<string, string>)
-      .flatMap(Object.entries),
+      .flatMap(Object.entries)
   );
 
   // Get all previous messages with tool outputs from code execution
   const previousMessages = json.messages.filter(
-    (msg) => msg.role === "assistant",
+    (msg) => msg.role === "assistant"
   );
 
   // Extract execution results from previous messages and add to environment variables
@@ -106,8 +107,8 @@ export async function POST(request: Request) {
         (part) =>
           part.toolInvocation as ToolInvocation & {
             result?: { result?: unknown };
-          },
-      ),
+          }
+      )
   );
 
   // Only take the last 5:
@@ -117,13 +118,13 @@ export async function POST(request: Request) {
   const executionResults = lastFiveToolCalls.reduce<Record<string, string>>(
     (acc, toolCall) => {
       if (toolCall?.result?.result) {
-        acc[`PREV_EXEC_${toolCall.toolCallId}`] = JSON.stringify(
-          toolCall.result.result,
+        acc[`PREV_EXEC_${toolCall.args.OUTPUT_NAME}`] = JSON.stringify(
+          toolCall.result.result
         );
       }
       return acc;
     },
-    {},
+    {}
   );
 
   // Combine module env vars with execution results
@@ -135,7 +136,7 @@ export async function POST(request: Request) {
           return module.configurations.map((configuration) => {
             return [configuration.name, configuration.value];
           });
-        }),
+        })
     ),
     ...executionResults,
   };
@@ -163,17 +164,27 @@ export async function POST(request: Request) {
   console.log("Updating chat title");
 
   maybeUpdateChatTitle(chatId).catch((error) =>
-    console.error("Failed to update chat title:", error),
+    console.error("Failed to update chat title:", error)
   );
 
   console.log("Chat title updated");
 
+  const executor = executeTool({
+    apiKey: process.env.FREESTYLE_API_KEY!,
+    nodeModules,
+    envVars,
+  });
+
+  executor.parameters = executor.parameters.extend({
+    OUTPUT_NAME: z
+      .string()
+      .describe(
+        "The name of the output variable, future code executions will be able to access this variable via process.env.PREV_EXEC_{OUTPUT_NAME}. No spaces or special characters are allowed. The name must start with a letter and can only contain letters, numbers, and underscores."
+      ),
+  });
+
   const tools: Record<string, Tool> = {
-    codeExecutor: executeTool({
-      apiKey: process.env.FREESTYLE_API_KEY!,
-      nodeModules,
-      envVars,
-    }),
+    codeExecutor: executor,
     sendFeedback: sendFeedbackTool(),
     // Human-in-the-loop tools
     structuredDataRequest: structuredDataRequestTool(),
@@ -181,7 +192,7 @@ export async function POST(request: Request) {
   };
 
   const docRequestTool = requestDocumentationTool(
-    modules.filter((module) => module.isEnabled),
+    modules.filter((module) => module.isEnabled)
   );
 
   if (docRequestTool) {
@@ -200,7 +211,10 @@ export async function POST(request: Request) {
               part.toolInvocation.result?.result &&
               part.toolInvocation.result?.result.length > 5003
             ) {
-              part.toolInvocation.result.result = `${part.toolInvocation.result.result.slice(0, 5000)}...`;
+              part.toolInvocation.result.result = `${part.toolInvocation.result.result.slice(
+                0,
+                5000
+              )}...`;
             }
           }
         }
