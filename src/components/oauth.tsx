@@ -65,8 +65,9 @@ export function OAuthUI({
   };
 
   const user = useUser();
-  const connectedAcc = isValidProvider(providerName)
-    ? user?.useConnectedAccount(providerName, { scopes })
+  // Only attempt to get connected account if user is signed in
+  const connectedAcc = (isValidProvider(providerName) && user && user.isSignedIn !== false)
+    ? user.useConnectedAccount(providerName, { scopes })
     : undefined;
   const accessToken = connectedAcc?.useAccessToken();
 
@@ -169,7 +170,12 @@ export function OAuthUI({
               }
 
               try {
-                await user?.getConnectedAccount(providerName, {
+                if (!user || user.isSignedIn === false) {
+                  toast.error("You need to sign in first to connect an account");
+                  return;
+                }
+                
+                await user.getConnectedAccount(providerName, {
                   or: "redirect",
                   scopes,
                 });

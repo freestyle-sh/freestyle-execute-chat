@@ -55,7 +55,7 @@ export function ModuleConfigDialog({ dialog }: ModuleConfigDialogProps) {
   
   // Check authentication on component mount
   useEffect(() => {
-    if (!user?.isSignedIn) {
+    if (!user || user?.isSignedIn === false) {
       setShowAuthPopup(true);
     }
   }, [user]);

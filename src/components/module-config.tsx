@@ -623,7 +623,7 @@ export function ModuleConfigDrawer({
   // Handler for drawer open state changes
   const handleOpenChange = (isOpen: boolean) => {
     // If trying to open the drawer and no authenticated user
-    if (isOpen && !user?.isSignedIn) {
+    if (isOpen && (!user || user?.isSignedIn === false)) {
       // Prevent drawer from opening
       setShowAuthPopup(true);
       return;
