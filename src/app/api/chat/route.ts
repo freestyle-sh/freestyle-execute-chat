@@ -7,6 +7,7 @@ import { messagesTable } from "@/db/schema";
 import { claudeSonnetModel } from "@/lib/model";
 import stripe from "@/lib/stripe";
 import { systemPrompt } from "@/lib/system-prompt";
+import { generateCodeExecutor } from "@/lib/tools/code-executor";
 import { moduleRequestTool } from "@/lib/tools/module-request";
 import { requestDocumentationTool } from "@/lib/tools/request-documentation";
 import { sendFeedbackTool } from "@/lib/tools/send-feedback";
@@ -171,21 +172,26 @@ export async function POST(request: Request) {
 
   console.log("Chat title updated");
 
-  const executor = executeTool({
-    apiKey: process.env.FREESTYLE_API_KEY!,
+  // const executor = executeTool({
+  //   apiKey: process.env.FREESTYLE_API_KEY!,
+  //   nodeModules,
+  //   envVars,
+  // });
+
+  // executor.parameters = executor.parameters.extend({
+  //   OUTPUT_NAME: z
+  //     .string()
+  //     .describe(
+  //       "The name of the output variable, future code executions will be able to access this variable via process.env.PREV_EXEC_{OUTPUT_NAME}. No spaces or special characters are allowed. The name must start with a letter and can only contain letters, numbers, and underscores."
+  //     ),
+  // });
+  const executor = generateCodeExecutor(
+    process.env.FREESTYLE_API_KEY!,
     nodeModules,
-    envVars,
-  });
+    envVars
+  );
 
-  executor.parameters = executor.parameters.extend({
-    OUTPUT_NAME: z
-      .string()
-      .describe(
-        "The name of the output variable, future code executions will be able to access this variable via process.env.PREV_EXEC_{OUTPUT_NAME}. No spaces or special characters are allowed. The name must start with a letter and can only contain letters, numbers, and underscores."
-      ),
-  });
-
-  const tools: Record<string, Tool> = {
+  let tools: Record<string, Tool> = {
     codeExecutor: executor,
     sendFeedback: sendFeedbackTool(),
     // Human-in-the-loop tools
@@ -227,6 +233,8 @@ export async function POST(request: Request) {
 
   console.log("Sending response");
 
+  let codeExecutorCalls: Record<string, string> = {};
+
   const textStreamer = streamText({
     // model: customerId
     //   ? wrapLanguageModel({
@@ -247,10 +255,41 @@ export async function POST(request: Request) {
     model: claudeSonnetModel,
     maxSteps: 10,
     onStepFinish: async (step) => {
-      console.log("Step finished", step.finishReason);
+      console.log("Step finished", step.toolResults);
+
+      // Track code execution tool calls and their results
+      const newCodeExecutorCalls = step.toolResults.reduce((acc, toolCall) => {
+        if (toolCall.toolName === "codeExecutor" && toolCall.result?.result) {
+          acc[`PREV_EXEC_${toolCall.args.OUTPUT_NAME}`] = JSON.stringify(
+            toolCall.result.result
+          );
+        }
+
+        return acc;
+      }, {} as Record<string, string>);
+
+      if (Object.keys(newCodeExecutorCalls).length > 0) {
+        console.log("Code executor calls recorded:", newCodeExecutorCalls);
+      }
+
+      codeExecutorCalls = {
+        ...codeExecutorCalls,
+        ...newCodeExecutorCalls,
+      };
+
+      const newExecutor = generateCodeExecutor(
+        process.env.FREESTYLE_API_KEY!,
+        nodeModules,
+        {
+          ...envVars,
+          ...codeExecutorCalls,
+        }
+      );
+
       return {
         tools: {
-          ...step.tools,
+          ...tools,
+          codeExecutor: newExecutor,
         },
       };
       // textStreamer.
