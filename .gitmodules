@@ -1,0 +1,4 @@
+[submodule "external/ai"]
+	path = external/ai
+	url = https://github.com/theswerd/ai.git
+	branch = tooling
