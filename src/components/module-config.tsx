@@ -128,6 +128,198 @@ function ModuleConfigTrigger({
   );
 }
 
+// OAuth UI component for a specific provider
+function OAuthConfigUI({
+  envVar,
+  module,
+  onRemoveConfig,
+}: {
+  envVar: EnvVarRequirement;
+  module: ModuleWithRequirements;
+  onRemoveConfig: () => void;
+}) {
+  // Check if the OAuth provider is valid for Stack Auth
+  type ValidProvider =
+    | "x"
+    | "github"
+    | "google"
+    | "microsoft"
+    | "spotify"
+    | "facebook"
+    | "discord"
+    | "gitlab"
+    | "bitbucket"
+    | "linkedin"
+    | "apple";
+  const validProviders: ValidProvider[] = [
+    "x",
+    "github",
+    "google",
+    "microsoft",
+    "spotify",
+    "facebook",
+    "discord",
+    "gitlab",
+    "bitbucket",
+    "linkedin",
+    "apple",
+  ];
+
+  // Type guard to make sure provider is valid
+  const isValidProvider = (provider: string): provider is ValidProvider => {
+    return validProviders.includes(provider as ValidProvider);
+  };
+
+  // Always call all Hooks at the top level
+  const user = useUser();
+  // Setup values needed for hooks and conditional logic
+  const validProvider =
+    envVar.source === "oauth" &&
+    envVar.oauthProvider &&
+    isValidProvider(envVar.oauthProvider)
+      ? (envVar.oauthProvider as ValidProvider)
+      : null;
+  const providerScopes =
+    envVar.source === "oauth" && envVar.oauthScopes ? envVar.oauthScopes : [];
+
+  // Always initialize hooks safely at the top level
+  const connectedAcc = validProvider
+    ? user?.useConnectedAccount(validProvider, { scopes: providerScopes })
+    : null;
+  const accessToken = connectedAcc?.useAccessToken();
+
+  // Always call useEffect at the top level, regardless of conditions
+  useEffect(() => {
+    if (accessToken?.accessToken && envVar.id) {
+      saveModuleConfiguration(module.id, {
+        [envVar.id]: accessToken.accessToken,
+      });
+    }
+  }, [accessToken?.accessToken, envVar.id, module.id]);
+
+  // Early return checks after hooks
+  if (
+    envVar.source !== "oauth" ||
+    !envVar.oauthProvider ||
+    !envVar.oauthScopes
+  ) {
+    return null;
+  }
+
+  // Show error for unsupported providers
+  if (!validProvider) {
+    return (
+      <div className="p-4 text-center">
+        <div className="text-destructive">
+          Unsupported OAuth provider: {envVar.oauthProvider}
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">
+          This provider is not supported by the authentication system.
+        </p>
+      </div>
+    );
+  }
+
+  const providerName = capitalize(envVar.oauthProvider.toLowerCase());
+  const serviceName = envVar.name;
+
+  return (
+    <div className="flex justify-center p-4 w-full mb-4">
+      {accessToken?.accessToken ? (
+        <div className="w-full max-w-xl flex flex-col gap-2">
+          <div className="flex justify-between items-center">
+            <p className="font-medium text-sm text-gray-500">Access Token</p>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2"
+              onClick={() => {
+                navigator.clipboard.writeText(accessToken.accessToken);
+                toast.success("Access token copied to clipboard");
+              }}
+            >
+              <CopyIcon className="mr-1" />
+              Copy
+            </Button>
+          </div>
+          <div className="w-full break-all overflow-hidden bg-muted text-muted-foreground p-3 rounded-md border border-gray-200 dark:border-gray-700">
+            <code className="text-xs">{accessToken.accessToken}</code>
+          </div>
+          <p className="text-xs text-gray-500 text-center">
+            {providerName} {serviceName} connected successfully
+          </p>
+          <div className="flex justify-center items-center gap-3 text-center m-4">
+            <Button
+              type="button"
+              variant="outline"
+              size="default"
+              className="w-full sm:flex-1 sm:max-w-[200px] text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive/90 cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
+                onRemoveConfig();
+              }}
+            >
+              Disconnect
+            </Button>
+
+            <DrawerClose asChild>
+              <Button
+                type="button"
+                size="default"
+                className="w-full sm:flex-1 sm:max-w-[200px] cursor-pointer"
+              >
+                Close
+              </Button>
+            </DrawerClose>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-4 sm:space-y-0 sm:space-x-4 w-full text-center flex items-center justify-center h-full flex-col sm:flex-row ">
+          <DrawerClose asChild>
+            <Button
+              type="button"
+              variant="outline"
+              size="default"
+              className="w-full sm:max-w-[300px] cursor-pointer"
+            >
+              Cancel
+            </Button>
+          </DrawerClose>
+          <Button
+            type="button"
+            className="flex justify-center gap-0 bg-white hover:bg-gray-100 text-gray-800 border border-gray-300 shadow-sm w-full sm:max-w-[300px]"
+            onClick={async () => {
+              try {
+                // We know provider is valid at this point due to the isValidProvider check
+                await user?.getConnectedAccount(
+                  envVar.oauthProvider as ValidProvider,
+                  {
+                    or: "redirect",
+                    scopes: envVar.oauthScopes ?? undefined,
+                  },
+                );
+              } catch (error) {
+                toast.error(
+                  `Failed to connect to ${providerName} ${serviceName}`,
+                );
+                console.error(error);
+              }
+            }}
+          >
+            <ModuleIcon
+              svg={module.svg}
+              darkModeColor={module.darkModeColor}
+              lightModeColor={module.lightModeColor}
+            />
+            <span>Connect {providerName}</span>
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ModuleConfigDrawerView({
   module,
   isConfigLoading,
@@ -243,196 +435,6 @@ function ModuleConfigDrawerView({
       },
     );
   };
-
-  // OAuth UI component for a specific provider
-  function OAuthConfigUI({
-    envVar,
-    module,
-    onRemoveConfig,
-  }: {
-    envVar: EnvVarRequirement;
-    module: ModuleWithRequirements;
-    onRemoveConfig: () => void;
-  }) {
-    // Check if the OAuth provider is valid for Stack Auth
-    type ValidProvider =
-      | "x"
-      | "github"
-      | "google"
-      | "microsoft"
-      | "spotify"
-      | "facebook"
-      | "discord"
-      | "gitlab"
-      | "bitbucket"
-      | "linkedin"
-      | "apple";
-    const validProviders: ValidProvider[] = [
-      "x",
-      "github",
-      "google",
-      "microsoft",
-      "spotify",
-      "facebook",
-      "discord",
-      "gitlab",
-      "bitbucket",
-      "linkedin",
-      "apple",
-    ];
-
-    // Type guard to make sure provider is valid
-    const isValidProvider = (provider: string): provider is ValidProvider => {
-      return validProviders.includes(provider as ValidProvider);
-    };
-
-    // Always call all Hooks at the top level
-    const user = useUser();
-    // Setup values needed for hooks and conditional logic
-    const validProvider = envVar.source === "oauth" && 
-                         envVar.oauthProvider && 
-                         isValidProvider(envVar.oauthProvider) ? 
-                         envVar.oauthProvider as ValidProvider : 
-                         null;
-    const providerScopes = envVar.source === "oauth" && envVar.oauthScopes ? 
-                          envVar.oauthScopes : 
-                          [];
-    
-    // Always initialize hooks safely at the top level
-    const connectedAcc = validProvider ? 
-                          user?.useConnectedAccount(validProvider, { scopes: providerScopes }) : 
-                          null;
-    const accessToken = connectedAcc?.useAccessToken();
-
-    // Always call useEffect at the top level, regardless of conditions
-    useEffect(() => {
-      if (accessToken?.accessToken && envVar.id) {
-        saveModuleConfiguration(module.id, {
-          [envVar.id]: accessToken.accessToken,
-        });
-      }
-    }, [accessToken?.accessToken, envVar.id, module.id]);
-    
-    // Early return checks after hooks
-    if (envVar.source !== "oauth" || !envVar.oauthProvider || !envVar.oauthScopes) {
-      return null;
-    }
-    
-    // Show error for unsupported providers
-    if (!validProvider) {
-      return (
-        <div className="p-4 text-center">
-          <div className="text-destructive">
-            Unsupported OAuth provider: {envVar.oauthProvider}
-          </div>
-          <p className="text-xs text-muted-foreground mt-2">
-            This provider is not supported by the authentication system.
-          </p>
-        </div>
-      );
-    }
-
-    const providerName =
-      envVar.oauthProvider.charAt(0).toUpperCase() +
-      envVar.oauthProvider.slice(1);
-    const serviceName = envVar.name;
-
-    return (
-      <div className="flex justify-center p-4 w-full mb-4">
-        {accessToken?.accessToken ? (
-          <div className="w-full max-w-xl flex flex-col gap-2">
-            <div className="flex justify-between items-center">
-              <p className="font-medium text-sm text-gray-500">Access Token</p>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-8 px-2"
-                onClick={() => {
-                  navigator.clipboard.writeText(accessToken.accessToken);
-                  toast.success("Access token copied to clipboard");
-                }}
-              >
-                <CopyIcon className="mr-1" />
-                Copy
-              </Button>
-            </div>
-            <div className="w-full break-all overflow-hidden bg-muted text-muted-foreground p-3 rounded-md border border-gray-200 dark:border-gray-700">
-              <code className="text-xs">{accessToken.accessToken}</code>
-            </div>
-            <p className="text-xs text-gray-500 text-center">
-              {providerName} {serviceName} connected successfully
-            </p>
-            <div className="flex justify-center items-center gap-3 text-center m-4">
-              <Button
-                type="button"
-                variant="outline"
-                size="default"
-                className="w-full sm:flex-1 sm:max-w-[200px] text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive/90 cursor-pointer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  onRemoveConfig();
-                }}
-              >
-                Disconnect
-              </Button>
-
-              <DrawerClose asChild>
-                <Button
-                  type="button"
-                  size="default"
-                  className="w-full sm:flex-1 sm:max-w-[200px] cursor-pointer"
-                >
-                  Close
-                </Button>
-              </DrawerClose>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4 sm:space-y-0 sm:space-x-4 w-full text-center flex items-center justify-center h-full flex-col sm:flex-row ">
-            <DrawerClose asChild>
-              <Button
-                type="button"
-                variant="outline"
-                size="default"
-                className="w-full sm:max-w-[300px] cursor-pointer"
-              >
-                Cancel
-              </Button>
-            </DrawerClose>
-            <Button
-              type="button"
-              className="flex justify-center gap-0 bg-white hover:bg-gray-100 text-gray-800 border border-gray-300 shadow-sm w-full sm:max-w-[300px]"
-              onClick={async () => {
-                try {
-                  // We know provider is valid at this point due to the isValidProvider check
-                  await user?.getConnectedAccount(
-                    envVar.oauthProvider as ValidProvider,
-                    {
-                      or: "redirect",
-                      scopes: envVar.oauthScopes ?? undefined,
-                    },
-                  );
-                } catch (error) {
-                  toast.error(
-                    `Failed to connect to ${providerName} ${serviceName}`,
-                  );
-                  console.error(error);
-                }
-              }}
-            >
-              <ModuleIcon
-                svg={module.svg}
-                darkModeColor={module.darkModeColor}
-                lightModeColor={module.lightModeColor}
-              />
-              <span>Connect {providerName}</span>
-            </Button>
-          </div>
-        )}
-      </div>
-    );
-  }
 
   // Check if this module has any OAuth requirements
   const oauthRequirements = module.environmentVariableRequirements.filter(
@@ -623,7 +625,7 @@ export function ModuleConfigDrawer({
   // Handler for drawer open state changes
   const handleOpenChange = (isOpen: boolean) => {
     // If trying to open the drawer and no authenticated user
-    if (isOpen && (!user || user?.isSignedIn === false)) {
+    if (isOpen && user === null) {
       // Prevent drawer from opening
       setShowAuthPopup(true);
       return;
