@@ -1,0 +1,4 @@
+packages:
+  - external/ai/packages/*
+  - external/ai/tools/*
+  - external/*
