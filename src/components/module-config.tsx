@@ -225,28 +225,9 @@ function OAuthConfigUI({
 
   return (
     <div className="flex justify-center p-4 w-full mb-4">
-      {accessToken?.accessToken ? (
+      {connectedAcc ? (
         <div className="w-full max-w-xl flex flex-col gap-2">
-          <div className="flex justify-between items-center">
-            <p className="font-medium text-sm text-gray-500">Access Token</p>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-8 px-2"
-              onClick={() => {
-                navigator.clipboard.writeText(accessToken.accessToken);
-                toast.success("Access token copied to clipboard");
-              }}
-            >
-              <CopyIcon className="mr-1" />
-              Copy
-            </Button>
-          </div>
-          <div className="w-full break-all overflow-hidden bg-muted text-muted-foreground p-3 rounded-md border border-gray-200 dark:border-gray-700">
-            <code className="text-xs">{accessToken.accessToken}</code>
-          </div>
-          <p className="text-xs text-gray-500 text-center">
+          <p className="text-sm text-secondary-foreground text-center">
             {providerName} {serviceName} connected successfully
           </p>
           <div className="flex justify-center items-center gap-3 text-center m-4">
