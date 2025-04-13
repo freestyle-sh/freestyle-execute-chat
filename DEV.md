@@ -6,6 +6,6 @@ Setup
 git submodule init
 git submodule update
 
-cd external/api
+cd external/ai
 pnpm i && pnpm run build
 ```

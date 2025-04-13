@@ -11,6 +11,7 @@ import { useUser } from "@stackframe/stack";
 import { useQuery } from "@tanstack/react-query";
 import { listModules } from "@/actions/modules/list-modules";
 import { ExamplePrompt } from "@/components/ui/example-prompt";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Home() {
   const user = useUser({ or: "anonymous" });
@@ -19,6 +20,7 @@ export default function Home() {
   const router = useTransitionRouter();
   const isLoading = false;
   const [submitting, setSubmitting] = useState(false);
+  const isMobile = useIsMobile();
 
   const selectedModules = useModulesStore((state) => state.selectedModules);
 
@@ -69,23 +71,27 @@ export default function Home() {
             onSelectAction={setPrompt}
           />
 
-          <ExamplePrompt
-            title="Cancel my meetings today"
-            description="Cancel all my Google Calendar events for today and email all of the attendees to let them know"
-            promptText="Get a list of my GitHub repositories and create a Google Sheet with their names, descriptions, stars, and last updated dates"
-            moduleNames={["Google Calendar", "Gmail"]}
-            modules={modules}
-            onSelectAction={setPrompt}
-          />
+          {!isMobile && (
+            <>
+              <ExamplePrompt
+                title="Cancel my meetings today"
+                description="Cancel all my Google Calendar events for today and email all of the attendees to let them know"
+                promptText="Get a list of my GitHub repositories and create a Google Sheet with their names, descriptions, stars, and last updated dates"
+                moduleNames={["Google Calendar", "Gmail"]}
+                modules={modules}
+                onSelectAction={setPrompt}
+              />
 
-          <ExamplePrompt
-            title="Stripe revenue report via email"
-            description="Generate a Stripe revenue summary and send it via Resend"
-            promptText="Create a summary of my Stripe revenue for the past week and send it to me via email using Resend. Include total revenue, new customers, and popular products."
-            moduleNames={["stripe", "resend"]}
-            modules={modules}
-            onSelectAction={setPrompt}
-          />
+              <ExamplePrompt
+                title="Stripe revenue report via email"
+                description="Generate a Stripe revenue summary and send it via Resend"
+                promptText="Create a summary of my Stripe revenue for the past week and send it to me via email using Resend. Include total revenue, new customers, and popular products."
+                moduleNames={["stripe", "resend"]}
+                modules={modules}
+                onSelectAction={setPrompt}
+              />
+            </>
+          )}
         </div>
 
         <PromptInputBasic
