@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { listModules } from "@/actions/modules/list-modules";
 import { ExamplePrompt } from "@/components/ui/example-prompt";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileHeader } from "@/components/mobile-header";
 
 export default function Home() {
   const user = useUser({ or: "anonymous" });
@@ -45,8 +46,10 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-full p-4 md:ml-4 animate-fade-in">
-      <div className="flex flex-col items-center max-w-3xl w-full rounded-2xl animate-slide-up">
+    <div className="flex flex-col h-svh">
+      <MobileHeader title="Freestyle Chat" />
+      <div className="flex flex-col items-center justify-center h-full p-4 md:ml-4 animate-fade-in">
+        <div className="flex flex-col items-center max-w-3xl w-full rounded-2xl animate-slide-up">
         <h1 className="text-3xl font-bold mb-6">Freestyle Chat</h1>
         <span className="text-muted-foreground mb-4 text-center max-w-md">
           Start a new conversation with Freestyle code execution.
@@ -108,6 +111,7 @@ export default function Home() {
         <div className="text-muted-foreground text-center text-sm mt-6 flex items-center gap-2 before:content-[''] before:h-[1px] before:w-12 before:bg-border after:content-[''] after:h-[1px] after:w-12 after:bg-border">
           Or continue with a recent chat from the sidebar.
         </div>
+      </div>
       </div>
     </div>
   );
