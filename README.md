@@ -1,7 +1,7 @@
 # Freestyle Execute Chat
 
 <div align="center">
-  <img src="public/logo.svg" width="120" height="120" alt="Freestyle Execute Chat Logo" />
+  <img src="app/public/logo.svg" width="120" height="120" alt="Freestyle Execute Chat Logo" />
   <h1>Freestyle Execute Chat</h1>
   <p>An AI assistant that truly assists - with real-world capabilities</p>
 </div>
