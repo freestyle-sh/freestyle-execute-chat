@@ -1,6 +1,6 @@
 "use client";
 
-import { SettingsIcon, GithubIcon, LogInIcon } from "lucide-react";
+import { SettingsIcon, GithubIcon, LogInIcon, GlobeLock } from "lucide-react";
 import Link from "next/link";
 
 import {
@@ -41,6 +41,12 @@ export function ChatSidebar() {
       </SidebarContent>
       <SidebarFooter className="border-t border-sidebar-border pt-2">
         <SidebarMenu>
+          <SidebarMenuLinkItem
+            href="/privacy"
+            label="Privacy"
+            target="_blank"
+            icon={GlobeLock}
+          />
           <SidebarMenuLinkItem
             href="https://github.com/freestyle-sh/freestyle-execute-chat"
             label="Github"
