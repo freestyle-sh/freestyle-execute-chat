@@ -31,16 +31,18 @@ export function DangerZone() {
     }
 
     setIsDeleting(true);
-    
+
     try {
       await deleteAccount();
       setIsDialogOpen(false);
       toast.success("Account deleted successfully");
       router.replace("/");
     } catch (error) {
-      toast.error(error instanceof Error 
-        ? `Could not delete account: ${error.message}` 
-        : "Could not delete account");
+      toast.error(
+        error instanceof Error
+          ? `Could not delete account: ${error.message}`
+          : "Could not delete account"
+      );
       setIsDeleting(false);
     }
   };
@@ -55,26 +57,31 @@ export function DangerZone() {
           <div>
             <p className="font-medium">Delete account</p>
             <p className="text-sm text-muted-foreground">
-              Permanently delete your account and all of your data
+              Permanently delete your account
             </p>
           </div>
-          
+
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="destructive" className="cursor-pointer">Delete Account</Button>
+              <Button variant="destructive" className="cursor-pointer">
+                Delete Account
+              </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
-                <DialogTitle className="text-destructive">Delete Account</DialogTitle>
+                <DialogTitle className="text-destructive">
+                  Delete Account
+                </DialogTitle>
                 <DialogDescription>
-                  This action cannot be undone. This will permanently delete your
-                  account and remove all your data from our servers.
+                  This action cannot be undone. This will permanently delete
+                  your account and remove all your data from our servers.
                 </DialogDescription>
               </DialogHeader>
-              
+
               <div className="my-6">
                 <p className="text-sm mb-4">
-                  To confirm, type <span className="font-bold">delete my account</span> below:
+                  To confirm, type{" "}
+                  <span className="font-bold">delete my account</span> below:
                 </p>
                 <Input
                   value={confirmText}
@@ -83,10 +90,10 @@ export function DangerZone() {
                   className="w-full"
                 />
               </div>
-              
+
               <DialogFooter>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="cursor-pointer"
                   onClick={() => {
                     setIsDialogOpen(false);
@@ -112,4 +119,3 @@ export function DangerZone() {
     </SettingsSection>
   );
 }
-
