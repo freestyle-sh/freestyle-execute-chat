@@ -17,7 +17,66 @@ Freestyle Execute Chat represents a new vision for AI assistants - one where the
 
 The core philosophy is simple: **an assistant should assist**, not just converse. By giving our AI the ability to execute code and interact with external systems, we bridge the gap between conversation and action.
 
-Freestyle Chat is a jack of all trades master of none chat assistant. We believe their is an incredible opportunity for people (like you), to fork it, focus on a single vertical, and master them. We encourage you to steal our code and make it your own and we're here to help you do that.
+Freestyle Chat is a jack of all trades, master of none chat assistant. We believe there is an incredible opportunity for people (like you) to fork it, focus on a single vertical, and master them. We encourage you to steal our code and make it your own and we're here to help you do that.
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/)
+- [pnpm](https://pnpm.io/)
+- [PostgreSQL](https://www.postgresql.org/) database (or a Neon.tech account)
+
+### Installation
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/yourusername/freestyle-execute-chat.git
+   cd freestyle-execute-chat
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   pnpm install
+   ```
+
+3. Set up environment variables:
+   Create a `.env` file in the root directory with the following variables:
+
+   ```
+   # Anthropic API key for Claude
+   ANTHROPIC_API_KEY=your_anthropic_api_key
+
+   # Database connection string
+   DATABASE_URL=your_postgres_or_neon_connection_string
+
+   # Freestyle API key for code execution
+   FREESTYLE_API_KEY=your_freestyle_api_key
+
+   # Stack Auth (for authentication)
+   NEXT_PUBLIC_STACK_PROJECT_ID=your_stack_project_id
+   NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY=your_stack_publishable_key
+   STACK_SECRET_SERVER_KEY=your_stack_secret_key
+   ```
+
+4. Run the development server:
+
+   ```bash
+   cd app
+   pnpm dev
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000) to see the application.
+
+### Database Setup
+
+The project uses Drizzle ORM with PostgreSQL. To initialize the database:
+
+```bash
+pnpm dlx drizzle-kit push
+```
 
 ## ✨ Key Capabilities
 
